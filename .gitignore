@@ -1,0 +1,23 @@
+# Python artifacts / Python の生成物
+__pycache__/
+*.py[cod]
+
+# Virtual environments / 仮想環境
+.venv/
+venv/
+
+# Tool caches / ツールのキャッシュ
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Packaging leftovers (subject VI: the mazegen-* artifact itself MUST stay committed at the repo root)
+# パッケージング作業の残骸(subject VI:mazegen-* 本体はリポジトリ直下にコミットしたまま残す)
+build/
+*.egg-info/
+
+# OS
+.DS_Store
+
+# NOTE: Docs/ is version-controlled on purpose. Never add it here.
+# 注意:Docs/ は意図的に git 管理下に置いている。ここに追加しないこと。
