@@ -29,7 +29,7 @@ and **what each of us understood**. It exists for four reasons:
 | `Docs/README.md` | This file. Map of the documentation + conventions. | — |
 | `Docs/commit_guide.md` | Git commit rules we both follow. | — |
 | `Docs/subject/` | The subject PDF and its Japanese translation. | `en.subject.pdf`, `ja.subject.md` |
-| `Docs/pair_communication/` | One file per meeting: agenda, decisions, open questions, TODOs with an owner. | `YYYY-MM-DD_short-topic.md` |
+| `Docs/pair_communication/` | One file per meeting: agenda, decisions, open questions, TODOs with an owner. | `NN_short-topic.md` |
 | `Docs/work_log/` | One file per person per day: what I did / what is next / where I got stuck / time spent. | `YYYY-MM-DD_<author>.md` |
 | `Docs/learning_log/` | One file per concept, **rewritten in your own words** — not pasted references. | `topic-name.md` (kebab-case) |
 | `Docs/implementation_plans/` | The design we actually adopted: scope, interface, steps, edge cases, complexity, test plan. | `topic-name.md` (kebab-case) |
@@ -38,7 +38,10 @@ and **what each of us understood**. It exists for four reasons:
 
 ### Naming conventions
 
-- Dates are always **ISO 8601**: `2026-08-13`. It sorts correctly in `ls` and in the GitHub file list.
+- Dates — in `work_log/` filenames and in every header table — are always **ISO 8601**: `2026-08-13`.
+  It sorts correctly in `ls` and in the GitHub file list.
+- `pair_communication/` is ordered by a two-digit **index** instead, because a meeting can move or split
+  across days while its place in the sequence of decisions does not.
 - Topic slugs are **kebab-case, lowercase, ASCII**: `hex-wall-encoding.md`, not `Hex Wall Encoding.md`.
   Spaces and non-ASCII characters make `git`, shell globbing, and links harder for both of us.
 - One meeting = one file. One person-day = one file. One concept = one file.
@@ -87,7 +90,7 @@ Full rules, the list of types, and the scopes we use are in [commit_guide.md](co
 | `Docs/README.md` | このファイル。ドキュメント全体の地図と規約。 | — |
 | `Docs/commit_guide.md` | 二人で守る git コミット規約。 | — |
 | `Docs/subject/` | subject PDF とその日本語訳。 | `en.subject.pdf`, `ja.subject.md` |
-| `Docs/pair_communication/` | 1 ミーティング 1 ファイル。議題・決定事項・未解決事項・担当者付き TODO。 | `YYYY-MM-DD_short-topic.md` |
+| `Docs/pair_communication/` | 1 ミーティング 1 ファイル。議題・決定事項・未解決事項・担当者付き TODO。 | `NN_short-topic.md` |
 | `Docs/work_log/` | 1 人 1 日 1 ファイル。やったこと / 次にやること / 詰まったこと / 作業時間。 | `YYYY-MM-DD_<author>.md` |
 | `Docs/learning_log/` | 1 概念 1 ファイル。**参考資料の貼り付けではなく自分の言葉で再構成する**。 | `topic-name.md`(kebab-case) |
 | `Docs/implementation_plans/` | 実際に採用した設計。Scope / Interface / 手順 / エッジケース / 計算量 / テスト方針。 | `topic-name.md`(kebab-case) |
@@ -96,7 +99,10 @@ Full rules, the list of types, and the scopes we use are in [commit_guide.md](co
 
 ### 命名規約
 
-- 日付は必ず **ISO 8601**(`2026-08-13`)。`ls` でも GitHub のファイル一覧でも正しい順に並ぶため。
+- 日付(`work_log/` のファイル名と、各ファイルのヘッダ表)は必ず **ISO 8601**(`2026-08-13`)。
+  `ls` でも GitHub のファイル一覧でも正しい順に並ぶため。
+- `pair_communication/` だけは 2 桁の**インデックス**で並べる。
+  ミーティングは日程変更や 2 日への分割が起きるが、決定の順序における位置は変わらないため。
 - トピック名は **kebab-case・小文字・ASCII**。`hex-wall-encoding.md` であって `Hex Wall Encoding.md` ではない。
   空白や非 ASCII は git・シェルの glob・リンクを扱いにくくする。
 - 1 ミーティング = 1 ファイル、1 人日 = 1 ファイル、1 概念 = 1 ファイル。

@@ -23,13 +23,16 @@ A file here records: what we discussed, **what we decided**, what is still open,
 
 ### Naming
 
-`YYYY-MM-DD_short-topic.md` — e.g. `2026-08-13_kickoff.md`, `2026-08-20_wall-encoding-contract.md`.
+`NN_short-topic.md` — a two-digit index in meeting order, then the topic — e.g. `01_kickoff.md`,
+`02_wall-encoding-contract.md`.
 
-If two meetings happen on the same day, the topic slug keeps them distinct. Do not append to an existing file.
+The index, not a date, is what orders these files: a discussion is defined by *what was decided and in what
+order*, and a meeting is often scheduled, moved, or split across two days. The actual date goes in the header
+table inside the file. Do not append to an existing file — one meeting, one file.
 
 ### How to use
 
-1. Copy `TEMPLATE.md` to the new filename **before** the meeting and fill in the agenda.
+1. Copy `TEMPLATE.md` to the next index **before** the meeting and fill in the agenda.
 2. Fill the decisions during or immediately after the meeting — not the next day.
 3. Every TODO gets an **owner** (`so` / `javi` / `both`) and a **due date**. A TODO without an owner is a wish.
 4. Commit it: `docs(pair): log <topic> meeting`.
@@ -44,12 +47,12 @@ If two meetings happen on the same day, the topic slug keeps them distinct. Do n
 
 ### Good first topics for this project
 
-1. `2026-08-13_kickoff.md` — subject reading, deadline, meeting rhythm, tooling (Python version, venv, flake8/mypy).
-2. `YYYY-MM-DD_role-division.md` — turning Javier's proposal in `implementation_plans/` into an agreed split.
-3. `YYYY-MM-DD_maze-data-structure.md` — the shared in-memory representation both sides will depend on.
-4. `YYYY-MM-DD_wall-encoding-contract.md` — bit order N/E/S/W and the coherence rule between neighbours (subject IV.5).
-5. `YYYY-MM-DD_algorithm-choice.md` — which generation algorithm, and how `PERFECT=True` / `False` are handled.
-6. `YYYY-MM-DD_renderer-choice.md` — terminal ASCII vs MLX, and who owns the interaction loop (subject V).
+1. `01_kickoff.md` — **written**: conventions, environment, core technical decisions, role division, schedule.
+2. `02_maze-data-structure.md` — the shared in-memory representation both sides will depend on.
+3. `03_wall-encoding-contract.md` — bit order N/E/S/W and the coherence rule between neighbours (subject IV.5).
+4. `04_algorithm-choice.md` — which generation algorithm, and how `PERFECT=True` / `False` are handled.
+5. `05_integration-checkpoint.md` — what actually broke when the two halves first ran together.
+6. `06_defense-prep.md` — what each of us could not explain in the rehearsal, and what we did about it.
 
 ---
 
@@ -72,13 +75,16 @@ If two meetings happen on the same day, the topic slug keeps them distinct. Do n
 
 ### 命名
 
-`YYYY-MM-DD_short-topic.md` — 例:`2026-08-13_kickoff.md`、`2026-08-20_wall-encoding-contract.md`。
+`NN_short-topic.md` — ミーティング順の 2 桁インデックス + トピック。例:`01_kickoff.md`、
+`02_wall-encoding-contract.md`。
 
-同じ日に 2 回話したときはトピック名で区別する。既存ファイルへの追記はしない。
+これらのファイルを順序づけるのは日付ではなくインデックス。
+議論は「何を、どの順で決めたか」で定義され、ミーティングは予定変更や 2 日への分割が起きるため。
+実際の日付はファイル内のヘッダ表に書く。既存ファイルへの追記はしない(1 ミーティング 1 ファイル)。
 
 ### 使い方
 
-1. ミーティング**前**に `TEMPLATE.md` をコピーし、議題を埋めておく。
+1. ミーティング**前**に `TEMPLATE.md` を次のインデックス番号でコピーし、議題を埋めておく。
 2. 決定事項はミーティング中か直後に書く。翌日にしない。
 3. TODO には必ず**担当者**(`so` / `javi` / `both`)と**期日**を付ける。担当者のない TODO はただの願望。
 4. コミットする:`docs(pair): log <topic> meeting`。
@@ -93,9 +99,9 @@ If two meetings happen on the same day, the topic slug keeps them distinct. Do n
 
 ### この課題で最初に書くと良いトピック
 
-1. `2026-08-13_kickoff.md` — subject 読み合わせ、締切、ミーティングの頻度、ツール(Python バージョン、venv、flake8/mypy)。
-2. `YYYY-MM-DD_role-division.md` — `implementation_plans/` にある Javier の分担案を、合意済みの分担に落とす。
-3. `YYYY-MM-DD_maze-data-structure.md` — 両側が依存する、メモリ上の共有表現。
-4. `YYYY-MM-DD_wall-encoding-contract.md` — N/E/S/W のビット順と、隣接セル間の整合ルール(subject IV.5)。
-5. `YYYY-MM-DD_algorithm-choice.md` — どの生成アルゴリズムにするか、`PERFECT=True` / `False` をどう扱うか。
-6. `YYYY-MM-DD_renderer-choice.md` — ターミナル ASCII か MLX か、操作ループを誰が持つか(subject V)。
+1. `01_kickoff.md` — **作成済み**:規約、環境、中核の技術判断、役割分担、スケジュール。
+2. `02_maze-data-structure.md` — 両側が依存する、メモリ上の共有表現。
+3. `03_wall-encoding-contract.md` — N/E/S/W のビット順と、隣接セル間の整合ルール(subject IV.5)。
+4. `04_algorithm-choice.md` — どの生成アルゴリズムにするか、`PERFECT=True` / `False` をどう扱うか。
+5. `05_integration-checkpoint.md` — 両半分を初めて一緒に動かしたとき、実際に何が壊れたか。
+6. `06_defense-prep.md` — リハーサルで説明できなかったことと、それに対して何をしたか。

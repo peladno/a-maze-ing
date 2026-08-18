@@ -1,14 +1,14 @@
 <!--
 How to use / 使い方
-  EN: Copy this file to YYYY-MM-DD_short-topic.md. Fill "Agenda" before the meeting,
-      "Decisions" during or right after it. Write the body in English so both of us can read it;
-      add a Japanese note under an item when the nuance matters. Delete this comment block.
-  JA: このファイルを YYYY-MM-DD_short-topic.md にコピーして使う。「Agenda」はミーティング前に、
-      「Decisions」は最中か直後に埋める。本文は二人が読めるよう英語で書き、
+  EN: Copy this file to NN_short-topic.md, NN being the next index. Fill "Agenda" before the
+      meeting, "Decisions" during or right after it. Write the body in English so both of us can
+      read it; add a Japanese note under an item when the nuance matters. Delete this comment block.
+  JA: このファイルを NN_short-topic.md(NN は次のインデックス番号)にコピーして使う。
+      「Agenda」はミーティング前に、「Decisions」は最中か直後に埋める。本文は二人が読めるよう英語で書き、
       ニュアンスが重要な箇所だけ項目の下に日本語メモを足す。このコメントブロックは削除する。
 -->
 
-# YYYY-MM-DD — <short topic>
+# NN — <short topic>
 
 | | |
 | --- | --- |
