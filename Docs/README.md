@@ -31,7 +31,7 @@ and **what each of us understood**. It exists for four reasons:
 | `Docs/subject/` | The subject PDF and its Japanese translation. | `en.subject.pdf`, `ja.subject.md` |
 | `Docs/pair_communication/` | One file per meeting: agenda, decisions, open questions, TODOs with an owner. | `NN_short-topic.md` |
 | `Docs/work_log/` | One file per person per day: what I did / what is next / where I got stuck / time spent. | `YYYY-MM-DD_<author>.md` |
-| `Docs/learning_log/` | One file per concept, **rewritten in your own words** — not pasted references. | `topic-name.md` (kebab-case) |
+| `Docs/learning_log/` | One file per concept: a **reference you can come back to**, structured so the understanding reloads in minutes. | `topic-name.md` (kebab-case) |
 | `Docs/implementation_plans/` | The design we actually adopted: scope, interface, steps, edge cases, complexity, test plan. | `topic-name.md` (kebab-case) |
 
 `<author>` is `so` (skusakab) or `javi` (jperez-u).
@@ -55,9 +55,9 @@ document that only one of us can read is not a shared document.
 
 - README / guide files: an `## English` section and a `## 日本語` section.
 - Templates and logs: bilingual headings (`## Decisions / 決定事項`). Write the **body in English** so both of us
-  can read it; add Japanese notes underneath a heading when the nuance matters. The exception is
-  `learning_log/`, where the deep explanation is written in Japanese on purpose (it is So's own understanding),
-  with a short English summary on top so Javier can still follow.
+  can read it; add Japanese notes underneath a heading when the nuance matters.
+- `learning_log/` and `pair_communication/`: **fully bilingual, section by section** (`**EN** —` then `**JA** —`),
+  because both of us have to understand each other's work area. Figures and tables appear once and are shared.
 
 ### Commit convention (summary)
 
@@ -92,7 +92,7 @@ Full rules, the list of types, and the scopes we use are in [commit_guide.md](co
 | `Docs/subject/` | subject PDF とその日本語訳。 | `en.subject.pdf`, `ja.subject.md` |
 | `Docs/pair_communication/` | 1 ミーティング 1 ファイル。議題・決定事項・未解決事項・担当者付き TODO。 | `NN_short-topic.md` |
 | `Docs/work_log/` | 1 人 1 日 1 ファイル。やったこと / 次にやること / 詰まったこと / 作業時間。 | `YYYY-MM-DD_<author>.md` |
-| `Docs/learning_log/` | 1 概念 1 ファイル。**参考資料の貼り付けではなく自分の言葉で再構成する**。 | `topic-name.md`(kebab-case) |
+| `Docs/learning_log/` | 1 概念 1 ファイル。**いつでも戻ってこられる解説書**。数分で理解が再ロードされる構成にする。 | `topic-name.md`(kebab-case) |
 | `Docs/implementation_plans/` | 実際に採用した設計。Scope / Interface / 手順 / エッジケース / 計算量 / テスト方針。 | `topic-name.md`(kebab-case) |
 
 `<author>` は `so`(skusakab)または `javi`(jperez-u)。
@@ -116,8 +116,8 @@ Full rules, the list of types, and the scopes we use are in [commit_guide.md](co
 - README・ガイド類:`## English` と `## 日本語` の 2 セクション。
 - テンプレート・ログ類:見出しをバイリンガル(`## Decisions / 決定事項`)にし、**本文は英語**で書く。
   ニュアンスが重要な箇所は見出しの下に日本語メモを足す。
-  例外は `learning_log/` で、ここは深い説明を意図的に日本語で書く(So 自身の理解の記録なので)。
-  ただし Javier も追えるよう、冒頭に短い英語サマリーを必ず付ける。
+- `learning_log/` と `pair_communication/`:**章ごとに完全バイリンガル**(`**EN** —` の次に `**JA** —`)。
+  二人がお互いの担当範囲を理解する必要があるため。図と表は 1 回だけ置いて共有する。
 
 ### コミット規約(要約)
 

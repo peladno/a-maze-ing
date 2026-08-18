@@ -33,12 +33,12 @@ The two folders are easy to confuse. The difference is **investigation vs contra
 | --- | --- | --- |
 | **Question it answers** | "How does this work? What are my options?" | "What exactly are we building, and how?" |
 | **Nature** | Investigation, comparison, understanding | The contract for the design we **adopted** |
-| **Audience** | Mainly yourself (Javier reads the EN summary) | Both of us — the other side depends on it |
+| **Audience** | Both of us — each has to understand the other's work area | Both of us — the other side depends on it |
 | **Timing** | Whenever you meet a concept | Before writing the code it describes |
 | **Contains alternatives?** | Yes — comparing them is the point | Only as "rejected, because …" |
 | **Binding?** | No. It is a note; being wrong is allowed | Yes. Changing it means telling the pair |
 | **Code inside?** | Snippets to illustrate a concept are fine | Signatures and types only, **never bodies** |
-| **Language** | JA detail + EN summary | Body in English (shared contract) |
+| **Language** | Fully bilingual, section by section | Body in English (shared contract) |
 | **Example** | `dfs-vs-bfs.md` — how both traversals work | `shortest-path-solver.md` — we use BFS, here is the API |
 | **When it is wrong** | Fix the note, no one else affected | Update it **and** tell the other person: they may already be coding against it |
 
@@ -106,12 +106,12 @@ convention; they are Javier's initial proposal for the project structure and the
 | --- | --- | --- |
 | **答える問い** | 「これはどう動く? どんな選択肢がある?」 | 「結局、何をどう作るのか?」 |
 | **性質** | 調査・比較・理解 | **採用した**設計の契約 |
-| **読者** | 主に自分(Javier は英語サマリーを読む) | 二人。相方がこれに依存して実装する |
+| **読者** | 二人。お互いの担当範囲を理解する必要がある | 二人。相方がこれに依存して実装する |
 | **書く時期** | 概念に出会ったとき | それが記述するコードを書く前 |
 | **選択肢を書くか** | 書く。比較こそが目的 | 「却下、理由は〜」としてのみ |
 | **拘束力** | なし。ノートなので間違っていてよい | あり。変更したら相方に伝える義務がある |
 | **コードを含むか** | 概念説明のための断片なら可 | シグネチャと型のみ。**本体は書かない** |
-| **言語** | 日本語の詳細 + 英語サマリー | 本文は英語(共有の契約なので) |
+| **言語** | 章ごとに完全バイリンガル | 本文は英語(共有の契約なので) |
 | **例** | `dfs-vs-bfs.md` — 2 つの探索がどう動くか | `shortest-path-solver.md` — BFS を採用、API はこれ |
 | **間違っていたとき** | ノートを直すだけ。他に影響なし | 直した上で**相方に伝える**。既にそれ前提で書いているかもしれない |
 
