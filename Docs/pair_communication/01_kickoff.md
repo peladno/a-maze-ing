@@ -446,8 +446,15 @@ the cost above actually matters — a raw grid handed across the boundary pays i
 | **B** | Same, but stored`grid[x][y]` to match the config order literally. | 同じだが、設定の順序に合わせて`grid[x][y]` で格納。       |
 | **C** | A flat`list` with an index helper, no nesting at all.             | ネストせず、添字ヘルパー付きのフラットな`list`。          |
 
-> Decision: **B (provisional / 暫定)** — to be re-discussed with javi against option A, using the Consequences
-> table above. / A 案にすべきか javi と再検討する。上の Consequences 表を材料にする。
+> Decision: **A** — origin top-left, `x` = column, `y` = row, stored `grid[y][x]`. Agreed with javi after
+> reviewing the Consequences table: the output encoder (W13) and the renderer (W15) are both row-oriented, so
+> storing rows first keeps the cost off javi's side. The config's `(x, y)` order is converted **once**, at parse
+> time in W01 (so), and the core never sees the other order. `Maze` still keeps the grid private and exposes row
+> iteration, so no caller indexes the raw list either way.
+> / **A** — 原点は左上、`x` = 列、`y` = 行、`grid[y][x]` で格納。Consequences 表を見たうえで javi と合意。
+> 出力エンコーダ(W13)と描画(W15)がどちらも行単位なので、行を先にすればコストが javi 側に落ちない。
+> 設定の `(x, y)` は W01(so)のパース時に**一度だけ**変換し、コアはもう一方の順序を一切見ない。
+> なお `Maze` はどちらにせよグリッドを private に保ち行アクセサを公開するので、生のリストを添字で触る呼び出し元はない。
 
 ### 3.3 🔴 Wall encoding and its invariant / ウォール符号化と不変条件
 
@@ -1405,7 +1412,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 2.3  | Makefile ownership / Makefile 担当           | 🟡 |                 |               |       |
 | 2.4  | `maze_analyzer.py` gate / 受け入れ判定     | 🟡 |                 |               |       |
 | 3.1  | Maze data structure / データ構造             | 🔴 | A + D. ただし`Maze` クラスで包む。 |               |       |
-| 3.2  | Coordinate convention / 座標規約             | 🔴 | B — provisional, re-discussing A / 暫定。A 案を再検討中 |               |       |
+| 3.2  | Coordinate convention / 座標規約             | 🔴 | A — `grid[y][x]`, origin top-left / A — 原点左上、`grid[y][x]` |               |       |
 | 3.3  | Wall encoding invariant / 符号化の不変条件   | 🔴 | A |               |       |
 | 3.4  | `PERFECT` modes / 2 つのモード             | 🔴 | A |               |       |
 | 3.5  | Generation algorithm / 生成アルゴリズム      | 🔴 | Open — `learning_log/` first, decide next session / 未決。`learning_log/` を書いてから翌日決定 |               | so |
@@ -1441,8 +1448,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | #  | Question / 論点 | Blocked? / 作業を止めるか | Who investigates / 調査担当 |
 | -- | --------------- | ------------------------- | --------------------------- |
 | Q1 | 3.5 — which generation algorithm / どの生成アルゴリズムか | **yes** — W05 / W07 / W08 | so — `learning_log/`, then decide next session / 翌日決定 |
-| Q2 | 3.2 — keep `grid[x][y]` (B) or switch to `grid[y][x]` (A)? / B を維持するか A に変えるか | partly — affects W03 / W13 / W15 | both / 二人で |
-| Q3 | W25 — who maintains `Docs/`? / `Docs/` の維持は誰か | no | both / 二人で |
+| Q2 | W25 — who maintains `Docs/`? / `Docs/` の維持は誰か | no | both / 二人で |
 
 ## TODO
 
