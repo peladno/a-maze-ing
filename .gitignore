@@ -18,6 +18,7 @@ build/
 
 # OS
 .DS_Store
+.python-version
 
 # NOTE: Docs/ is version-controlled on purpose. Never add it here.
 # 注意:Docs/ は意図的に git 管理下に置いている。ここに追加しないこと。

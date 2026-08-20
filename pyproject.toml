@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [tool.mypy]
-exclude = ".venv"
+exclude = ".venv,dist,__pycache__,mypy_cache,.git"
 ignore_missing_imports = true
 
 [build-system]
