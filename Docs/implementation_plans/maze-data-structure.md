@@ -220,7 +220,7 @@ still trivial; the cost that grows is the generator's, not this module's.
 
 | Option | Why rejected |
 | --- | --- |
-| A `Cell` class holding four wall flags (3.1 option B) | The shared wall would still be stored twice, so the invariant problem is unchanged, and the hex conversion comes back. Readability is recovered at the boundary by wrapping the grid in `Maze` instead. **The skeleton currently contains `maze/cell.py`; per this decision it should go.** |
+| A `Cell` class holding four wall flags (3.1 option B) | The shared wall would still be stored twice, so the invariant problem is unchanged, and the hex conversion comes back. Readability is recovered at the boundary by wrapping the grid in `Maze` instead. **javi agreed on 2026-08-20 that the skeleton file could go, and `maze/cell.py` was removed.** |
 | An explicit graph of nodes and edges (3.1 option C) | The invariant becomes unbreakable, but every geometric requirement — the 3x3 rule, placing the "42", rendering — needs the grid rebuilt each time. |
 | `grid[x][y]` (3.2 option B) | Output and rendering are both row-oriented; storing columns first would make javi's side read transposed on every loop. |
 

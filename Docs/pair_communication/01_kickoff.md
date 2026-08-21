@@ -1476,8 +1476,10 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | #  | Question / 論点 | Blocked? / 作業を止めるか | Who investigates / 調査担当 |
 | -- | --------------- | ------------------------- | --------------------------- |
 | Q1 | Measure the real dead-end ratio for the backtracker, before and after braiding / backtracker の行き止まり率を braiding 前後で実測する | no — but it is the evidence behind 3.5 and the §VII justification / 3.5 の根拠と §VII の理由づけ | so — procedure in `learning_log/maze-generation-algorithms.md` §5.4 |
-| Q2 | Use union-find in validation (W10) to count independent loops after braiding? / braiding 後の独立ループ数の計数に union-find を使うか | no — needed before `PERFECT=False` is called done / `PERFECT=False` を完成と呼ぶ前に必要 | so — kept under consideration / 継続検討 |
+| Q2 | Union-find in validation (W10). **Narrowed:** counting independent loops needs no union-find — it is `E − V + 1` (see `generation-algorithm.md` §4.2). It remains a candidate for checking **connectivity**. / W10 での union-find。**論点が狭まった:** 独立ループの計数に union-find は不要(`E − V + 1` の引き算)。**連結性**の確認の候補としては残る。 | no | so |
 | Q3 | W25 — who maintains `Docs/`? / `Docs/` の維持は誰か | no | both / 二人で |
+| Q4 | Where does `MazeGenerator` live? The skeleton has both `maze/generator.py` and `mazegen/generator.py`; §VI wants the generator in a standalone importable module. / `MazeGenerator` の置き場所。骨組みに両方あるが、§VI は独立モジュールを要求している。 | no — settle in `mazegen-package-api.md` | so — W18 / W19 |
+| Q5 | Which machine will javi use on evaluation day? He develops on a company Windows PC, which cannot be brought to the defense (§IX). Affects how defensively W15 must be written. / 評価当日に javi はどのマシンを使うか。会社の Windows PC は持ち込めない。W15 の作り方に影響する。 | **yes, eventually** — §IX applies to both of us | javi — see `03_poetry_switch.md` §6 |
 
 ## TODO
 
