@@ -581,9 +581,27 @@ Before choosing, each of us should be able to describe how the candidates differ
 | **C** | Kruskal — edges merged via a disjoint-set structure, very uniform texture.                     | Kruskal — 素集合データ構造で辺を併合。テクスチャが非常に均一。                      |
 | **D** | One now, a second later as the §VIII bonus ("support multiple algorithms").                    | まず 1 つ。§VIII のボーナス(複数アルゴリズム対応)で後から追加。                     |
 
-> Decision: **Open / 未決** — so writes the `learning_log/` notes first, then we decide in the next session
-> (tomorrow). Currently blocks W05 / W07 / W08. / so が `learning_log/` を書いたうえで、翌日のセッションで決定する。
-> 現在 W05 / W07 / W08 をブロック中。
+> Decision: **A — recursive backtracker, written iteratively with an explicit stack.**
+> Since the default mode is `PERFECT=False`, braiding has to remove almost every dead end, so the algorithm that
+> starts with the fewest of them leaves the least work. The recursion-depth caveat is not a reason against it:
+> writing it iteratively removes the problem entirely, and the explicit stack is the same one the trace in
+> `Docs/learning_log/maze-generation-algorithms.md` §2.2 shows.
+> **This rests on a figure we have not measured yet** (~10% dead ends vs ~30%), so it is provisional in that one
+> respect — §5.4 of the reference gives the procedure, and the measurement becomes the §VII justification.
+> Cheap to revisit: 3.1 and 5.1 keep the algorithm inside `MazeGenerator`, so replacing it would not reach javi's
+> side (W13 / W15). Kruskal is rejected as a *generator*, but **union-find stays under consideration as a tool for
+> validation (W10)** — counting independent loops after braiding. See Q2.
+> / **A — 再帰的バックトラッカー。ただし明示的スタックによる反復版で書く。**
+> 既定モードが `PERFECT=False` である以上 braiding が行き止まりをほぼ全部潰す必要があり、
+> 開始時の行き止まりが最も少ないものが残作業を最小にする。
+> 再帰の深さは反対理由にならない。反復版にすれば完全に消え、そのスタックは
+> `Docs/learning_log/maze-generation-algorithms.md` §2.2 のトレースが示すものと同じ。
+> **この判断は未実測の数値(行き止まり 約 1 割 対 約 3 割)に乗っている**ので、その一点において暫定。
+> 解説書 §5.4 に実測手順があり、その計測結果がそのまま §VII の選定理由になる。
+> 覆っても差し替えは安い。3.1 と 5.1 によりアルゴリズムは `MazeGenerator` の内側にあり、
+> javi 側(W13 / W15)には届かない。
+> Kruskal は**生成器としては**却下するが、**union-find は検証(W10)の道具として引き続き検討する** —
+> braiding 後の独立ループ数の計数。Q2 参照。
 
 ### 3.6 🔴 The "42" pattern / 「42」パターン
 
@@ -1415,7 +1433,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 3.2  | Coordinate convention / 座標規約             | 🔴 | A — `grid[y][x]`, origin top-left / A — 原点左上、`grid[y][x]` |               |       |
 | 3.3  | Wall encoding invariant / 符号化の不変条件   | 🔴 | A |               |       |
 | 3.4  | `PERFECT` modes / 2 つのモード             | 🔴 | A |               |       |
-| 3.5  | Generation algorithm / 生成アルゴリズム      | 🔴 | Open — `learning_log/` first, decide next session / 未決。`learning_log/` を書いてから翌日決定 |               | so |
+| 3.5  | Generation algorithm / 生成アルゴリズム      | 🔴 | A — recursive backtracker, iterative / A — 再帰的バックトラッカー(反復版) | Default mode is `PERFECT=False`, so braiding must remove nearly every dead end; this algorithm starts with the fewest (~10% vs ~30%, to be measured per §5.4 of the reference). Recursion depth is removed by the iterative form. / 既定が `PERFECT=False` で braiding が行き止まりをほぼ全部潰す必要があり、開始時の行き止まりが最少。再帰の深さは反復版で消える。 | so |
 | 3.6  | "42" pattern / 「42」                        | 🔴 | A |               |       |
 | 3.7  | Corridor width / 通路幅                      | 🟡 |                 |               |       |
 | 3.8  | Shortest path / 最短経路                     | 🟡 |                 |               |       |
@@ -1439,7 +1457,9 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 
 | Item | Option rejected / 却下した案 | Why / 理由 |
 | ---- | ---------------------------- | ---------- |
-|      |                              |            |
+| 3.5 | Randomized Kruskal / ランダム化 Kruskal | On a grid, adjacency follows from the coordinates, so an edge list plus union-find is more machinery for the same result. Its dead-end ratio is no better than Prim's. Rejected as a generator only — union-find is still a candidate tool for validation (W10). / 格子では隣接関係が座標から決まるため、エッジ一覧と union-find は同じ結果に対して機構が多い。行き止まりの割合も Prim と同程度。却下したのは生成器としてのみで、union-find は W10 の道具として候補に残る。 |
+| 3.5 | Randomized Prim / ランダム化 Prim | Roughly three times as many dead ends to start from, which is exactly the work braiding has to undo for the default `PERFECT=False` mode. Everything else between the two was a draw. / 開始時の行き止まりがおよそ 3 倍で、それは既定の `PERFECT=False` で braiding が取り消さねばならない作業そのもの。それ以外の観点は引き分けだった。 |
+| 3.2 | `grid[x][y]` (option B) | Output encoding and rendering are both row-oriented, so storing columns first would make javi's side read transposed on every loop. The config's `(x, y)` is converted once at parse time instead. / 出力と描画がどちらも行単位なので、列を先に格納すると javi 側が毎回転置して読むことになる。設定の `(x, y)` はパース時に一度だけ変換する。 |
 
 ---
 
@@ -1447,8 +1467,9 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 
 | #  | Question / 論点 | Blocked? / 作業を止めるか | Who investigates / 調査担当 |
 | -- | --------------- | ------------------------- | --------------------------- |
-| Q1 | 3.5 — which generation algorithm / どの生成アルゴリズムか | **yes** — W05 / W07 / W08 | so — `learning_log/`, then decide next session / 翌日決定 |
-| Q2 | W25 — who maintains `Docs/`? / `Docs/` の維持は誰か | no | both / 二人で |
+| Q1 | Measure the real dead-end ratio for the backtracker, before and after braiding / backtracker の行き止まり率を braiding 前後で実測する | no — but it is the evidence behind 3.5 and the §VII justification / 3.5 の根拠と §VII の理由づけ | so — procedure in `learning_log/maze-generation-algorithms.md` §5.4 |
+| Q2 | Use union-find in validation (W10) to count independent loops after braiding? / braiding 後の独立ループ数の計数に union-find を使うか | no — needed before `PERFECT=False` is called done / `PERFECT=False` を完成と呼ぶ前に必要 | so — kept under consideration / 継続検討 |
+| Q3 | W25 — who maintains `Docs/`? / `Docs/` の維持は誰か | no | both / 二人で |
 
 ## TODO
 

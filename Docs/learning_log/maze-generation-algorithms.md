@@ -29,6 +29,17 @@ much work is left for the braiding step of the default mode, and how much concep
 つまり選択は**正しさの問題ではない**。どれを選んでも正しい生成器になる。
 判断材料は、質感、既定モードの braiding にどれだけ仕事が残るか、そして説明すべき概念がどれだけ増えるか。
 
+> **Decision taken / 決定済み (2026-08-14)**
+> **EN** — 3.5 = **recursive backtracker, written iteratively with an explicit stack**. The default mode is
+> `PERFECT=False`, so braiding has to remove nearly every dead end, and this algorithm starts with the fewest.
+> Kruskal was rejected as a *generator*, but union-find is still a candidate tool for validation (W10).
+> The dead-end figures below are **not measured yet** — §5.4 is the procedure, and it is tracked as Q1 in
+> `01_kickoff.md`.
+> **JA** — 3.5 = **再帰的バックトラッカー(明示的スタックによる反復版)**。既定が `PERFECT=False` で
+> braiding が行き止まりをほぼ全部潰す必要があり、開始時の行き止まりが最少だから。
+> Kruskal は**生成器としては**却下したが、union-find は検証(W10)の道具として候補に残っている。
+> 下の行き止まりの数値は**まだ実測していない**。手順は §5.4、`01_kickoff.md` の Q1 で追跡中。
+
 | | Recursive backtracker (DFS) | Randomized Prim | Randomized Kruskal |
 | --- | --- | --- | --- |
 | **Texture / 質感** | long winding corridors, few junctions / 長く曲がりくねる通路、分岐は少ない | short corridors, many junctions, grows outward / 通路が短く分岐が多い、外へ広がる | uniform, no growth direction / 均一、育つ方向に偏りがない |
@@ -442,8 +453,10 @@ implementation" is a much stronger answer at the defense than "because that is w
 
 ## 6. The questions that decide it / 決め手になる問い
 
-**EN** — Answer these four and 3.5 is decided.
-**JA** — この 4 つに答えれば 3.5 は決まる。
+**EN** — These four decided 3.5 (see the banner in §0). Kept here because the same questions come back if we add
+a second algorithm for the §VIII bonus.
+**JA** — この 4 つで 3.5 が決まった(§0 の枠を参照)。§VIII のボーナスで 2 つ目のアルゴリズムを足すとき、
+同じ問いが戻ってくるので残してある。
 
 1. **Braiding workload / braiding の作業量** — how differently does `PERFECT=False` play out starting from 10%
    dead ends versus 30%? / 行き止まり 1 割から始めるのと 3 割から始めるのとで、実装がどれだけ変わるか
@@ -480,8 +493,9 @@ rather than looking up the answer.
 
 - [ ] What the real dead-end ratios are for our implementation (measure per §5.4) /
   行き止まりの割合の実測値(§5.4 で測る)
-- [ ] How to **count** independent loops to guarantee §IV.4's "at least two" after braiding — union-find may help /
-  braiding 後に「独立した経路 2 本以上」をどう数えて保証するか。union-find が使えるかもしれない
+- [ ] How to **count** independent loops to guarantee §IV.4's "at least two" after braiding — union-find is the
+  candidate tool, tracked as Q2 in `01_kickoff.md` / braiding 後に「独立した経路 2 本以上」をどう数えて保証するか。
+  union-find が候補。`01_kickoff.md` の Q2 で追跡中
 - [ ] How to verify that the "42" shape does not disconnect the grid /
   「42」の形が格子を分断しないことをどう確認するか
 
