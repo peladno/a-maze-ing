@@ -1,5 +1,6 @@
 # from .colors import WALL, PATH, ENTRY, EXIT, PATTERN42, RESET
-
+from display.example_maze import DummyMaze
+from maze.cell import N, W
 from typing import Any
 
 
@@ -24,20 +25,45 @@ class TerminalRenderer:
             - maze.exit
             - maze.shortest_path (optional)
         """
-        # TODO: implement once Maze exists
-        raise NotImplementedError
+        height = maze.height
+        width = maze.width
+
+        for y in range(height):
+            for x in range(width):
+                cell_mask = maze.get_cell(x, y)
+                print(cell_mask)
 
     def _north_wall(self, cell_mask: int) -> str:
         """Return the ASCII for the north wall."""
-        # TODO: implement when bitmask is final
-        return "+─"
+        if cell_mask & N:
+            return "+─"
+        else:
+            return "+ "
 
     def _west_wall(self, cell_mask: int) -> str:
         """Return the ASCII for the west wall."""
-        return "│ "
+        if cell_mask & W:
+            return "│ "
+        else:
+            return " "
 
     def _cell_content(self, x: int, y: int, maze: Any) -> str:
         # Change Maze type when is available
         """Return the character inside the cell."""
-        # TODO: implement when Maze exists
-        return " "
+        if (x, y) == maze.entry:
+            return "E "
+
+        if (x, y) == maze.exit:
+            return "X "
+
+        if self.show_path is True:
+            if (x, y) in maze.shortest_path:
+                return ". "
+        return "  "
+
+
+if __name__ == "__main__":
+    maze = DummyMaze()
+    renderer = TerminalRenderer()
+
+    renderer.render(maze)
