@@ -241,6 +241,7 @@ OS の答えは、使える MLX wheel も決める(4.2 参照)。
 | **A** | Standard library, nothing extra to install, and `make install` is a line the evaluator's machine will certainly support.  **Cost:** slower installs than uv, and the same minor version has to be pinned by agreement — nothing enforces it. | 標準ライブラリで追加インストールが不要。`make install` は評価者のマシンでも確実に動く。**コスト:** uv より遅く、マイナーバージョンの一致は口約束に依存する(強制する仕組みがない)。 |
 | **B** | Much faster installs and a modern workflow.  **Cost:** a tool the evaluator may not have, so the README needs a documented fallback. | インストールが大幅に速く、現代的な運用。**コスト:** 評価者が持っていない可能性があり、README に代替手順を明記する必要がある。 |
 | **C** | Tools stay isolated from the project environment.  **Cost:** two mechanisms to explain and to keep working instead of one. | ツールがプロジェクト環境から隔離される。**コスト:** 説明し保守する仕組みが 1 つではなく 2 つになる。 |
+| **D** | A lock file pins exact versions for both of us and the evaluator, dev and runtime dependencies are separated, and `poetry build` produces the wheel and sdist §VI asks for without extra tooling.  **Cost:** a tool that must be installed before `make install` works, so the README needs an explicit setup line; and `poetry build` is driven by `pyproject.toml`, which currently names the project `a-maze-ing` and therefore does **not** produce `mazegen-*`. | lock ファイルで二人と評価者のバージョンが正確に一致し、dev 依存と runtime 依存が分離でき、`poetry build` が §VI の要求する wheel と sdist を追加設定なしで生成する。**コスト:** `make install` の前にツール自体のインストールが必要になるので、README に手順を明記する必要がある。また `poetry build` は `pyproject.toml` に従うため、現状の `name = "a-maze-ing"` では **`mazegen-*` を生成しない**。 |
 
 **Options / 選択肢**
 
@@ -249,8 +250,14 @@ OS の答えは、使える MLX wheel も決める(4.2 参照)。
 | **A** | `python3 -m venv` + `pip install -r requirements.txt`.           | `python3 -m venv` + `pip install -r requirements.txt`。 |
 | **B** | `uv` for speed, with a `venv` fallback documented in the README. | 速度重視で`uv`。README に `venv` の代替手順を明記。     |
 | **C** | `pipx` for tools, `venv` for the project.                        | ツールは`pipx`、プロジェクトは `venv`。                 |
+| **D** | Poetry — dependency management, virtualenv and build backend in one tool. | Poetry — 依存管理・仮想環境・ビルドバックエンドを 1 つのツールで。 |
 
-> Decision: A
+> Decision: ~~A~~ → **superseded by D (Poetry)** on 2026-08-20.
+> The original decision was `venv` + `pip`. javi proposed Poetry, implemented it, and so accepted it after review.
+> **The record of that re-decision, with its reasons and its follow-ups, is
+> [`03_poetry_switch.md`](03_poetry_switch.md).**
+> / 当初の決定は `venv` + `pip`。javi が Poetry を提案・実装し、so がレビューのうえ受け入れた。
+> 再決定の記録・理由・残作業は [`03_poetry_switch.md`](03_poetry_switch.md) にある。
 
 ### 2.2 🟡 Lint configuration / lint の設定
 
@@ -1425,7 +1432,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 1.2  | Git workflow / git の運用                    | 🔴 | A |               |       |
 | 1.3  | Documentation habit / ドキュメントの運用     | 🟡 |                 |               |       |
 | 1.4  | AI usage & README owner / AI と README 担当  | 🟡 |                 |               |       |
-| 2.1  | Python version & venv / バージョンと仮想環境 | 🔴 | A |               |       |
+| 2.1  | Python version & venv / バージョンと仮想環境 | 🔴 | ~~A~~ → **D — Poetry** (see `03_poetry_switch.md`) / D — Poetry に変更 | The subject allows any package manager (§III.2 names pip, uv, pipx). Poetry was chosen for the lock file, the dev/runtime split, and a build backend we need for §VI anyway. / subject は任意のパッケージマネージャを許容している。lock による版固定、dev/runtime の分離、§VI で必要になるビルド機構を理由に Poetry を選んだ。 | both |
 | 2.2  | Lint configuration / lint 設定               | 🟡 |                 |               |       |
 | 2.3  | Makefile ownership / Makefile 担当           | 🟡 |                 |               |       |
 | 2.4  | `maze_analyzer.py` gate / 受け入れ判定     | 🟡 |                 |               |       |
@@ -1459,6 +1466,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | ---- | ---------------------------- | ---------- |
 | 3.5 | Randomized Kruskal / ランダム化 Kruskal | On a grid, adjacency follows from the coordinates, so an edge list plus union-find is more machinery for the same result. Its dead-end ratio is no better than Prim's. Rejected as a generator only — union-find is still a candidate tool for validation (W10). / 格子では隣接関係が座標から決まるため、エッジ一覧と union-find は同じ結果に対して機構が多い。行き止まりの割合も Prim と同程度。却下したのは生成器としてのみで、union-find は W10 の道具として候補に残る。 |
 | 3.5 | Randomized Prim / ランダム化 Prim | Roughly three times as many dead ends to start from, which is exactly the work braiding has to undo for the default `PERFECT=False` mode. Everything else between the two was a draw. / 開始時の行き止まりがおよそ 3 倍で、それは既定の `PERFECT=False` で braiding が取り消さねばならない作業そのもの。それ以外の観点は引き分けだった。 |
+| 2.1 | `venv` + `pip` (option A, the original decision) | No lock file, so the two machines and the evaluator's are only aligned by agreement; runtime and dev dependencies end up mixed in one `requirements.txt`; and §VI's package build would need separate tooling configured by hand. / lock がないため、二人と評価者の環境は口約束でしか揃わない。runtime と dev の依存が `requirements.txt` に混ざる。§VI のパッケージビルドに別途ツール設定が必要になる。 |
 | 3.2 | `grid[x][y]` (option B) | Output encoding and rendering are both row-oriented, so storing columns first would make javi's side read transposed on every loop. The config's `(x, y)` is converted once at parse time instead. / 出力と描画がどちらも行単位なので、列を先に格納すると javi 側が毎回転置して読むことになる。設定の `(x, y)` はパース時に一度だけ変換する。 |
 
 ---
