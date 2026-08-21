@@ -8,6 +8,11 @@
 | **Subject ref** | §IV.4, §IV.5, §VI |
 | **Related / 関連** | `Docs/pair_communication/01_kickoff.md` § 3.1, 3.2, 3.3, 3.6; `Docs/learning_log/maze-generation-algorithms.md` |
 
+> **New here? Read [`architecture-overview.md`](architecture-overview.md) first** — it shows where this module
+> sits in the program, and follows one small maze through every stage of the pipeline.
+> **はじめて読む場合は [`architecture-overview.md`](architecture-overview.md) から。**
+> このモジュールがプログラムのどこに位置するかと、小さな迷路 1 つがパイプラインを通っていく様子が書いてある。
+
 > **This is the contract W13 (hex output) and W15 (renderer) depend on.** Nothing on javi's side should index the
 > grid directly — read it through the accessors in §2.
 > **これは W13(16 進出力)と W15(描画)が依存する契約。** javi 側はグリッドを直接添字で触らない。§2 のアクセサ経由で読む。
