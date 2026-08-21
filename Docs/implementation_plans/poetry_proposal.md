@@ -4,10 +4,13 @@
 
 ## English
 
-Poetry is used in this project because it provides a **clean, reproducible, and professional development workflow** that aligns with the requirements of the A‑Maze‑ing subject. While `pip` is only an installer, Poetry is a **full dependency and packaging manager**, which is essential for building the reusable `mazegen-*` package and maintaining consistent environments across the team.
+The subject permits any package manager (it names `pip`, `uv`, and `pipx`); it
+does not prescribe Poetry. We chose Poetry because it provides a clean,
+reproducible workflow with dependency locking, development-dependency groups,
+and a build backend for the reusable `mazegen-*` package.
 
-Poetry がこのプロジェクトで使用される理由は、A‑Maze‑ing の要件に合った 再現性・依存関係管理・パッケージ化・開発フロー を提供するためです。
-pip は単なるインストーラーですが、Poetry は 依存管理とパッケージ管理を統合したツール であり、このプロジェクトに最適です。
+subject は `pip`、`uv`、`pipx` など任意のパッケージマネージャを許可しており、Poetry を指定していません。
+本プロジェクトでは、依存関係の固定、開発用依存の分離、`mazegen-*` 用のビルドバックエンドを一体で提供するため、Poetry を選択しました。
 
 ### 1. Reproducible environments 完全に再現可能な環境
 
@@ -75,11 +78,12 @@ This file contains metadata, dependencies, build settings, and tool configuratio
 プロジェクト構成ドキュメントでは、pyproject.toml がプロジェクトの中心となる設定ファイルであり、Poetry によって管理されるとされています。
 このファイルにはメタデータ、依存関係、ビルド設定、ツール設定がまとまっており、プロジェクトの理解と保守が容易になります。
 
-### 6. Officially recommended workflow 公式に推奨されている開発フロー
+### 6. Chosen workflow 選択したワークフロー
 
-The subject lists Poetry commands as the expected workflow:
+The subject allows package managers such as `pip`, `uv`, and `pipx`. Poetry is
+our project choice, so these are our commands:
 
-ドキュメントには、期待されるワークフローとして Poetry のコマンドが記載されています。
+subject は `pip`、`uv`、`pipx` などを許可しています。以下の Poetry コマンドは、私たちが選択したワークフローです。
 
 ```bash
 poetry install
@@ -89,9 +93,10 @@ poetry run mypy .
 poetry build
 ```
 
-This confirms Poetry is part of the project design and evaluation process.
+These commands document the project workflow; they are not commands prescribed
+by the subject or evaluator.
 
-つまり、Poetry は単なる選択肢ではなく、このプロジェクトの設計と評価プロセスの一部です。
+これらはプロジェクトの手順であり、subject や評価者が指定したコマンドではありません。
 
 ### Summary まとめ
 
@@ -113,9 +118,11 @@ Poetry を使う理由は以下の通りです：
 - Unified configuration in pyproject.toml
 - pyproject.toml による統合管理
 
-- A workflow that matches the project subject and evaluator expectations
-- subject に完全準拠したワークフロー
+- A workflow we selected for this project
+- 本プロジェクトで選択したワークフロー
 
-Using pip alone would require additional tools and manual steps (manual venv creation, separate lock/requirements management, explicit build tooling configuration) and would not meet the project’s stated requirements as cleanly or reliably.
+Using pip alone is permitted by the subject. It would require us to select and
+configure equivalent locking, environment, and build tooling ourselves, whereas
+Poetry supplies those capabilities together.
 
-pip のみでは、追加ツールや手動設定なしにこれらの要件を満たすことは困難です。
+pip のみでも subject の要件を満たすことは可能です。ただし同等の lock、仮想環境、ビルド機能を別途選択・設定する必要があります。Poetry はそれらを一体で提供します。

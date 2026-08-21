@@ -1,0 +1,6 @@
+# Keep text files on LF line endings across operating systems. This prevents
+# Windows CRLF conversions from breaking the Makefile on Unix-based evaluators.
+# OS を問わずテキストファイルの改行を LF に統一する。Windows の CRLF 変換で
+# Unix 系の評価環境にある Makefile が壊れることを防ぐ。
+* text=auto eol=lf
+Makefile text eol=lf
