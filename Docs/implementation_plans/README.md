@@ -15,6 +15,29 @@ A plan is written **before** the code, and it is a **design-level** document:
 > and the exceptions raised — never a function body. If a plan contains an implementation, the plan has stopped
 > being a plan and the review has become a code review of code nobody has run.
 
+### `...` in a plan, `NotImplementedError` in the code
+
+The Interface sections in this folder write bodies as `...`, because a plan is a document and is never executed.
+**Do not carry that into the source.** In real Python a function whose body is `...` silently returns `None`, and
+mypy treats `...` as a stub, so a declared `-> int` is not flagged either. The caller receives `None` and the
+failure surfaces somewhere else entirely — far from the function nobody wrote yet.
+
+A skeleton method should fail loudly instead:
+
+```python
+def walls_at(self, pos: Coord) -> int:
+    raise NotImplementedError
+```
+
+Called, it fails immediately and names the function that is missing.
+
+| Where | Body | Why |
+| --- | --- | --- |
+| `implementation_plans/*.md` | `...` | Never executed. It states "no body, on purpose" |
+| A `.py` skeleton | `raise NotImplementedError` | Executed. An unwritten function must fail at the call site, not return `None` |
+
+*(javi's suggestion, 2026-08-20.)*
+
 ### Why we write it
 
 - **Review** — the subject's README must state the algorithm we chose **and why**. That justification is written
@@ -87,6 +110,29 @@ convention; they are Javier's initial proposal for the project structure and the
 > **書くのはシグネチャであって本体ではない。** Interface セクションには型ヒント付きの Python シグネチャ、
 > クラス定義、送出する例外を書く。**関数の本体は書かない**。
 > 計画に実装が入った時点で、それは計画ではなくなり、レビューは「誰も動かしていないコードのコードレビュー」になる。
+
+### 計画では `...`、コードでは `NotImplementedError`
+
+このフォルダの Interface セクションが本体を `...` と書くのは、計画が文書であって実行されないから。
+**それをソースコードに持ち込まないこと。** 実際の Python では、本体が `...` の関数は**静かに `None` を返す**。
+しかも mypy は `...` をスタブとみなすので、戻り値を `-> int` と宣言していても指摘しない。
+呼び出し側は `None` を受け取り、**まだ誰も書いていない関数から遠く離れた場所で**失敗が表面化する。
+
+骨組みのメソッドは、代わりに大きな音で落ちるべき:
+
+```python
+def walls_at(self, pos: Coord) -> int:
+    raise NotImplementedError
+```
+
+こうすれば、呼ばれた瞬間に、足りない関数の名前とともに落ちる。
+
+| 場所 | 本体 | 理由 |
+| --- | --- | --- |
+| `implementation_plans/*.md` | `...` | 実行されない。「意図的に本体を書いていない」ことの表明 |
+| `.py` の骨組み | `raise NotImplementedError` | 実行される。未実装の関数は `None` を返すのではなく、呼ばれた場所で落ちるべき |
+
+*(javi の提案、2026-08-20)*
 
 ### なぜ書くのか
 
