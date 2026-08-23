@@ -1,25 +1,28 @@
 [project]
-name = "a-maze-ing"
+name = "mazegen"
 version = "0.1.0"
 description = "Maze generator project"
 authors = [
     {name = "skusakab"}, 
     {name = "jperez-u"}
 ]
-license = "LICENCE.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "mypy (>=2.3.1,<3.0.0)",
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest (>=8.0.0,<9.0.0)",
     "flake8 (>=7.3.0,<8.0.0)",
-    "python-dotenv (>=1.2.3,<2.0.0)"
+    "mypy (>=2.3.1,<3.0.0)",
 ]
 
 [tool.mypy]
-exclude = ".venv,dist,__pycache__,mypy_cache,.git"
+exclude = "dist,__pycache__,mypy_cache,.git"
 ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
