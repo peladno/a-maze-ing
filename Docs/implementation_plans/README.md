@@ -61,7 +61,7 @@ The two folders are easy to confuse. The difference is **investigation vs contra
 | **Contains alternatives?** | Yes — comparing them is the point | Only as "rejected, because …" |
 | **Binding?** | No. It is a note; being wrong is allowed | Yes. Changing it means telling the pair |
 | **Code inside?** | Snippets to illustrate a concept are fine | Signatures and types only, **never bodies** |
-| **Language** | Fully bilingual, section by section | Body in English (shared contract) |
+| **Language** | Fully bilingual, section by section | Signatures and tables once; **explanations bilingual** |
 | **Example** | `dfs-vs-bfs.md` — how both traversals work | `shortest-path-solver.md` — we use BFS, here is the API |
 | **When it is wrong** | Fix the note, no one else affected | Update it **and** tell the other person: they may already be coding against it |
 
@@ -157,7 +157,7 @@ def walls_at(self, pos: Coord) -> int:
 | **選択肢を書くか** | 書く。比較こそが目的 | 「却下、理由は〜」としてのみ |
 | **拘束力** | なし。ノートなので間違っていてよい | あり。変更したら相方に伝える義務がある |
 | **コードを含むか** | 概念説明のための断片なら可 | シグネチャと型のみ。**本体は書かない** |
-| **言語** | 章ごとに完全バイリンガル | 本文は英語(共有の契約なので) |
+| **言語** | 章ごとに完全バイリンガル | シグネチャと表は 1 回。**説明はバイリンガル** |
 | **例** | `dfs-vs-bfs.md` — 2 つの探索がどう動くか | `shortest-path-solver.md` — BFS を採用、API はこれ |
 | **間違っていたとき** | ノートを直すだけ。他に影響なし | 直した上で**相方に伝える**。既にそれ前提で書いているかもしれない |
 
