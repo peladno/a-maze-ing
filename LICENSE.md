@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Javier Pérez
+Copyright (c) 2026 skusakab and jperez-u
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
