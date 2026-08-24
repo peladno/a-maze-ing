@@ -3,6 +3,8 @@ from maze.maze import Direction
 from maze.maze import Maze
 from maze.maze import _ALL_WALLS
 from maze.maze import OutOfBoundsError
+from maze.maze import NotAdjacentError
+from maze.maze import MazeError
 
 
 def test_opposite_is_symmetric() -> None:
@@ -58,3 +60,42 @@ def test_new_maze_has_no_open_wall() -> None:
     m = Maze(5, 3)
     for d in Direction:
         assert not m.is_open((1, 2), d)
+
+
+def test_open_passage_updates_both_cells() -> None:
+    for w, h, d in [
+        (1, 0, Direction.NORTH),
+        (2, 1, Direction.EAST),
+        (1, 2, Direction.SOUTH),
+        (0, 1, Direction.WEST)
+    ]:
+        m = Maze(5, 3)
+        m.open_passage((1, 1), (w, h))
+        assert m.is_open((1, 1), d)
+        assert m.is_open((w, h), d.opposite)
+
+
+def test_open_passage_raises_when_not_adjacent() -> None:
+    m = Maze(5, 3)
+    with pytest.raises(NotAdjacentError):
+        m.open_passage((3, 2), (1, 1))
+
+
+def test_open_passage_is_idempotent() -> None:
+    m = Maze(5, 3)
+    m.open_passage((1, 1), (1, 0))
+    m.open_passage((1, 1), (1, 0))
+    assert m.is_open((1, 1), Direction.NORTH)
+    assert m.is_open((1, 0), Direction.SOUTH)
+
+
+def test_open_passage_raises_outside_grid() -> None:
+    m = Maze(5, 3)
+    with pytest.raises(OutOfBoundsError):
+        m.open_passage((5, 3), (6, 3))
+
+
+def test_open_passage_refuses_reserved_cells() -> None:
+    with pytest.raises(MazeError):
+        m = Maze(5, 3, reserved=frozenset({(1, 1)}))
+        m.open_passage((1, 0), (1, 1))
