@@ -90,6 +90,47 @@ AND を取ると**他の桁がすべて消え**、その壁の状態だけが残
   = 0001   -> closed          = 0000   -> open
 ```
 
+### `~` clears — and only one operator does it safely / `~` は消す。ただし安全なのは 1 つだけ
+
+**EN** — Opening a wall means **clearing** its bit. Three operators reach the right answer on the
+first call, and they part company on the second:
+**JA** — 壁を開けるとは、そのビットを**消す**こと。3 つの演算子が 1 回目は正しい答えに届き、
+2 回目で分かれる。
+
+```text
+starting from 15 (all closed), clearing SOUTH:
+
+mask & ~d      1st -> 11 (0b1011)      2nd -> 11 (0b1011)      unchanged
+mask ^ d       1st -> 11 (0b1011)      2nd -> 15 (0b1111)      toggled back
+mask - d       1st -> 11 (0b1011)      2nd ->  7 (0b0111)      ate another bit
+```
+
+**EN** — Edge case E9 of the contract says calling `open_passage` twice on the same pair must be
+harmless. **That requirement leaves exactly one usable operator.** `^` toggles, and `-` corrupts a
+different bit once the wall is already open. This is a case where the specification chooses the
+operator, not taste.
+**JA** — 契約のエッジケース E9 は「同じ組に 2 回呼んでも無害」であることを要求する。
+**その要求だけで、使える演算子が 1 つに絞られる。** `^` はトグルし、
+`-` は既に開いている壁に対して別のビットを壊す。**仕様が演算子を決めている**場面。
+
+**EN** — `~` flips every bit. Python integers have no fixed width, so the result prints as a
+negative number — `~1` is `-2` — but that is exactly what makes it work: `~d` is "every bit set
+**except** d's", so `&` keeps everything and erases that one.
+**JA** — `~` は全ビットを反転する。Python の整数に桁数の上限はないので、
+結果は負の数として表示される(`~1` は `-2`)。しかしそれこそが効く理由で、
+`~d` は「**d の桁以外すべてが 1**」という値だから、`&` は他を残して**その 1 桁だけを消す**。
+
+```text
+    1111   (mask)
+  & 1011   (~SOUTH, keeping only the four bits that matter)
+  = 1011   -> SOUTH is now open
+```
+
+**EN** — If the negative number is uncomfortable, `_ALL_WALLS ^ d` produces the same "all bits but
+d" value while staying inside four bits.
+**JA** — 負の数が気になるなら、`_ALL_WALLS ^ d` でも同じ「d 以外すべて」の値が作れ、
+4 ビットの中に収まる。
+
 | a | b | `a \| b` | `a & b` |
 | --- | --- | --- | --- |
 | 0 | 0 | 0 | 0 |
@@ -138,6 +179,8 @@ d46
 | `+` and `\|` are interchangeable for combining bits. / ビットを合わせるのに `+` と `\|` は同じ。 | Same result *only* while the bits do not overlap. `1 + 1 = 2` carries into another digit; `1 \| 1 = 1` does not. / ビットが重ならない間だけ同じ。`+` は繰り上がって別の桁に化ける。 |
 | `mask & direction == 0` groups as `(mask & direction) == 0`. / そう解釈される。 | **No.** `&` binds *looser* than `==` in Python, so it reads `mask & (direction == 0)`. Parenthesise the AND. / **違う。** Python では `&` の方が `==` より優先度が低い。AND を括ること。 |
 | `walls_at` computes something. / 何かを計算している。 | It reads `self._grid[y][x]` and returns it. The bounds check is the only other line. / `self._grid[y][x]` を読んで返すだけ。他の行は境界チェックだけ。 |
+| `^` and `-` also clear a bit, so any of them will do. / どれでも消せる。 | Only on the first call. `^` toggles it back and `-` corrupts another bit, so neither survives edge case E9. / 1 回目だけ。`^` は戻し、`-` は別のビットを壊す。E9 を満たさない。 |
+| `~1` being `-2` means something is wrong. / 負の数が出るのはおかしい。 | Python integers have no fixed width, so flipping gives a negative. Combined with `&` it does exactly the right thing. / 桁数の上限がないので反転すると負になる。`&` と組み合わせれば正しく働く。 |
 
 ## 7. How we use it here / この課題での使い方
 
@@ -167,6 +210,11 @@ d46
 - [ ] Q5. Why is `mask & direction == 0` not what it looks like? / なぜ見た目どおりに解釈されないのか
 - [ ] Q6. A reserved "42" cell always reads the same value. Which, and why? /
   確保セルは常に同じ値になる。いくつで、なぜか
+- [ ] Q7. Three operators can clear a bit. Which one does `open_passage` use, and which requirement
+  rules the other two out? / ビットを消せる演算子は 3 つある。どれを使い、
+  他の 2 つはどの要件で外れるのか
+- [ ] Q8. Why does `~` returning a negative number not break the masking? /
+  `~` が負の数を返すのに、なぜマスクが壊れないのか
 
 ## 9. Still unclear / まだ分かっていないこと
 

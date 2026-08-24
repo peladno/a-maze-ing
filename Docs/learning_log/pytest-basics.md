@@ -96,6 +96,30 @@ test_new_maze_has_no_open_wall            <- reads as a property
 test_is_open                              <- reads as "some function was run"
 ```
 
+### 4.4 Break the code to check the test / コードを壊してテストを確かめる
+
+**EN** — A passing test proves nothing until you have watched it fail. The cheapest way is to break
+the implementation **on purpose** and confirm the test notices.
+**JA** — 通っているテストは、**落ちるところを見るまで何も証明していない**。
+最も安い確かめ方は、実装をわざと壊して、テストが気づくか見ること。
+
+```text
+open_passage that updates only cell a
+  -> is_open(neighbour, d.opposite) becomes False
+  -> test_open_passage_updates_both_cells fails      the invariant is guarded
+
+open_passage that uses ^ instead of & ~
+  -> the second call closes the wall again
+  -> test_open_passage_is_idempotent fails            E9 is guarded
+```
+
+**EN** — If a test still passes against the broken version, it was not testing what its name says.
+That is how the first draft of `updates_both_cells` was caught: it asserted only one side, so the
+one-sided implementation passed it.
+**JA** — 壊した版でもテストが通るなら、そのテストは**名前が言っていることを検査していない**。
+`updates_both_cells` の最初の版はこれで見つかった。片側しか検査しておらず、
+片側だけ更新する実装を通してしまった。
+
 ## 5. Figure, example, trace / 図・具体例・トレース
 
 **EN** — The same claim, checked two ways, against a function that is wrong on purpose
@@ -148,6 +172,8 @@ _grid[1][3]  -> 15                the right one
 | Putting the loop inside `pytest.raises` checks every case. / 全ケースを検査できる。 | The first exception ends the block; the rest never run. Put the `with` inside the loop. / 最初の例外でブロックが終わり、残りは実行されない。`with` をループの内側に。 |
 | A passing test means the code is right. / 通れば正しい。 | It means **this** input behaved. A 3x3 grid passed an index-order bug for two rounds. / **その入力で**そう振る舞っただけ。3x3 は添字順のバグを 2 回通した。 |
 | Reaching into `_grid` from a test is fine. / テストから内部を触ってよい。 | It works, but the test then breaks whenever the internals change. Prefer the public accessor once one exists. / 動くが、内部を変えた瞬間にテストが壊れる。公開アクセサができたらそちらへ。 |
+| A test named after a property is testing that property. / 名前どおりのことを検査している。 | Not automatically. `updates_both_cells` asserted one cell for a while. Break the code and see the test fail before trusting it. / 自動ではそうならない。壊して落ちるのを見るまで信用しない。 |
+| A feature cannot be tested until everything it depends on exists. / 依存するものが揃うまでテストできない。 | Depends on the seams. `reserved` is a constructor parameter, so the "42" rule was testable long before the pattern generator existed. / 継ぎ目次第。`reserved` は引数なので、パターン生成の前から検査できた。 |
 
 ## 7. How we use it here / この課題での使い方
 
@@ -182,6 +208,10 @@ _grid[1][3]  -> 15                the right one
   このプロジェクトのテストを 1 つ挙げ、どのバグを捕まえるか言えるか
 - [ ] Q6. Tests are not graded. What is the argument for writing them anyway? /
   採点されないのに書く理由は何か
+- [ ] Q7. How do you find out whether a test can fail at all? / そのテストが落ちうるかを、どう確かめるか
+- [ ] Q8. `Maze` does not compute the "42" cells, yet the rule about them is tested. What in the
+  design makes that possible? / `Maze` は「42」を計算しないのに、その規則を検査できる。
+  設計の何がそれを可能にしているか
 
 ## 9. Still unclear / まだ分かっていないこと
 
