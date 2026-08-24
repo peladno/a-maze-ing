@@ -2,7 +2,7 @@ from __future__ import annotations
 from .renderer import Renderer
 
 from typing import Protocol
-
+# Todo Dummy maze, replace all Mazelike with Maze when maze is ready
 from .example_maze import N, W, S, E
 
 
@@ -57,14 +57,14 @@ class TerminalRenderer(Renderer):
             The rendered maze is written directly to standard output.
         """
         height = maze.height
-        print(self._horizontall_wall(maze, 0, N))
+        print(self._horizontal_wall(maze, 0, N))
 
         for y in range(height):
             print(self._vertical_wall(maze, y))
 
-            print(self._horizontall_wall(maze, y, S))
+            print(self._horizontal_wall(maze, y, S))
 
-    def _horizontall_wall(
+    def _horizontal_wall(
         self, maze: MazeLike, y: int, wall: int
     ) -> str:
         """Build one horizontal border for a maze row.
@@ -140,8 +140,8 @@ class TerminalRenderer(Renderer):
             return " . "
         return "   "
 
+# Todo delete, just for testing
+# if __name__ == "__main__":
+#     from .example_maze import DummyMaze
 
-if __name__ == "__main__":
-    from .example_maze import DummyMaze
-
-    TerminalRenderer().render(DummyMaze())
+#     TerminalRenderer().render(DummyMaze())

@@ -27,11 +27,11 @@ class MazeError(Exception):
 
 
 class OutOfBoundsError(MazeError):
-    raise NotImplementedError("Not implemented yet")
+    """Raised when a coordinate is outside the maze."""
 
 
 class NotAdjacentError(MazeError):
-    raise NotImplementedError("Not implemented yet")
+    """Raised when two cells are not orthogonally adjacent."""
 
 
 class Maze:
@@ -82,5 +82,6 @@ class Maze:
     def rows(self) -> Iterator[tuple[int, ...]]:
         raise NotImplementedError("Not implemented yet")
 
+    # --- the only mutator ----------------------------------------------
     def open_passage(self, a: Coord, b: Coord) -> None:
         raise NotImplementedError("Not implemented yet")

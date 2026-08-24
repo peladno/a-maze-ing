@@ -1,4 +1,4 @@
-# example_maze.py
+# Todo example_maze.py when Maze class is implemented
 import random
 import time
 import os
@@ -12,8 +12,7 @@ W = 8
 
 class DummyMaze:
     """
-    Maze de ejemplo compatible con la interfaz de maze.Maze.
-    Ahora soporta generación aleatoria con semilla reproducible.
+    Dummy maze, Delete when maze class is implemented
     """
 
     def __init__(
@@ -24,7 +23,6 @@ class DummyMaze:
         self.entry = (0, 0)
         self.exit = (width - 1, height - 1)
 
-        # Decide la semilla
         if seed is None:
             seed = int(time.time() * 1000) ^ int.from_bytes(
                 os.urandom(4), "big")
