@@ -19,15 +19,37 @@
 
 ### Setup
 
-<!-- TODO: python version, virtual environment, `make install`. -->
+Poetry is required to install the project. Install it with the [official Poetry
+installer](https://python-poetry.org/docs/#installation), then run:
+
+```bash
+poetry install
+```
+
+With Python 3.10+ already installed, this creates Poetry's virtual environment
+and installs the development tools. `make install` runs the same command on
+systems with `make` available.
 
 ### Run
 
-<!-- TODO: `python3 a_maze_ing.py config.txt`, `make run`, `make debug`. -->
+```bash
+make run
+make debug
+```
+
+They respectively run `python3 a_maze_ing.py config.txt` and the same command
+through Python's built-in debugger.
 
 ### Test
 
-<!-- TODO: how to run the tests and the linters (`make lint`, `make lint-strict`). -->
+```bash
+make test
+make lint
+make lint-strict
+```
+
+Build the distributable `mazegen-*` wheel and source archive at the repository
+root with `make build`.
 
 ## Configuration file
 
