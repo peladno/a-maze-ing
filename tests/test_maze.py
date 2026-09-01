@@ -99,3 +99,61 @@ def test_open_passage_refuses_reserved_cells() -> None:
     with pytest.raises(MazeError):
         m = Maze(5, 3, reserved=frozenset({(1, 1)}))
         m.open_passage((1, 0), (1, 1))
+
+
+def test_neighbours_stops_at_the_edge() -> None:
+    m = Maze(5, 3)
+    result1 = tuple(m.neighbours((1, 1)))
+    result2 = tuple(m.neighbours((0, 0)))
+    assert result1 == (
+        (Direction.NORTH, (1, 0)),
+        (Direction.EAST, (2, 1)),
+        (Direction.SOUTH, (1, 2)),
+        (Direction.WEST, (0, 1))
+    )
+    assert result2 == (
+        (Direction.EAST, (1, 0)),
+        (Direction.SOUTH, (0, 1))
+    )
+
+
+def test_neighbours_skips_reserved_cells() -> None:
+    m = Maze(5, 3, reserved=frozenset({(2, 1), (1, 2)}))
+    result = tuple(m.neighbours((1, 1)))
+    assert result == (
+        (Direction.NORTH, (1, 0)),
+        (Direction.WEST, (0, 1))
+    )
+
+
+def test_neighbours_raises_outside_grid() -> None:
+    m = Maze(5, 3)
+    with pytest.raises(OutOfBoundsError):
+        list(m.neighbours((6, 4)))
+
+
+def test_open_neighbours_only_returns_carved_cells() -> None:
+    m = Maze(5, 3)
+    before = tuple(m.open_neighbours((1, 1)))
+    m.open_passage((1, 1), (1, 2))
+    after = tuple(m.open_neighbours((1, 1)))
+    assert before == ()
+    assert after == ((1, 2), )
+
+
+def test_rows_has_one_tuple_per_row() -> None:
+    m = Maze(5, 3)
+    rows = tuple(m.rows())
+    assert len(rows) == m.height
+    assert len(rows[0]) == m.width
+    assert isinstance(rows[0], tuple)
+
+
+def test_rows_agrees_with_walls_at() -> None:
+    m = Maze(5, 3)
+    m.open_passage((1, 2), (1, 1))
+    m.open_passage((2, 2), (1, 2))
+    rows = tuple(m.rows())
+    for y in range(m.height):
+        for x in range(m.width):
+            assert rows[y][x] == m.walls_at((x, y))

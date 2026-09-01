@@ -9,7 +9,7 @@ from collections.abc import Iterator
 from enum import IntEnum
 
 
-# (x, y): x is the column, y is the row, origin top-left (decision 3.2).
+# (x, y): x is the column, y is the row, and the origin is top-left.
 Coord = tuple[int, int]
 
 
@@ -311,3 +311,99 @@ class Maze:
                 self._grid[by][bx] = self._grid[by][bx] & ~oppo_d
                 return
         raise NotAdjacentError(f"{a} and {b} are not orthogonally adjacent")
+
+    def neighbours(self, pos: Coord) -> Iterator[tuple[Direction, Coord]]:
+        """Yield the neighbouring cells that exist and may be carved.
+
+        Parameters
+        ----------
+        pos:
+            Position whose neighbours to list, as ``(x, y)``.
+
+        Yields
+        ------
+        tuple[Direction, Coord]
+            The direction to step in, and the cell it leads to. At most
+            four, fewer at an edge or beside the "42" pattern.
+
+        Raises
+        ------
+        OutOfBoundsError
+            If ``pos`` itself is outside the grid,
+            raised when the generator is first advanced.
+
+        Notes
+        -----
+        **Walls are ignored here.** This answers "what is next to me",
+        not "where can I walk" — the generator needs the first question,
+        because before it carves anything every wall is closed and the
+        second question would answer nothing.
+
+        Positions outside the grid and cells reserved for the "42"
+        pattern are dropped, so a caller never has to check for either.
+        That is what lets the generator stay unaware of both.
+        """
+        if not self.contains(pos):
+            raise OutOfBoundsError(f"pos is outside the grid: {pos}")
+        x, y = pos
+        for d in Direction:
+            dx, dy = d.delta
+            npos = (x + dx, y + dy)
+            if self.contains(npos) and not self.is_reserved(npos):
+                yield (d, npos)
+
+    def open_neighbours(self, pos: Coord) -> Iterator[Coord]:
+        """Yield the neighbouring cells that can actually be walked to.
+
+        Parameters
+        ----------
+        pos:
+            Position to walk from, as ``(x, y)``.
+
+        Yields
+        ------
+        Coord
+            Each neighbour whose shared wall is open.
+
+        Raises
+        ------
+        OutOfBoundsError
+            If ``pos`` is outside the grid. Raised through
+            ``neighbours``, which is why there is no check here.
+
+        Notes
+        -----
+        This is ``neighbours`` with the walls taken into account. Path
+        finding and connectivity checks follow these edges, and a maze
+        is fully connected when every cell is reachable this way
+        (§IV.4).
+
+        The result is a generator, so it can be walked once. Wrap it in
+        ``list()`` if the same neighbours are needed twice.
+        """
+        for d, npos in self.neighbours(pos):
+            if self.is_open(pos, d):
+                yield npos
+
+    def rows(self) -> Iterator[tuple[int, ...]]:
+        """Yield the grid one row at a time, top to bottom.
+
+        Yields
+        ------
+        tuple[int, ...]
+            One row, left to right, one wall mask per cell. Printing
+            each value as a hexadecimal digit gives a line of the
+            output file (§IV.5).
+
+        Notes
+        -----
+        **This is the only way the outside sees the whole grid**, and it
+        hands out tuples rather than the stored lists. A caller cannot
+        write through a tuple, so a row handed to the encoder or the
+        renderer cannot corrupt the maze.
+
+        Callers never index the grid themselves, so the internal layout
+        stays free to change without touching their code.
+        """
+        for row in self._grid:
+            yield tuple(row)
