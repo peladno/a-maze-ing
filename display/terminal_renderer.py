@@ -1,20 +1,10 @@
 from __future__ import annotations
-from .renderer import Renderer
 
-from typing import Protocol
+from .renderer import MazeLike, Renderer
+from .colors import ENTRY, EXIT, PATH, RESET, WALL_COLORS
+
 # Todo Dummy maze, replace all Mazelike with Maze when maze is ready
 from .example_maze import N, W, S, E
-
-
-class MazeLike(Protocol):
-    """Minimum maze interface required by :class:`TerminalRenderer`."""
-
-    width: int
-    height: int
-
-    def walls_at(self, pos: tuple[int, int]) -> int:
-        """Return the wall bitmask for the cell at ``(x, y)``."""
-        ...
 
 
 class TerminalRenderer(Renderer):
@@ -28,13 +18,19 @@ class TerminalRenderer(Renderer):
         show_path:
             If ``True``, mark cells in ``maze.shortest_path`` with ``.``.
         color_mode:
-            Reserved for selecting wall colours in a future implementation.
+            Wall colour mode: ``0`` disables colour, while ``1`` to ``3``
+            select the configured ANSI wall colours.
 
         Returns
         -------
         None
             The renderer is configured in place.
         """
+        if color_mode not in range(len(WALL_COLORS)):
+            raise ValueError(
+                f"color_mode must be between 0 and {len(WALL_COLORS) - 1}"
+            )
+
         self.show_path = show_path
         self.color_mode = color_mode
 
@@ -87,8 +83,9 @@ class TerminalRenderer(Renderer):
         line = ""
         for x in range(maze.width):
             cell_mask = maze.walls_at((x, y))
-            line += "+---" if cell_mask & wall else "+   "
-        return line + "+"
+            line += self._wall_color("+")
+            line += self._wall_color("---") if cell_mask & wall else "   "
+        return line + self._wall_color("+")
 
     def _vertical_wall(self, maze: MazeLike, y: int) -> str:
         """Build one row containing cell contents and vertical walls.
@@ -108,11 +105,18 @@ class TerminalRenderer(Renderer):
         line = ""
         for x in range(maze.width):
             cell_mask = maze.walls_at((x, y))
-            line += "|" if cell_mask & W else " "
+            line += self._wall_color("|") if cell_mask & W else " "
             line += self._cell_content(x, y, maze)
 
         last_mask = maze.walls_at((maze.width - 1, y))
-        return line + ("|" if last_mask & E else " ")
+        return line + (
+            self._wall_color("|") if last_mask & E else " "
+        )
+
+    def _wall_color(self, text: str) -> str:
+        """Apply the selected ANSI colour to a wall fragment."""
+        color = WALL_COLORS[self.color_mode]
+        return f"{color}{text}{RESET}" if color else text
 
     def _cell_content(self, x: int, y: int, maze: MazeLike) -> str:
         """Return the marker displayed inside one cell.
@@ -131,14 +135,15 @@ class TerminalRenderer(Renderer):
             ``.`` for a visible path cell, or spaces for an empty cell.
         """
         if (x, y) == getattr(maze, "entry", None):
-            return " E "
+            return f"{ENTRY} E {RESET}"
 
         if (x, y) == getattr(maze, "exit", None):
-            return " X "
+            return f"{EXIT} X {RESET}"
 
         if self.show_path and (x, y) in getattr(maze, "shortest_path", ()):
-            return " . "
+            return f"{PATH} . {RESET}"
         return "   "
+
 
 # Todo delete, just for testing
 # if __name__ == "__main__":
