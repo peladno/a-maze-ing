@@ -191,7 +191,7 @@ W13 が至る所で `grid[y][x]` と書いていたら、保存方法を変え�
 | Module | What it does | Plan | Owner |
 | --- | --- | --- | --- |
 | `maze/maze.py` | the grid, the wall bits, `open_passage` | `maze-data-structure.md` | so — W03, W04 |
-| `maze/config.py` | read `config.txt` into values | *not written yet* | so — W01, W02 |
+| `maze/config.py` | read `config.txt` into values | `config-parser.md` | so — W01, W02 |
 | `mazegen/generator.py` | build the maze; the reusable class of §VI | `generation-algorithm.md` | so — W05–W09, W18 |
 | `maze/solver.py` | shortest path as `NESW` | *not written yet* | so — W12 |
 | `maze/validator.py` | check the result independently | — | so — W10 |
@@ -199,10 +199,12 @@ W13 が至る所で `grid[y][x]` と書いていたら、保存方法を変え�
 | `display/` | terminal rendering and user keys | — | javi — W15, W16 |
 | `a_maze_ing.py` | wire it together, catch errors | — | javi — W17 |
 
-**EN** — Three plans are still missing, and two of them are seams javi is waiting on: how the config values reach
-him (W14 needs entry and exit) and how the path is represented (W14 and W16 need it).
-**JA** — 計画が 3 つ未作成で、そのうち 2 つは javi が待っている継ぎ目。
-設定値がどう届くか(W14 に入口と出口が必要)と、経路をどう表現するか(W14 と W16 に必要)。
+**EN** — Two plans are still missing. The remaining seam javi is waiting on is how the path is represented (W14 and
+W16 need it). The other seam — how the config values reach him — is now written: `config-parser.md` supplies
+`entry`, `exit` and `output_file`, which is exactly what `MazeWriter.write` already takes as parameters.
+**JA** — 計画は残り 2 つ未作成。javi が待っている継ぎ目のうち残るのは、経路をどう表現するか(W14 と W16 が必要)。
+もう一方の継ぎ目、設定値がどう届くかは `config-parser.md` に書かれた。
+`entry` / `exit` / `output_file` を供給する — これは `MazeWriter.write` が既に引数で取っているものそのもの。
 
 ---
 
