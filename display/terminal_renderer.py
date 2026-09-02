@@ -150,7 +150,7 @@ class TerminalRenderer(Renderer):
         return "   "
 
 
-if __name__ == "__main__":
-    from .example_maze import DummyMaze
+# if __name__ == "__main__":
+#     from .example_maze import DummyMaze
 
-    TerminalRenderer().render(DummyMaze())
+#     TerminalRenderer().render(DummyMaze())

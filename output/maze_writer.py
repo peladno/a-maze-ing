@@ -1,12 +1,11 @@
+"""Module for serializing maze structures and metadata to file."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-# TODO dummy maze,and MazeLike, replace with real Maze when is available
-# from display.example_maze import DummyMaze
 from display.renderer import MazeLike
 
-# TODO import Maze class when is available
 if TYPE_CHECKING:
     from maze.maze import Coord
 
@@ -75,7 +74,6 @@ class MazeWriter:
         str
             The complete encoded output text ready for writing to file.
         """
-
         height = maze.height
         width = maze.width
 
@@ -92,13 +90,14 @@ class MazeWriter:
         grid_part = "\n".join(grid_lines) + "\n"
         metadata_part = (
             f"\n{entry[0]},{entry[1]}\n{exit[0]},{exit[1]}\n{shortest_path}\n"
-            )
+        )
 
         return grid_part + metadata_part
 
-# Todo just for testing delete after
 
 # if __name__ == "__main__":
+#     from display.example_maze import DummyMaze
+
 #     dummy_maze = DummyMaze(width=4, height=4, seed=42)
 
 #     output_text = MazeWriter.encode(
@@ -108,7 +107,7 @@ class MazeWriter:
 #         shortest_path="ESSS",
 #     )
 
-#     print("--- Rersult encode() ---")
+#     print("--- Result encode() ---")
 #     print(output_text)
 #     print("------------------------------------")
 
@@ -119,4 +118,4 @@ class MazeWriter:
 #         shortest_path="ESSS",
 #         filepath="test_output.txt",
 #     )
-#     print("File 'test_output.txt' succesfully generated.")
+#     print("File 'test_output.txt' successfully generated.")

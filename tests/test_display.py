@@ -5,13 +5,10 @@ vertical wall formatting, cell marker placement, and standard output.
 """
 
 from __future__ import annotations
-
-from typing import TYPE_CHECKING
 import pytest
-
+from typing import TYPE_CHECKING
+from maze.maze import Maze
 from display.colors import WALL_COLORS
-# TODO Delete and replace DummyMaze when Maze class is ready
-from display.example_maze import DummyMaze
 from display.terminal_renderer import TerminalRenderer
 
 if TYPE_CHECKING:
@@ -55,7 +52,7 @@ def test_terminal_renderer_horizontal_wall() -> None:
         Asserts the generated ASCII segment matching cell wall masks.
     """
     renderer = TerminalRenderer(color_mode=0)
-    maze = DummyMaze(width=2, height=2, seed=42)
+    maze = Maze(width=2, height=2)
 
     # N wall (1) in row 0: cell 0 mask 9 (N bit set), cell 1 mask 3 (N bit set)
     wall_str = renderer._horizontal_wall(maze, y=0, wall=1)
@@ -70,9 +67,9 @@ def test_terminal_renderer_cell_content() -> None:
     None
         Asserts presence of 'E', 'X', and '.' markers under display options.
     """
-    maze = DummyMaze(width=2, height=2, seed=42)
-    maze.entry = (0, 0)
-    maze.exit = (1, 1)
+    maze = Maze(width=2, height=2)
+    setattr(maze, "entry", (0, 0))
+    setattr(maze, "exit", (1, 1))
     shortest_path: tuple[Coord, ...] = ((0, 0), (0, 1), (1, 1))
     setattr(maze, "shortest_path", shortest_path)
 
@@ -105,7 +102,8 @@ def test_terminal_renderer_render_output(
         Asserts line count and start pattern written to standard output.
     """
     renderer = TerminalRenderer(show_path=True, color_mode=0)
-    maze = DummyMaze(width=2, height=2, seed=42)
+    maze = Maze(width=2, height=2)
+    maze.open_passage((0, 0), (1, 0))
 
     renderer.render(maze)
 
