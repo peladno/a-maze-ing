@@ -91,14 +91,19 @@ one of them is corrected.
 
 1. `maze-generation-algorithms.md` — **written**: grid graph and spanning tree, recursive backtracker, Prim,
    Kruskal, and how each scores against our constraints. Feeds decision 3.5.
-2. `bitmask-wall-encoding.md` — bit 0=N, 1=E, 2=S, 3=W (§IV.5); `&`, `|`, `^`, `<<`, and why a bitmask instead of
-   four booleans.
-3. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
+2. `bitmask-wall-encoding.md` — **written**: bit 0=N, 1=E, 2=S, 3=W (§IV.5), `|` to set and `&` to isolate, and
+   the trace from one cell to its hexadecimal digit.
+3. `python-enum-and-property.md` — **written**: the object model behind `Direction` and `Maze` — `IntEnum` vs
+   `IntFlag`, properties as read-only exits, and the traps hit while writing them.
+4. `pytest-basics.md` — **written**: discovery, `assert`, `pytest.raises`, and the ways a test can pass while
+   proving nothing.
+5. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
    the `NESW` path in §IV.5.
-4. `union-find.md` — only if we adopt Kruskal, or if we use it to count independent loops for `PERFECT=False`.
-5. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
+6. `union-find.md` — only if we use it to check connectivity; counting independent loops turned out to be a
+   subtraction (`generation-algorithm.md` §4.2), not a search.
+7. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
    a testability requirement rather than a feature.
-6. `python-packaging-wheel-vs-sdist.md` — `.whl` vs `.tar.gz` and what `pip install` does with each, needed for
+8. `python-packaging-wheel-vs-sdist.md` — `.whl` vs `.tar.gz` and what `pip install` does with each, needed for
    the `mazegen-*` deliverable (§VI).
 
 ---
@@ -191,12 +196,17 @@ one of them is corrected.
 
 1. `maze-generation-algorithms.md` — **作成済み**:格子グラフと全域木、再帰的バックトラッカー、Prim、Kruskal、
    および各案が制約に対してどうか。決定 3.5 の材料。
-2. `bitmask-wall-encoding.md` — bit0=N, 1=E, 2=S, 3=W(§IV.5)。`&` `|` `^` `<<` と、
-   なぜ bool 4 個ではなくビットマスクなのか。
-3. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
+2. `bitmask-wall-encoding.md` — **作成済み**:bit0=N, 1=E, 2=S, 3=W(§IV.5)、`|` で立て `&` で取り出す、
+   そして 1 セルから 16 進 1 桁までのトレース。
+3. `python-enum-and-property.md` — **作成済み**:`Direction` と `Maze` を支えるオブジェクトモデル。
+   `IntEnum` と `IntFlag`、読み取り専用の出口としての property、書きながら踏んだ罠。
+4. `pytest-basics.md` — **作成済み**:検出の仕組み、`assert`、`pytest.raises`、
+   そして「通るのに何も証明していないテスト」の作られ方。
+5. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
    §IV.5 の `NESW` 経路に必要。
-4. `union-find.md` — Kruskal を採用する場合、または `PERFECT=False` の独立ループ数を数えるのに使う場合。
-5. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
+6. `union-find.md` — 連結性の確認に使う場合のみ。独立ループ数の計数は引き算で済むことが分かった
+   (`generation-algorithm.md` §4.2)。
+7. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
    再現性が「機能」ではなく「テスト可能性の要件」である理由。
-6. `python-packaging-wheel-vs-sdist.md` — `.whl` と `.tar.gz`、`pip install` がそれぞれに何をするか。
+8. `python-packaging-wheel-vs-sdist.md` — `.whl` と `.tar.gz`、`pip install` がそれぞれに何をするか。
    `mazegen-*` 提出物(§VI)に直結する。

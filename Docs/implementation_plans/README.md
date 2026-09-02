@@ -15,6 +15,29 @@ A plan is written **before** the code, and it is a **design-level** document:
 > and the exceptions raised — never a function body. If a plan contains an implementation, the plan has stopped
 > being a plan and the review has become a code review of code nobody has run.
 
+### `...` in a plan, `NotImplementedError` in the code
+
+The Interface sections in this folder write bodies as `...`, because a plan is a document and is never executed.
+**Do not carry that into the source.** In real Python a function whose body is `...` silently returns `None`, and
+mypy treats `...` as a stub, so a declared `-> int` is not flagged either. The caller receives `None` and the
+failure surfaces somewhere else entirely — far from the function nobody wrote yet.
+
+A skeleton method should fail loudly instead:
+
+```python
+def walls_at(self, pos: Coord) -> int:
+    raise NotImplementedError
+```
+
+Called, it fails immediately and names the function that is missing.
+
+| Where | Body | Why |
+| --- | --- | --- |
+| `implementation_plans/*.md` | `...` | Never executed. It states "no body, on purpose" |
+| A `.py` skeleton | `raise NotImplementedError` | Executed. An unwritten function must fail at the call site, not return `None` |
+
+*(javi's suggestion, 2026-08-20.)*
+
 ### Why we write it
 
 - **Review** — the subject's README must state the algorithm we chose **and why**. That justification is written
@@ -38,7 +61,7 @@ The two folders are easy to confuse. The difference is **investigation vs contra
 | **Contains alternatives?** | Yes — comparing them is the point | Only as "rejected, because …" |
 | **Binding?** | No. It is a note; being wrong is allowed | Yes. Changing it means telling the pair |
 | **Code inside?** | Snippets to illustrate a concept are fine | Signatures and types only, **never bodies** |
-| **Language** | Fully bilingual, section by section | Body in English (shared contract) |
+| **Language** | Fully bilingual, section by section | Signatures and tables once; **explanations bilingual** |
 | **Example** | `dfs-vs-bfs.md` — how both traversals work | `shortest-path-solver.md` — we use BFS, here is the API |
 | **When it is wrong** | Fix the note, no one else affected | Update it **and** tell the other person: they may already be coding against it |
 
@@ -88,6 +111,29 @@ convention; they are Javier's initial proposal for the project structure and the
 > クラス定義、送出する例外を書く。**関数の本体は書かない**。
 > 計画に実装が入った時点で、それは計画ではなくなり、レビューは「誰も動かしていないコードのコードレビュー」になる。
 
+### 計画では `...`、コードでは `NotImplementedError`
+
+このフォルダの Interface セクションが本体を `...` と書くのは、計画が文書であって実行されないから。
+**それをソースコードに持ち込まないこと。** 実際の Python では、本体が `...` の関数は**静かに `None` を返す**。
+しかも mypy は `...` をスタブとみなすので、戻り値を `-> int` と宣言していても指摘しない。
+呼び出し側は `None` を受け取り、**まだ誰も書いていない関数から遠く離れた場所で**失敗が表面化する。
+
+骨組みのメソッドは、代わりに大きな音で落ちるべき:
+
+```python
+def walls_at(self, pos: Coord) -> int:
+    raise NotImplementedError
+```
+
+こうすれば、呼ばれた瞬間に、足りない関数の名前とともに落ちる。
+
+| 場所 | 本体 | 理由 |
+| --- | --- | --- |
+| `implementation_plans/*.md` | `...` | 実行されない。「意図的に本体を書いていない」ことの表明 |
+| `.py` の骨組み | `raise NotImplementedError` | 実行される。未実装の関数は `None` を返すのではなく、呼ばれた場所で落ちるべき |
+
+*(javi の提案、2026-08-20)*
+
 ### なぜ書くのか
 
 - **振り返り** — subject の README には、選んだアルゴリズムと**その理由**を書く義務がある。
@@ -111,7 +157,7 @@ convention; they are Javier's initial proposal for the project structure and the
 | **選択肢を書くか** | 書く。比較こそが目的 | 「却下、理由は〜」としてのみ |
 | **拘束力** | なし。ノートなので間違っていてよい | あり。変更したら相方に伝える義務がある |
 | **コードを含むか** | 概念説明のための断片なら可 | シグネチャと型のみ。**本体は書かない** |
-| **言語** | 章ごとに完全バイリンガル | 本文は英語(共有の契約なので) |
+| **言語** | 章ごとに完全バイリンガル | シグネチャと表は 1 回。**説明はバイリンガル** |
 | **例** | `dfs-vs-bfs.md` — 2 つの探索がどう動くか | `shortest-path-solver.md` — BFS を採用、API はこれ |
 | **間違っていたとき** | ノートを直すだけ。他に影響なし | 直した上で**相方に伝える**。既にそれ前提で書いているかもしれない |
 

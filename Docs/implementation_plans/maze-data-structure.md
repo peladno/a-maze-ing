@@ -8,6 +8,11 @@
 | **Subject ref** | §IV.4, §IV.5, §VI |
 | **Related / 関連** | `Docs/pair_communication/01_kickoff.md` § 3.1, 3.2, 3.3, 3.6; `Docs/learning_log/maze-generation-algorithms.md` |
 
+> **New here? Read [`architecture-overview.md`](architecture-overview.md) first** — it shows where this module
+> sits in the program, and follows one small maze through every stage of the pipeline.
+> **はじめて読む場合は [`architecture-overview.md`](architecture-overview.md) から。**
+> このモジュールがプログラムのどこに位置するかと、小さな迷路 1 つがパイプラインを通っていく様子が書いてある。
+
 > **This is the contract W13 (hex output) and W15 (renderer) depend on.** Nothing on javi's side should index the
 > grid directly — read it through the accessors in §2.
 > **これは W13(16 進出力)と W15(描画)が依存する契約。** javi 側はグリッドを直接添字で触らない。§2 のアクセサ経由で読む。
@@ -125,19 +130,68 @@ class Maze:
 
 ### What each member is for / 各メンバーの役割
 
-| Member | Purpose |
-| --- | --- |
-| `Direction` | The bit order of §IV.5 lives in one place. `NORTH = 1` *is* bit 0, so no separate mapping table can drift from the spec. |
-| `Direction.opposite` | What makes the coherence invariant expressible: opening a wall on one side must clear `opposite` on the other. |
-| `walls_at` | The 4-bit mask of a cell, `0`–`15`, where a set bit means **closed**. This is the value W13 turns into a hex digit. |
-| `is_open` | The question the solver and the renderer actually ask, so neither has to know about bits. |
-| `neighbours` | In-bounds, non-reserved neighbours with the direction to reach them — the generator's basic step. |
-| `open_neighbours` | Cells reachable through an *open* passage — what BFS (W12) walks. |
-| `rows` | Row-major iteration, top to bottom, each row left to right. **This is what hides `grid[y][x]` from callers.** |
-| `open_passage` | The only mutator. It updates **both** cells, so the invariant cannot be broken from outside (decision 3.3 = A). |
+**EN** — One line per member: what it does, and who calls it.
+**JA** — 1 メンバー 1 行で、何をするか・誰が呼ぶか。
 
-**JA** — `rows()` が要。3.2 で `grid[y][x]` を選んだので出力も描画も行単位で素直に読めるが、
-それでも生の配列は渡さない。将来 3.1 の内部表現を変えても、javi 側のコードは一行も変わらない。
+| Member | What it does / 何をするか | Called by / 呼ぶ側 |
+| --- | --- | --- |
+| `Direction` | Names the four walls, and its **values are the §IV.5 bits themselves** (`NORTH = 1` *is* bit 0). Keeping the bit order in one place means no second table can drift from the spec. / 4 枚の壁に名前を付ける。**値が §IV.5 のビットそのもの**。ビット順が 1 か所にあるので、仕様とずれる第二の表が生まれない。 | everyone |
+| `Direction.opposite` | "The opposite of north is south." Needed because opening a wall must clear it **on both sides** — the other side is `opposite`. / 「北の反対は南」。壁を開けるときに**両側**を消す必要があり、その反対側がこれ。 | `open_passage` |
+| `Direction.delta` | How `(x, y)` changes when you step one cell that way. Turns "the neighbour to the north" into a coordinate. / その方向へ 1 歩動いたときの `(x, y)` の変化量。「北の隣」を座標に変える。 | `neighbours` |
+| `MazeError` and friends | The error types this module raises. Decision 3.9 = A: our own types, so the top-level handler can tell a bad config from a bug in our code. / このモジュールが送出するエラーの型。決定 3.9 = A で自前の型にした。最上位のハンドラが「設定が不正」と「自分たちのバグ」を区別できるようにするため。 | `a_maze_ing.py` (W17) |
+| `Maze.__init__` | Builds the grid **with every wall closed**, and remembers which cells are reserved for the "42". / **すべての壁が閉じた状態**でグリッドを作り、「42」用に確保するセルを覚える。 | `MazeGenerator` (W05) |
+| `width`, `height` | The size. Read-only. / 大きさ。読み取り専用。 | W13, W15, validator |
+| `reserved` | The set of "42" cells. Read-only — it is fixed at construction. / 「42」のセル集合。読み取り専用で、構築時に確定する。 | generator, W15 (optional colouring) |
+| `contains` | Is this coordinate inside the grid? The building block of every bounds check. / この座標は盤内か。あらゆる境界チェックの土台。 | everywhere |
+| `is_reserved` | Is this cell part of the "42"? The generator must never carve into one. / このセルは「42」の一部か。生成器はここを掘ってはいけない。 | generator (W05, W09) |
+| `walls_at` | The cell's 4-bit mask, `0`–`15`. A set bit means **closed**. **This integer is the hex digit** W13 writes. / そのセルの 4 ビットのマスク(0〜15)。ビットが立っていると**閉**。**この整数が W13 の書く 16 進の桁そのもの**。 | W13, validator |
+| `is_open` | Is this one wall open? The same question as `walls_at` but without the caller touching bits. / この 1 枚の壁は開いているか。`walls_at` と同じ問いを、呼ぶ側がビットを触らずに聞ける形にしたもの。 | solver (W12), renderer (W15) |
+| `neighbours` | The neighbouring cells that exist and are not reserved, **with the direction to reach each**. The generator's basic step. / 実在して確保セルでもない隣を、**そこへ行く方向つきで**返す。生成器の基本操作。 | generator (W05) |
+| `open_neighbours` | The cells you can actually **walk to** — those with an open passage. This is what BFS follows. / 実際に**歩いて行ける**隣、つまり通路が開いている先。BFS がたどるのはこれ。 | solver (W12), validator (W10) |
+| `rows` | Walks the whole grid top to bottom, each row left to right, yielding one `int` per cell. **The only way the outside sees the whole grid.** / グリッド全体を上から下・各行を左から右に走査し、1 セル 1 つの `int` を返す。**外側が全体を見る唯一の手段。** | W13, W15, validator |
+| `open_passage` | **The only thing that changes anything.** Opens the wall between two adjacent cells, updating **both** of them. / **唯一、状態を変える操作。** 隣接 2 セルの間の壁を開け、**両方**を更新する。 | generator (W05) |
+
+**EN** — Reading the table, three groups appear: `Direction` and the errors are **vocabulary**, most of `Maze` is
+**questions** the outside asks, and exactly one member is an **action**. That shape is the design: a structure
+that answers questions freely, and changes only through one door.
+
+**JA** — 表を眺めると 3 つの群が見える。`Direction` とエラー型は**語彙**、`Maze` のほとんどは外側が投げる**質問**、
+そして**動作**はただ 1 つ。この形自体が設計そのもの。
+質問には自由に答え、変更は 1 つの扉からしか通さない構造。
+
+### Which caller uses what / 誰が何を使うか
+
+| Caller / 呼ぶ側 | Members it needs / 使うメンバー |
+| --- | --- |
+| Generator W05 — so | `neighbours`, `is_reserved`, `open_passage` |
+| Validator W10 — so | `rows`, `walls_at`, `open_neighbours`, `contains` |
+| Solver W12 — so | `open_neighbours`, `contains` |
+| **Hex encoder W13 — javi** | `width`, `height`, `rows` |
+| **Renderer W15 — javi** | `width`, `height`, `rows` or `is_open`, `reserved` |
+
+**EN** — Note that **only the generator calls `open_passage`.** Everyone else reads. That is not a rule anyone has
+to remember — it falls out of the fact that there is nothing else to call.
+
+**JA** — **`open_passage` を呼ぶのは生成器だけ**である点に注目。他は全員が読むだけ。
+これは誰かが覚えておくべきルールではない。**他に呼べるものが存在しないから、自然にそうなる。**
+
+### A typical sequence / 典型的な流れ
+
+**EN** — What actually happens, in order, for one run:
+
+**JA** — 1 回の実行で実際に起きること、順番に:
+
+```text
+1. MazeGenerator     Maze(width, height, reserved=<"42" cells>)   ← every wall closed
+2. MazeGenerator     neighbours(pos)      "where can I go from here?"
+3. MazeGenerator     open_passage(a, b)   "carve" — repeated until the maze is done
+4. Solver W12        open_neighbours(pos) walks the finished maze, breadth first
+5. Encoder W13       rows()               nine ints -> "bd3 / c3a / d46"
+6. Renderer W15      rows() / is_open()   draws the same nine ints on screen
+```
+
+**EN** — Steps 1–3 build, steps 4–6 read. **The maze never changes after step 3.**
+**JA** — 1〜3 が構築、4〜6 が読み取り。**ステップ 3 以降、迷路は二度と変化しない。**
 
 ### For javi — the four members W13 and W15 need / javi 向け:必要なのはこの 4 つ
 
