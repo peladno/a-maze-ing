@@ -219,9 +219,21 @@ Python の上限(1000 前後)に当たる。明示的スタックなら同じ O(
 - [ ] **Q2 — decision 3.10, seed handling.** Proposed: own `Random` instance, and when the config gives no seed,
   generate one and **print it**. Needs so's confirmation. /
   3.10。提案は「自前の `Random` を持ち、設定にシードがなければ生成して表示する」。要確認。
-- [ ] **Q3 — how rare is "rare"?** §IV.4 says dead ends should be rare and §VIII rewards zero. What number do we
-  target, and does the analyzer's `--max-dead-ends` define it for us? /
-  「稀」とは何個か。analyzer の `--max-dead-ends` がその定義を与えてくれるか。
+- [x] **Q3 — how rare is "rare"? Answered by `maze_analyzer.py --help` (2026-09-01).** The subject only says
+  "rare"; the analyzer puts a number on it. / 「稀」の定義。subject は言葉だけだが、analyzer が数を与えている。
+
+  ```text
+  --min-loops N       independent routes a playable maze must keep      (default: 2)
+  --max-dead-ends N   real dead-ends tolerated; use 0 for the bonus     (default: 2)
+  ```
+
+  **EN** — So the default mode passes with **at least 2 independent loops and at most 2 dead ends**, and §VIII's
+  bonus is `--max-dead-ends 0`. The loop half is already cheap: §4.2 shows each wall braiding removes adds exactly
+  one loop, so two removals satisfy it. **The dead-end count is the real target**, and it is now a number we can
+  measure while implementing rather than a word to interpret.
+  **JA** — つまり既定モードの合格線は「**独立ループ 2 本以上、行き止まり 2 個以下**」で、§VIII のボーナスは
+  `--max-dead-ends 0`。ループ側は安い。§4.2 のとおり braiding で壁を 1 枚取るごとにループが 1 つ増えるので、
+  2 枚で足りる。**本命は行き止まりの数**で、これは解釈すべき言葉ではなく、実装しながら測れる数になった。
 - [ ] **Q4 — where is "the centre"?** For an even `WIDTH` or `HEIGHT` there is no single centre cell. Define it
   once, here, before §4.3 becomes a bug. / `WIDTH` や `HEIGHT` が偶数のとき中央のセルは一意でない。先に定義する。
 
@@ -230,3 +242,4 @@ Python の上限(1000 前後)に当たる。明示的スタックなら同じ O(
 | Date | Change | Reason |
 | --- | --- | --- |
 | 2026-08-20 | initial draft | 3.5 decided; W05 can start once Q1–Q4 are answered |
+| 2026-09-01 | Q3 answered from `maze_analyzer.py --help` | the acceptance line is 2 loops and 2 dead ends, not a word to interpret |
