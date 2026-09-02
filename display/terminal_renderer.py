@@ -1,10 +1,15 @@
+"""Terminal ASCII renderer for maze visualization."""
+
 from __future__ import annotations
 
-from .renderer import MazeLike, Renderer
+from maze.maze import Direction
 from .colors import ENTRY, EXIT, PATH, RESET, WALL_COLORS
+from .renderer import MazeLike, Renderer
 
-# Todo Dummy maze, replace all Mazelike with Maze when maze is ready
-from .example_maze import N, W, S, E
+N = Direction.NORTH
+E = Direction.EAST
+S = Direction.SOUTH
+W = Direction.WEST
 
 
 class TerminalRenderer(Renderer):
@@ -145,7 +150,6 @@ class TerminalRenderer(Renderer):
         return "   "
 
 
-# Todo delete, just for testing
 # if __name__ == "__main__":
 #     from .example_maze import DummyMaze
 

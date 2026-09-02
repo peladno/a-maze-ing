@@ -1,31 +1,51 @@
-# Todo example_maze.py when Maze class is implemented
+"""Temporary dummy maze implementation inheriting from the real Maze class."""
+
+from __future__ import annotations
+
+import os
 import random
 import time
-import os
 from typing import Optional
 
-N = 1
-E = 2
-S = 4
-W = 8
+from maze.maze import Coord, Maze, MazeError
 
 
-class DummyMaze:
-    """
-    Dummy maze, Delete when maze class is implemented
+class DummyMaze(Maze):
+    """Dummy maze structure inheriting from the real Maze class.
+
+    Generates random passages using ``open_passage()`` for display prototyping
+    and testing while using the authoritative ``Maze`` implementation.
     """
 
     def __init__(
-            self, width: int = 4, height: int = 4, seed: Optional[int] = None
-            ) -> None:
-        self.width = width
-        self.height = height
+        self,
+        width: int = 4,
+        height: int = 4,
+        reserved: frozenset[Coord] = frozenset(),
+        seed: Optional[int] = None,
+    ) -> None:
+        """Initialize a dummy maze using the Maze base class.
+
+        Parameters
+        ----------
+        width:
+            Grid width in cells.
+        height:
+            Grid height in cells.
+        reserved:
+            Set of reserved cell coordinates.
+        seed:
+            Optional seed for random generation.
+        """
+        super().__init__(width=width, height=height, reserved=reserved)
+
         self.entry = (0, 0)
         self.exit = (width - 1, height - 1)
 
         if seed is None:
             seed = int(time.time() * 1000) ^ int.from_bytes(
-                os.urandom(4), "big")
+                os.urandom(4), "big"
+            )
             self._reproducible = False
         else:
             self._reproducible = True
@@ -33,40 +53,21 @@ class DummyMaze:
         self.seed = seed
         random.seed(self.seed)
 
-        self.grid = []
+        # Randomly open passages using open_passage to maintain wall coherence
         for y in range(self.height):
-            row = []
             for x in range(self.width):
-                mask = 0
-                if random.random() < 0.5:
-                    mask |= N
-                if random.random() < 0.5:
-                    mask |= E
-                if random.random() < 0.5:
-                    mask |= S
-                if random.random() < 0.5:
-                    mask |= W
-                # TODO uncomment for map with all the walls
-                # if y == 0:
-                #     mask |= N
-                # if y == self.height - 1:
-                #     mask |= S
-                # if x == 0:
-                #     mask |= W
-                # if x == self.width - 1:
-                #     mask |= E
-
-                row.append(mask)
-            self.grid.append(row)
-
-    def walls_at(self, pos: tuple[int, int]) -> int:
-        x, y = pos
-        return self.grid[y][x]
-
-    def rows(self) -> list[tuple[int, ...]]:
-        return [tuple(row) for row in self.grid]
+                cell = (x, y)
+                for _direction, npos in self.neighbours(cell):
+                    if random.random() < 0.5:
+                        try:
+                            self.open_passage(cell, npos)
+                        except MazeError:
+                            pass
 
     def __repr__(self) -> str:
+        """Return a string representation of the DummyMaze."""
         mode = "reproducible" if self._reproducible else "random"
-        return (f"<DummyMaze {self.width}x{self.height} "
-                f"seed={self.seed} mode={mode}>")
+        return (
+            f"<DummyMaze {self.width}x{self.height} "
+            f"seed={self.seed} mode={mode}>"
+        )
