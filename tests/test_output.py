@@ -29,8 +29,8 @@ def test_maze_writer_encode_structure() -> None:
 
     lines = encoded.splitlines()
     assert len(lines) == 6
-    assert lines[0] == "e8"
-    assert lines[1] == "73"
+    assert lines[0] == "93"
+    assert lines[1] == "c6"
     assert lines[2] == ""
     assert lines[3] == "0,0"
     assert lines[4] == "1,1"
@@ -38,19 +38,18 @@ def test_maze_writer_encode_structure() -> None:
 
 
 def test_maze_writer_encode_hex_formatting() -> None:
-    """Verify that cell wall bitmasks > 9 format as lowercase hex (a-f).
+    """Verify that cell wall bitmasks format as lowercase hex (0-f).
 
     Returns
     -------
     None
-        Asserts that bitmasks 14 and 8 are formatted as 'e8'.
+        Asserts that bitmasks 9 and 3 are formatted as '93'.
     """
     maze = DummyMaze(width=2, height=2, seed=42)
     encoded = MazeWriter.encode(maze, (0, 0), (1, 1), "E")
 
     first_line = encoded.splitlines()[0]
-    # Cell masks for seed 42 (14, 8) -> 'e', '8' -> "e8"
-    assert first_line == "e8"
+    assert first_line == "93"
 
 
 def test_maze_writer_write_file(

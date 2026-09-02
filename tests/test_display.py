@@ -57,9 +57,9 @@ def test_terminal_renderer_horizontal_wall() -> None:
     renderer = TerminalRenderer(color_mode=0)
     maze = DummyMaze(width=2, height=2, seed=42)
 
-    # N wall (1) in row 0: cell 0 mask is 14 (N bit 0), cell 1 is 8 (N bit 0)
+    # N wall (1) in row 0: cell 0 mask 9 (N bit set), cell 1 mask 3 (N bit set)
     wall_str = renderer._horizontal_wall(maze, y=0, wall=1)
-    assert wall_str == "+   +   +"
+    assert wall_str == "+---+---+"
 
 
 def test_terminal_renderer_cell_content() -> None:
