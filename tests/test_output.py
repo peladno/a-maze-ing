@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from display.example_maze import DummyMaze
+from maze.maze import Maze
 from output.maze_writer import MazeWriter
 
 
@@ -20,7 +20,7 @@ def test_maze_writer_encode_structure() -> None:
     None
         Asserts that line count, hex grid rows, and metadata match.
     """
-    maze = DummyMaze(width=2, height=2, seed=42)
+    maze = Maze(width=2, height=2)
     entry = (0, 0)
     exit = (1, 1)
     path = "SE"
@@ -29,8 +29,8 @@ def test_maze_writer_encode_structure() -> None:
 
     lines = encoded.splitlines()
     assert len(lines) == 6
-    assert lines[0] == "93"
-    assert lines[1] == "c6"
+    assert lines[0] == "ff"
+    assert lines[1] == "ff"
     assert lines[2] == ""
     assert lines[3] == "0,0"
     assert lines[4] == "1,1"
@@ -43,13 +43,13 @@ def test_maze_writer_encode_hex_formatting() -> None:
     Returns
     -------
     None
-        Asserts that bitmasks 9 and 3 are formatted as '93'.
+        Asserts that fully closed bitmask 15 formats as 'ff'.
     """
-    maze = DummyMaze(width=2, height=2, seed=42)
+    maze = Maze(width=2, height=2)
     encoded = MazeWriter.encode(maze, (0, 0), (1, 1), "E")
 
     first_line = encoded.splitlines()[0]
-    assert first_line == "93"
+    assert first_line == "ff"
 
 
 def test_maze_writer_write_file(
@@ -67,7 +67,7 @@ def test_maze_writer_write_file(
     None
         Asserts that the file is created and contains the encoded output.
     """
-    maze = DummyMaze(width=2, height=2, seed=42)
+    maze = Maze(width=2, height=2)
     entry = (0, 0)
     exit = (1, 1)
     path = "SE"

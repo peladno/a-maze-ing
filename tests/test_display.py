@@ -6,6 +6,7 @@ vertical wall formatting, cell marker placement, and standard output.
 
 from __future__ import annotations
 import pytest
+
 from typing import TYPE_CHECKING
 from maze.maze import Maze
 from display.colors import WALL_COLORS
