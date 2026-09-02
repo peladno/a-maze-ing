@@ -97,13 +97,15 @@ one of them is corrected.
    `IntFlag`, properties as read-only exits, and the traps hit while writing them.
 4. `pytest-basics.md` — **written**: discovery, `assert`, `pytest.raises`, and the ways a test can pass while
    proving nothing.
-5. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
+5. `python-generators.md` — **written**: `yield`, why a generator function does not run when called, and why
+   its result can be walked only once.
+6. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
    the `NESW` path in §IV.5.
-6. `union-find.md` — only if we use it to check connectivity; counting independent loops turned out to be a
+7. `union-find.md` — only if we use it to check connectivity; counting independent loops turned out to be a
    subtraction (`generation-algorithm.md` §4.2), not a search.
-7. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
+8. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
    a testability requirement rather than a feature.
-8. `python-packaging-wheel-vs-sdist.md` — `.whl` vs `.tar.gz` and what `pip install` does with each, needed for
+9. `python-packaging-wheel-vs-sdist.md` — `.whl` vs `.tar.gz` and what `pip install` does with each, needed for
    the `mazegen-*` deliverable (§VI).
 
 ---
@@ -202,11 +204,13 @@ one of them is corrected.
    `IntEnum` と `IntFlag`、読み取り専用の出口としての property、書きながら踏んだ罠。
 4. `pytest-basics.md` — **作成済み**:検出の仕組み、`assert`、`pytest.raises`、
    そして「通るのに何も証明していないテスト」の作られ方。
-5. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
+5. `python-generators.md` — **作成済み**:`yield`、ジェネレータ関数が呼んでも走らない理由、
+   そして結果が 1 回しか回せない理由。
+6. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
    §IV.5 の `NESW` 経路に必要。
-6. `union-find.md` — 連結性の確認に使う場合のみ。独立ループ数の計数は引き算で済むことが分かった
+7. `union-find.md` — 連結性の確認に使う場合のみ。独立ループ数の計数は引き算で済むことが分かった
    (`generation-algorithm.md` §4.2)。
-7. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
+8. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
    再現性が「機能」ではなく「テスト可能性の要件」である理由。
-8. `python-packaging-wheel-vs-sdist.md` — `.whl` と `.tar.gz`、`pip install` がそれぞれに何をするか。
+9. `python-packaging-wheel-vs-sdist.md` — `.whl` と `.tar.gz`、`pip install` がそれぞれに何をするか。
    `mazegen-*` 提出物(§VI)に直結する。
