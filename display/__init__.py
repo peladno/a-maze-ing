@@ -6,6 +6,7 @@ from .input_handler import (
     apply_action,
     display_menu,
     get_user_action,
+    run_interactive_session,
 )
 from .renderer import MazeLike, Renderer
 from .terminal_renderer import TerminalRenderer
@@ -18,5 +19,6 @@ __all__ = [
     "apply_action",
     "display_menu",
     "get_user_action",
+    "run_interactive_session",
     "WALL_COLORS",
 ]

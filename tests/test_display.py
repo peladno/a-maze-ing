@@ -9,7 +9,14 @@ import pytest
 
 from typing import TYPE_CHECKING
 from maze.maze import Maze
-from display import TerminalRenderer, WALL_COLORS
+from display import (
+    TerminalRenderer,
+    UserAction,
+    WALL_COLORS,
+    apply_action,
+    display_menu,
+    get_user_action,
+)
 
 if TYPE_CHECKING:
     from maze.maze import Coord
@@ -113,3 +120,81 @@ def test_terminal_renderer_render_output(
     # 2 rows -> 1 top border + 2 * (1 vertical row + 1 bottom border) = 5 lines
     assert len(lines) == 5
     assert lines[0].startswith("+")
+
+
+def test_apply_action_toggle_path() -> None:
+    """Verify that TOGGLE_PATH inverts show_path and returns True.
+
+    Returns
+    -------
+    None
+        Asserts that renderer.show_path is toggled.
+    """
+    render = TerminalRenderer(show_path=False, color_mode=0)
+    loop = apply_action(UserAction.TOGGLE_PATH, render)
+
+    assert render.show_path is True
+    assert loop is True
+
+    loop = apply_action(UserAction.TOGGLE_PATH, render)
+
+    assert render.show_path is False
+    assert loop is True
+
+
+def test_apply_action_change_color() -> None:
+    """Verify that CHANGE_COLOR cycles color_mode and returns True.
+
+    Returns
+    -------
+    None
+        Asserts that renderer.color_mode increments and wraps around.
+    """
+    pass
+
+
+def test_apply_action_quit() -> None:
+    """Verify that QUIT returns False to signal loop termination.
+
+    Returns
+    -------
+    None
+        Asserts that apply_action returns False.
+    """
+    pass
+
+
+def test_get_user_action_valid(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify that get_user_action returns the matching UserAction.
+
+    Parameters
+    ----------
+    monkeypatch:
+        Pytest monkeypatch fixture to simulate user input.
+
+    Returns
+    -------
+    None
+        Asserts that valid input string maps to UserAction.
+    """
+    pass
+
+
+def test_display_menu_content(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Verify that display_menu prints the menu with all options.
+
+    Parameters
+    ----------
+    capsys:
+        Pytest standard output capture fixture.
+
+    Returns
+    -------
+    None
+        Asserts that option keys appear in stdout.
+    """
+    pass

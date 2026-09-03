@@ -1,5 +1,8 @@
 from enum import Enum
 
+from display.colors import WALL_COLORS
+from display.renderer import MazeLike
+
 from .terminal_renderer import TerminalRenderer
 
 
@@ -40,10 +43,71 @@ def get_user_action() -> UserAction:
 
 
 def apply_action(action: UserAction, renderer: TerminalRenderer) -> bool:
-    raise NotImplementedError("Not implemented yet")
+    """Apply the chosen user action to the renderer or application state.
+
+    Parameters
+    ----------
+    action:
+        The action chosen by the user.
+    renderer:
+        The renderer whose options (show_path, color_mode) are updated.
+
+    Returns
+    -------
+    bool
+        True if the interactive loop should continue; False if quitting.
+    """
+    if action == UserAction.TOGGLE_PATH:
+        renderer.show_path = not renderer.show_path
+        return True
+
+    if action == UserAction.CHANGE_COLOR:
+        renderer.color_mode = (renderer.color_mode + 1) % len(WALL_COLORS)
+        return True
+
+    if action == UserAction.REGENERATE:
+        return True
+
+    if action == UserAction.QUIT:
+        print("Exiting application. Goodbye!")
+        return False
+
+    return True
 
 
-if __name__ == "__main__":
-    display_menu()
-    action = get_user_action()
-    print(f"¡You choose the correct action: {action.name}!")
+def run_interactive_session(
+    renderer: TerminalRenderer, maze: MazeLike
+) -> None:
+    """Run the interactive terminal session loop.
+
+    Parameters
+    ----------
+    renderer:
+        The terminal renderer used to draw the maze.
+    maze:
+        The maze object to display.
+
+    Returns
+    -------
+    None
+        The loop runs until the user chooses to quit.
+    """
+    running = True
+    while running:
+        renderer.render(maze)
+        display_menu()
+        action = get_user_action()
+        running = apply_action(action, renderer)
+
+
+# if __name__ == "__main__":
+#     from display.example_maze import DummyMaze
+
+#     test_maze = DummyMaze(width=5, height=4, seed=42)
+#     sample_path = (
+#         (0, 0), (1, 0), (1, 1), (2, 1), (3, 1), (4, 1), (4, 2), (4, 3)
+#     )
+#     setattr(test_maze, "shortest_path", sample_path)
+#     test_renderer = TerminalRenderer(show_path=False, color_mode=0)
+
+#     run_interactive_session(test_renderer, test_maze)
