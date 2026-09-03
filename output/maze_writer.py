@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from display.renderer import MazeLike
+from display import MazeLike
 
 if TYPE_CHECKING:
     from maze.maze import Coord

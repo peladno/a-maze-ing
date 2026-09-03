@@ -9,8 +9,7 @@ import pytest
 
 from typing import TYPE_CHECKING
 from maze.maze import Maze
-from display.colors import WALL_COLORS
-from display.terminal_renderer import TerminalRenderer
+from display import TerminalRenderer, WALL_COLORS
 
 if TYPE_CHECKING:
     from maze.maze import Coord
