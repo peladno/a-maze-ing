@@ -150,7 +150,16 @@ def test_apply_action_change_color() -> None:
     None
         Asserts that renderer.color_mode increments and wraps around.
     """
-    pass
+    render = TerminalRenderer(show_path=False, color_mode=0)
+    loop = apply_action(UserAction.CHANGE_COLOR, render)
+
+    assert loop is True
+    assert render.color_mode == 1
+
+    render.color_mode = len(WALL_COLORS) - 1
+    loop = apply_action(UserAction.CHANGE_COLOR, render)
+
+    assert render.color_mode == 0
 
 
 def test_apply_action_quit() -> None:
@@ -161,7 +170,10 @@ def test_apply_action_quit() -> None:
     None
         Asserts that apply_action returns False.
     """
-    pass
+    render = TerminalRenderer(show_path=False, color_mode=0)
+    loop = apply_action(UserAction.QUIT, render)
+
+    assert loop is False
 
 
 def test_get_user_action_valid(
@@ -179,7 +191,23 @@ def test_get_user_action_valid(
     None
         Asserts that valid input string maps to UserAction.
     """
-    pass
+    test_cases = [
+        ("t", UserAction.TOGGLE_PATH),
+        ("c", UserAction.CHANGE_COLOR),
+        ("r", UserAction.REGENERATE),
+        ("q", UserAction.QUIT),
+        (" T ", UserAction.TOGGLE_PATH),
+    ]
+
+    for user_input, expected_action in test_cases:
+        monkeypatch.setattr("builtins.input", lambda _: user_input)
+        assert get_user_action() == expected_action
+
+    answer = iter([" ", "a", "q"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answer))
+
+    action = get_user_action()
+    assert action == UserAction.QUIT
 
 
 def test_display_menu_content(
@@ -197,4 +225,14 @@ def test_display_menu_content(
     None
         Asserts that option keys appear in stdout.
     """
-    pass
+    display_menu()
+
+    captured = capsys.readouterr()
+    printed = captured.out
+
+    assert "MAZE INTERACTIVE MENU" in printed
+    assert "=" * 40 in printed
+    assert f"[{UserAction.TOGGLE_PATH.value}] Toggle Path" in printed
+    assert f"[{UserAction.CHANGE_COLOR.value}] Change Color" in printed
+    assert f"[{UserAction.REGENERATE.value}] Regenerate" in printed
+    assert f"[{UserAction.QUIT.value}] Quit" in printed

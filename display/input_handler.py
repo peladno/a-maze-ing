@@ -100,14 +100,14 @@ def run_interactive_session(
         running = apply_action(action, renderer)
 
 
-# if __name__ == "__main__":
-#     from display.example_maze import DummyMaze
+if __name__ == "__main__":
+    from display.example_maze import DummyMaze
 
-#     test_maze = DummyMaze(width=5, height=4, seed=42)
-#     sample_path = (
-#         (0, 0), (1, 0), (1, 1), (2, 1), (3, 1), (4, 1), (4, 2), (4, 3)
-#     )
-#     setattr(test_maze, "shortest_path", sample_path)
-#     test_renderer = TerminalRenderer(show_path=False, color_mode=0)
+    test_maze = DummyMaze(width=5, height=4, seed=42)
+    sample_path = (
+        (0, 0), (1, 0), (1, 1), (2, 1), (3, 1), (4, 1), (4, 2), (4, 3)
+    )
+    setattr(test_maze, "shortest_path", sample_path)
+    test_renderer = TerminalRenderer(show_path=False, color_mode=0)
 
-#     run_interactive_session(test_renderer, test_maze)
+    run_interactive_session(test_renderer, test_maze)
