@@ -120,6 +120,30 @@ one-sided implementation passed it.
 `updates_both_cells` の最初の版はこれで見つかった。片側しか検査しておらず、
 片側だけ更新する実装を通してしまった。
 
+### 4.5 Some contracts can only be checked by type / 型でしか確かめられない約束
+
+**EN** — A list and a tuple answer `len()`, indexing and comparison identically. The only checks that
+separate them are `isinstance(x, tuple)` and trying to write to them.
+**JA** — リストとタプルは `len()`・添字・比較のどれでも同じ答えを返す。
+見分けられるのは `isinstance(x, tuple)` と、**書き換えを試すこと**だけ。
+
+```text
+                        list    tuple
+len(x) == 3             True    True
+x[0] == 15              True    True
+list(x) == [15,15,15]   True    True
+isinstance(x, tuple)    False   True     <- the only difference a test can see
+
+x[0] = 999              works   TypeError
+```
+
+**EN** — `rows()` promises tuples so a caller cannot write back into the maze. Every other assertion
+would still pass if it started returning lists, so **the type check is the only thing guarding that
+promise.** Asserting the `TypeError` on assignment checks the same promise from the other side.
+**JA** — `rows()` がタプルを返すのは、呼ぶ側から迷路を書き換えられないようにするため。
+リストを返すようになっても他の検査はすべて通るので、**その約束を守っているのは型の検査だけ**。
+代入時の `TypeError` を検査すれば、同じ約束を逆側から確かめられる。
+
 ## 5. Figure, example, trace / 図・具体例・トレース
 
 **EN** — The same claim, checked two ways, against a function that is wrong on purpose
@@ -173,6 +197,8 @@ _grid[1][3]  -> 15                the right one
 | A passing test means the code is right. / 通れば正しい。 | It means **this** input behaved. A 3x3 grid passed an index-order bug for two rounds. / **その入力で**そう振る舞っただけ。3x3 は添字順のバグを 2 回通した。 |
 | Reaching into `_grid` from a test is fine. / テストから内部を触ってよい。 | It works, but the test then breaks whenever the internals change. Prefer the public accessor once one exists. / 動くが、内部を変えた瞬間にテストが壊れる。公開アクセサができたらそちらへ。 |
 | A test named after a property is testing that property. / 名前どおりのことを検査している。 | Not automatically. `updates_both_cells` asserted one cell for a while. Break the code and see the test fail before trusting it. / 自動ではそうならない。壊して落ちるのを見るまで信用しない。 |
+| A failing test means the test is wrong. / テストが落ちたらテストが間違っている。 | Sometimes it means the code has a property you did not know about. `DID NOT RAISE` on `neighbours` was correct: the bounds check sits in a generator and does not run until the generator is advanced. / **コードに知らなかった性質がある**場合もある。`neighbours` の `DID NOT RAISE` は正しく、ジェネレータの遅延を暴いていた。 |
+| `len` and indexing are enough to check a returned sequence. / 長さと添字で十分。 | They cannot tell a list from a tuple, so a contract that says "tuple" needs `isinstance`. / リストとタプルを見分けられない。「タプル」という契約には `isinstance` が要る。 |
 | A feature cannot be tested until everything it depends on exists. / 依存するものが揃うまでテストできない。 | Depends on the seams. `reserved` is a constructor parameter, so the "42" rule was testable long before the pattern generator existed. / 継ぎ目次第。`reserved` は引数なので、パターン生成の前から検査できた。 |
 
 ## 7. How we use it here / この課題での使い方
@@ -212,6 +238,8 @@ _grid[1][3]  -> 15                the right one
 - [ ] Q8. `Maze` does not compute the "42" cells, yet the rule about them is tested. What in the
   design makes that possible? / `Maze` は「42」を計算しないのに、その規則を検査できる。
   設計の何がそれを可能にしているか
+- [ ] Q9. `rows()` must return tuples. Which assertion would notice if it returned lists instead? / リストを返すようになったら、どの検査が気づくか
+- [ ] Q10. A test fails on a line you believe is correct. Name two possible causes. / 正しいと思う行でテストが落ちた。原因の候補を 2 つ挙げよ
 
 ## 9. Still unclear / まだ分かっていないこと
 

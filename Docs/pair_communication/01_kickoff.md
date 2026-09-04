@@ -455,13 +455,28 @@ the cost above actually matters — a raw grid handed across the boundary pays i
 
 > Decision: **A** — origin top-left, `x` = column, `y` = row, stored `grid[y][x]`. Agreed with javi after
 > reviewing the Consequences table: the output encoder (W13) and the renderer (W15) are both row-oriented, so
-> storing rows first keeps the cost off javi's side. The config's `(x, y)` order is converted **once**, at parse
-> time in W01 (so), and the core never sees the other order. `Maze` still keeps the grid private and exposes row
-> iteration, so no caller indexes the raw list either way.
+> storing rows first keeps the cost off javi's side. `Maze` keeps the grid private and exposes row iteration, so
+> no caller indexes the raw list either way.
 > / **A** — 原点は左上、`x` = 列、`y` = 行、`grid[y][x]` で格納。Consequences 表を見たうえで javi と合意。
 > 出力エンコーダ(W13)と描画(W15)がどちらも行単位なので、行を先にすればコストが javi 側に落ちない。
-> 設定の `(x, y)` は W01(so)のパース時に**一度だけ**変換し、コアはもう一方の順序を一切見ない。
-> なお `Maze` はどちらにせよグリッドを private に保ち行アクセサを公開するので、生のリストを添字で触る呼び出し元はない。
+> `Maze` はグリッドを private に保ち行アクセサを公開するので、生のリストを添字で触る呼び出し元はない。
+>
+> **Updated 2026-09-02 — where the order is swapped.** This decision originally said the config's `(x, y)` is
+> converted **once, at parse time in W01**. That was written before 3.1 settled on wrapping the grid in a `Maze`
+> class, and the implemented design is different — and better: **`Maze` speaks `(x, y)` as well.** `Coord` is
+> `(x, y)`, every public member takes and returns `(x, y)`, and the transposition to `_grid[y][x]` happens inside
+> `Maze`, invisible to every caller. **So there is exactly one order in the whole program, and no boundary
+> conversion anywhere** — the config parser (W01) produces `(x, y)` and hands it over unchanged. Recorded because
+> the original wording reads as an instruction to swap the order in the parser, and doing that would corrupt every
+> coordinate in a way that only shows up on non-square mazes. See `implementation_plans/config-parser.md` §9.1.
+> / **2026-09-02 更新 — 順序を入れ替える場所について。** この決定は当初「設定の `(x, y)` は W01 のパース時に
+> **一度だけ**変換する」と書いていた。これは 3.1 で `Maze` クラスに包むと決まる前の文で、実装された設計は違う。
+> そしてそちらの方が良い。**`Maze` も `(x, y)` で話す。** `Coord` は `(x, y)`、公開メンバーはすべて `(x, y)` を
+> 受け取り返し、`_grid[y][x]` への転置は `Maze` の内側で起きて呼ぶ側からは見えない。
+> **したがってプログラム全体で順序は 1 つだけで、境界での変換はどこにも存在しない。**
+> パーサ(W01)は `(x, y)` を作ってそのまま渡す。
+> 記録しておく理由は、元の文が「パーサで順序を入れ替えろ」と読め、実際にそうすると**全座標が壊れ、
+> しかも正方形でない迷路でしか症状が出ない**ため。`implementation_plans/config-parser.md` §9.1 を参照。
 
 ### 3.3 🔴 Wall encoding and its invariant / ウォール符号化と不変条件
 
@@ -1467,7 +1482,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 3.5 | Randomized Kruskal / ランダム化 Kruskal | On a grid, adjacency follows from the coordinates, so an edge list plus union-find is more machinery for the same result. Its dead-end ratio is no better than Prim's. Rejected as a generator only — union-find is still a candidate tool for validation (W10). / 格子では隣接関係が座標から決まるため、エッジ一覧と union-find は同じ結果に対して機構が多い。行き止まりの割合も Prim と同程度。却下したのは生成器としてのみで、union-find は W10 の道具として候補に残る。 |
 | 3.5 | Randomized Prim / ランダム化 Prim | Roughly three times as many dead ends to start from, which is exactly the work braiding has to undo for the default `PERFECT=False` mode. Everything else between the two was a draw. / 開始時の行き止まりがおよそ 3 倍で、それは既定の `PERFECT=False` で braiding が取り消さねばならない作業そのもの。それ以外の観点は引き分けだった。 |
 | 2.1 | `venv` + `pip` (option A, the original decision) | No lock file, so the two machines and the evaluator's are only aligned by agreement; runtime and dev dependencies end up mixed in one `requirements.txt`; and §VI's package build would need separate tooling configured by hand. / lock がないため、二人と評価者の環境は口約束でしか揃わない。runtime と dev の依存が `requirements.txt` に混ざる。§VI のパッケージビルドに別途ツール設定が必要になる。 |
-| 3.2 | `grid[x][y]` (option B) | Output encoding and rendering are both row-oriented, so storing columns first would make javi's side read transposed on every loop. The config's `(x, y)` is converted once at parse time instead. / 出力と描画がどちらも行単位なので、列を先に格納すると javi 側が毎回転置して読むことになる。設定の `(x, y)` はパース時に一度だけ変換する。 |
+| 3.2 | `grid[x][y]` (option B) | Output encoding and rendering are both row-oriented, so storing columns first would make javi's side read transposed on every loop. The swap to `[y][x]` is instead hidden inside `Maze`, so `(x, y)` is the only order anyone outside it ever writes. / 出力と描画がどちらも行単位なので、列を先に格納すると javi 側が毎回転置して読むことになる。`[y][x]` への入れ替えは `Maze` の内側に隠してあり、外側が書く順序は `(x, y)` ひとつだけ。 |
 
 ---
 

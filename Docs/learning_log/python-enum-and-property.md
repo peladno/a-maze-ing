@@ -152,6 +152,8 @@ scope, but it **cannot** read a name defined in a class body the same way — se
 | `[[0] * w] * h` makes `h` independent rows. / 独立した行が `h` 個できる。 | It repeats **one** row `h` times. Writing one cell changes every row. Build rows in a comprehension. / 同じ行を `h` 回並べるだけ。1 セル書くと全行が変わる。内包表記で行ごとに作る。 |
 | A default argument is re-created on every call. / デフォルト引数は呼ぶたびに作られる。 | It is evaluated **once**, at definition. A mutable default keeps the previous call's changes — which is why `reserved` defaults to `frozenset()`. / 定義時に **1 度だけ**評価される。可変なものだと前回の結果が残る。だから `frozenset()`。 |
 | `tuple[-1, 0]` is a tuple. / これはタプル。 | It is a **type**: `types.GenericAlias`. It does not fail at runtime, so the wrong value travels. A tuple value uses `( )`. / これは**型**。実行時に落ちないので、間違った値が流れていく。値は `( )` で書く。 |
+| `m.rows` gives the rows. / これで行が取れる。 | Without `()` it is the **method object**: `<bound method Maze.rows ...>`. Functions are values in Python, so naming one does not call it. Only `@property` methods are read without parentheses. / 括弧が無ければ**メソッドオブジェクト**。Python では関数も値なので、名前を書いただけでは呼ばれない。括弧なしで読めるのは `@property` だけ。 |
+| `(x,)` and `(x)` are the same. / 同じ。 | **The comma makes the tuple, not the parentheses.** `((1,2))` is a 2-tuple; `((1,2),)` is a 1-tuple holding a pair. Needed whenever a sequence has exactly one element. / **タプルを作るのはカンマで、括弧ではない。**要素が 1 つのときだけカンマが必須になる。 |
 | `is` compares values. / `is` は値を比べる。 | `is` compares **identity**. `15 is 15` is True only because small ints are cached. Use `==` for numbers, `is` for `None` and enum members. / `is` は**同一性**。整数には `==`、`None` と enum メンバーには `is`。 |
 
 ## 7. How we use it here / この課題での使い方
@@ -183,6 +185,8 @@ scope, but it **cannot** read a name defined in a class body the same way — se
 - [ ] Q6. `[[0] * 3] * 3` then `grid[0][0] = 9`. What does the grid look like, and why? /
   グリッドはどうなり、それはなぜか
 - [ ] Q7. Why does `reserved` default to `frozenset()` rather than `set()`? / なぜ `set()` ではないのか
+- [ ] Q8. `m.width` needs no parentheses but `m.rows()` does. What makes the difference? / 何がその違いを作っているのか
+- [ ] Q9. How do you write a tuple holding exactly one coordinate? / 座標を 1 つだけ持つタプルはどう書くか
 
 ## 9. Still unclear / まだ分かっていないこと
 
