@@ -9,8 +9,14 @@ import pytest
 
 from typing import TYPE_CHECKING
 from maze.maze import Maze
-from display.colors import WALL_COLORS
-from display.terminal_renderer import TerminalRenderer
+from display import (
+    TerminalRenderer,
+    UserAction,
+    WALL_COLORS,
+    apply_action,
+    display_menu,
+    get_user_action,
+)
 
 if TYPE_CHECKING:
     from maze.maze import Coord
@@ -114,3 +120,119 @@ def test_terminal_renderer_render_output(
     # 2 rows -> 1 top border + 2 * (1 vertical row + 1 bottom border) = 5 lines
     assert len(lines) == 5
     assert lines[0].startswith("+")
+
+
+def test_apply_action_toggle_path() -> None:
+    """Verify that TOGGLE_PATH inverts show_path and returns True.
+
+    Returns
+    -------
+    None
+        Asserts that renderer.show_path is toggled.
+    """
+    render = TerminalRenderer(show_path=False, color_mode=0)
+    loop = apply_action(UserAction.TOGGLE_PATH, render)
+
+    assert render.show_path is True
+    assert loop is True
+
+    loop = apply_action(UserAction.TOGGLE_PATH, render)
+
+    assert render.show_path is False
+    assert loop is True
+
+
+def test_apply_action_change_color() -> None:
+    """Verify that CHANGE_COLOR cycles color_mode and returns True.
+
+    Returns
+    -------
+    None
+        Asserts that renderer.color_mode increments and wraps around.
+    """
+    render = TerminalRenderer(show_path=False, color_mode=0)
+    loop = apply_action(UserAction.CHANGE_COLOR, render)
+
+    assert loop is True
+    assert render.color_mode == 1
+
+    render.color_mode = len(WALL_COLORS) - 1
+    loop = apply_action(UserAction.CHANGE_COLOR, render)
+
+    assert render.color_mode == 0
+
+
+def test_apply_action_quit() -> None:
+    """Verify that QUIT returns False to signal loop termination.
+
+    Returns
+    -------
+    None
+        Asserts that apply_action returns False.
+    """
+    render = TerminalRenderer(show_path=False, color_mode=0)
+    loop = apply_action(UserAction.QUIT, render)
+
+    assert loop is False
+
+
+def test_get_user_action_valid(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Verify that get_user_action returns the matching UserAction.
+
+    Parameters
+    ----------
+    monkeypatch:
+        Pytest monkeypatch fixture to simulate user input.
+
+    Returns
+    -------
+    None
+        Asserts that valid input string maps to UserAction.
+    """
+    test_cases = [
+        ("t", UserAction.TOGGLE_PATH),
+        ("c", UserAction.CHANGE_COLOR),
+        ("r", UserAction.REGENERATE),
+        ("q", UserAction.QUIT),
+        (" T ", UserAction.TOGGLE_PATH),
+    ]
+
+    for user_input, expected_action in test_cases:
+        monkeypatch.setattr("builtins.input", lambda _: user_input)
+        assert get_user_action() == expected_action
+
+    answer = iter([" ", "a", "q"])
+    monkeypatch.setattr("builtins.input", lambda _: next(answer))
+
+    action = get_user_action()
+    assert action == UserAction.QUIT
+
+
+def test_display_menu_content(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Verify that display_menu prints the menu with all options.
+
+    Parameters
+    ----------
+    capsys:
+        Pytest standard output capture fixture.
+
+    Returns
+    -------
+    None
+        Asserts that option keys appear in stdout.
+    """
+    display_menu()
+
+    captured = capsys.readouterr()
+    printed = captured.out
+
+    assert "MAZE INTERACTIVE MENU" in printed
+    assert "=" * 40 in printed
+    assert f"[{UserAction.TOGGLE_PATH.value}] Toggle Path" in printed
+    assert f"[{UserAction.CHANGE_COLOR.value}] Change Color" in printed
+    assert f"[{UserAction.REGENERATE.value}] Regenerate" in printed
+    assert f"[{UserAction.QUIT.value}] Quit" in printed
