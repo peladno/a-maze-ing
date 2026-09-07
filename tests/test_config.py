@@ -200,7 +200,7 @@ def test_as_coord_rejects_negative() -> None:
     for value in ["-1,0", "0,-1"]:
         with pytest.raises(ConfigValueError) as excinfo:
             _as_coord(value, where)
-    assert where in str(excinfo.value)
+        assert where in str(excinfo.value)
 
 
 def test_as_coord_allows_spaces_around_numbers() -> None:

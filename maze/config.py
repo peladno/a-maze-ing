@@ -310,5 +310,38 @@ def _as_coord(value: str, where: str) -> Coord:
     return (x_int, y_int)
 
 
+_REQUIRED = ("WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT")
+
+
 def parse_config(text: str, source: str = "<config>") -> Config:
-    raise NotImplementedError
+    pairs = _read_pairs(text, source)
+    lacks = []
+    for key in _REQUIRED:
+        if key not in pairs:
+            lacks.append(key)
+    if lacks:
+        message = f"reqired key is missing: {lacks}"
+        raise ConfigMissingKeyError(message)
+    value, lineno = pairs["WIDTH"]
+    where = _where(source, "WIDTH", lineno)
+    width = _as_int(value, where, 1)
+    value, lineno = pairs["HEIGHT"]
+    where = _where(source, "HEIGHT", lineno)
+    height = _as_int(value, where, 1)
+    value, lineno = pairs["ENTRY"]
+    where = _where(source, "ENTRY", lineno)
+    entry = _as_coord(value, where)
+    value, lineno = pairs["EXIT"]
+    where = _where(source, "EXIT", lineno)
+    exit = _as_coord(value, where)
+    value, lineno = pairs["OUTPUT_FILE"]
+    where = _where(source, "OUTPUT_FILE", lineno)
+    output_file = _as_filename(value, where)
+    value, lineno = pairs["PERFECT"]
+    where = _where(source, "PERFECT", lineno)
+    perfect = _as_bool(value, where)
+    if not pairs["SEED"]:
+        seed = None
+    else:
+        value, lineno = pairs["SEED"]
+        where = _where(source, "SEED", lineno)
