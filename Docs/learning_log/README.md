@@ -99,13 +99,19 @@ one of them is corrected.
    proving nothing.
 5. `python-generators.md` — **written**: `yield`, why a generator function does not run when called, and why
    its result can be walked only once.
-6. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
+6. `python-exceptions.md` — **written**: `raise`, `try`/`except`, `from err`, our `ConfigError` family, and why
+   `int()` can report a bad input while `ft_atoi` cannot. Feeds §IV.2 and decision 3.9.
+7. `python-truthiness-and-none.md` — **written**: the falsy values, and why `if x` cannot tell "absent" from
+   "zero" — the trap behind `SEED=0`, `minimum=0` and `bool("False")`.
+8. `python-type-syntax-vs-values.md` — **written**: `[]`, `{}` and `|` mean different things in a type and in an
+   expression. Three of the four bugs it caused raised nothing at all.
+9. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
    the `NESW` path in §IV.5.
-7. `union-find.md` — only if we use it to check connectivity; counting independent loops turned out to be a
+10. `union-find.md` — only if we use it to check connectivity; counting independent loops turned out to be a
    subtraction (`generation-algorithm.md` §4.2), not a search.
-8. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
+11. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
    a testability requirement rather than a feature.
-9. `python-packaging-wheel-vs-sdist.md` — `.whl` vs `.tar.gz` and what `pip install` does with each, needed for
+12. `python-packaging-wheel-vs-sdist.md` — `.whl` vs `.tar.gz` and what `pip install` does with each, needed for
    the `mazegen-*` deliverable (§VI).
 
 ---
@@ -206,11 +212,17 @@ one of them is corrected.
    そして「通るのに何も証明していないテスト」の作られ方。
 5. `python-generators.md` — **作成済み**:`yield`、ジェネレータ関数が呼んでも走らない理由、
    そして結果が 1 回しか回せない理由。
-6. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
+6. `python-exceptions.md` — **作成済み**:`raise`、`try`/`except`、`from err`、`ConfigError` の階層、
+   そして `int()` に不正入力を報告できて `ft_atoi` にできない理由。§IV.2 と決定 3.9 の材料。
+7. `python-truthiness-and-none.md` — **作成済み**:偽になる値の一覧と、`if x` が「未指定」と「0」を
+   区別できない理由。`SEED=0`・`minimum=0`・`bool("False")` の背後にある罠。
+8. `python-type-syntax-vs-values.md` — **作成済み**:`[]`・`{}`・`|` が型と式で意味を変えること、
+   そしてそこから生まれた 4 つのバグ(うち 3 つは**何も起こさなかった**)。
+9. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
    §IV.5 の `NESW` 経路に必要。
-7. `union-find.md` — 連結性の確認に使う場合のみ。独立ループ数の計数は引き算で済むことが分かった
+10. `union-find.md` — 連結性の確認に使う場合のみ。独立ループ数の計数は引き算で済むことが分かった
    (`generation-algorithm.md` §4.2)。
-8. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
+11. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
    再現性が「機能」ではなく「テスト可能性の要件」である理由。
-9. `python-packaging-wheel-vs-sdist.md` — `.whl` と `.tar.gz`、`pip install` がそれぞれに何をするか。
+12. `python-packaging-wheel-vs-sdist.md` — `.whl` と `.tar.gz`、`pip install` がそれぞれに何をするか。
    `mazegen-*` 提出物(§VI)に直結する。
