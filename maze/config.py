@@ -136,6 +136,7 @@ def _where(source: str, key: str, lineno: int) -> str:
     Returns
     -------
     str
+
         ``source:line: KEY``, so that whatever follows reads as a
         sentence about that key. Holding the format in one place is what
         keeps the call sites from drifting apart.
@@ -313,35 +314,223 @@ def _as_coord(value: str, where: str) -> Coord:
 _REQUIRED = ("WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT")
 
 
+def _take(
+    pairs: dict[str, tuple[str, int]],
+    key: str,
+    source: str
+) -> tuple[str, str]:
+    """Return one key's value together with the prefix for its messages.
+
+    Parameters
+    ----------
+    pairs:
+        The result of ``_read_pairs``. The key must be present; callers
+        check that first, either against the required list or with
+        ``in``.
+    key:
+        The key to read.
+    source:
+        The name of the configuration, for the prefix.
+
+    Returns
+    -------
+    tuple[str, str]
+        ``(value, where)`` in that order. Both are strings, so nothing
+        would complain if they were swapped -- unpack them under these
+        two names.
+
+    Notes
+    -----
+    It exists so the key is named **once** per setting. Reading the
+    value and building the prefix both need it, and writing it twice is
+    how a message ends up naming the key next to the one it read.
+    """
+    value, lineno = pairs[key]
+    where = _where(source, key, lineno)
+    return (value, where)
+
+
+def _require_inside(coord: Coord, where: str, width: int, height: int) -> None:
+    """Raise unless the coordinate falls inside a width by height grid.
+
+    Parameters
+    ----------
+    coord:
+        The position to check, as ``(x, y)``.
+    where:
+        Prefix from ``_where``. The failing part is named after it, so a
+        message can say which of x and y is out.
+    width, height:
+        The grid the configuration asked for.
+
+    Raises
+    ------
+    ConfigValueError
+        If x is not below width, or y is not below height.
+
+    Notes
+    -----
+    Only the upper bound is tested here: ``_as_coord`` already refused a
+    negative part. And only this much is testable at all before a maze
+    exists -- whether the cell is on the outer wall, and whether it is
+    reachable, are questions for the code that validates the maze.
+
+    The bound is ``width``, not ``width - 1``: with WIDTH=20 the columns
+    are 0 to 19, which is the off-by-one the subject's own example is
+    written to show.
+    """
+    x, y = coord
+    if x >= width:
+        where_x = f"{where} x"
+        message = f"{where_x} must be less than {width}, got {x}"
+        raise ConfigValueError(message)
+    if y >= height:
+        where_y = f"{where} y"
+        message = f"{where_y} must be less than {height}, got {y}"
+        raise ConfigValueError(message)
+
+
 def parse_config(text: str, source: str = "<config>") -> Config:
+    """Turn the text of a configuration file into a validated Config.
+
+    The three stages run in order and the order matters: the pairs are
+    read, the required keys are confirmed, and only then is any value
+    interpreted. Confirming the keys first is what makes the lookups
+    below safe -- past that point a key is known to be there.
+
+    Parameters
+    ----------
+    text:
+        The whole configuration file.
+    source:
+        The name to show in error messages, normally the file the text
+        came from. ``load_config`` passes the path; a test passing a
+        string of its own can leave the default.
+
+    Returns
+    -------
+    Config
+        Frozen, with every value converted and in range. Nothing
+        downstream needs to check any of it again.
+
+    Raises
+    ------
+    ConfigSyntaxError
+        From ``_read_pairs``, if a line is not a ``KEY=VALUE`` pair.
+    ConfigMissingKeyError
+        If any of the six keys §IV.3 requires never appeared. All the
+        missing ones are named at once: they are equally wrong, and
+        reporting the first alone would send the user round again.
+    ConfigValueError
+        If a value cannot be used, or if entry or exit falls outside the
+        grid, or if they are the same cell (§IV.4).
+
+    Notes
+    -----
+    The checks at the end are the ones that need more than one key, so
+    they cannot be made while the keys are being read. What they do
+    *not* include is anything needing the maze itself: that a cell sits
+    on the outer wall, or can be reached, is checked once a maze exists.
+    The line between the two is simply whether the question can be
+    answered from the file alone.
+
+    A missing key carries no line number, unlike every other message
+    here. There is no line to point at -- the failure is that nothing
+    was written.
+    """
     pairs = _read_pairs(text, source)
-    lacks = []
+    missing = []
     for key in _REQUIRED:
         if key not in pairs:
-            lacks.append(key)
-    if lacks:
-        message = f"reqired key is missing: {lacks}"
+            missing.append(key)
+    if missing:
+        mkeys = ", ".join(missing)
+        message = f"{source}: missing required keys: {mkeys}"
         raise ConfigMissingKeyError(message)
-    value, lineno = pairs["WIDTH"]
-    where = _where(source, "WIDTH", lineno)
+    value, where = _take(pairs, "WIDTH", source)
     width = _as_int(value, where, 1)
-    value, lineno = pairs["HEIGHT"]
-    where = _where(source, "HEIGHT", lineno)
+    value, where = _take(pairs, "HEIGHT", source)
     height = _as_int(value, where, 1)
-    value, lineno = pairs["ENTRY"]
-    where = _where(source, "ENTRY", lineno)
-    entry = _as_coord(value, where)
-    value, lineno = pairs["EXIT"]
-    where = _where(source, "EXIT", lineno)
-    exit = _as_coord(value, where)
-    value, lineno = pairs["OUTPUT_FILE"]
-    where = _where(source, "OUTPUT_FILE", lineno)
+    value, where_entry = _take(pairs, "ENTRY", source)
+    entry = _as_coord(value, where_entry)
+    value, where_exit = _take(pairs, "EXIT", source)
+    exit = _as_coord(value, where_exit)
+    value, where = _take(pairs, "OUTPUT_FILE", source)
     output_file = _as_filename(value, where)
-    value, lineno = pairs["PERFECT"]
-    where = _where(source, "PERFECT", lineno)
+    value, where = _take(pairs, "PERFECT", source)
     perfect = _as_bool(value, where)
-    if not pairs["SEED"]:
-        seed = None
+    if "SEED" in pairs:
+        value, where = _take(pairs, "SEED", source)
+        seed = _as_int(value, where, minimum=None)
     else:
-        value, lineno = pairs["SEED"]
-        where = _where(source, "SEED", lineno)
+        seed = None
+    _require_inside(entry, where_entry, width, height)
+    _require_inside(exit, where_exit, width, height)
+    if entry == exit:
+        message = (
+            f"{where_exit} must not be the same value of entry {entry}"
+        )
+        raise ConfigValueError(message)
+    return Config(
+        width=width,
+        height=height,
+        entry=entry,
+        exit=exit,
+        output_file=output_file,
+        perfect=perfect,
+        seed=seed
+    )
+
+
+def load_config(path: str | Path) -> Config:
+    """Read a configuration file and return it as a validated Config.
+
+    This is the only function here that touches the filesystem, which is
+    why it is so thin: everything else takes text, and so every test of
+    the parsing needs nothing but a string literal.
+
+    Parameters
+    ----------
+    path:
+        The file to read. ``str`` or ``Path`` -- ``Path()`` accepts
+        either, so nothing branches on which one arrived.
+
+    Returns
+    -------
+    Config
+        The parsed configuration. See ``parse_config``.
+
+    Raises
+    ------
+    ConfigFileError
+        If the file cannot be read at all: missing, a directory, no
+        permission, or not valid UTF-8.
+    ConfigError
+        Any of the parsing errors, unchanged, from ``parse_config``.
+
+    Notes
+    -----
+    Nothing is checked before reading. Asking ``exists()`` first would
+    cover one of the four failures and leave the other three to the read
+    anyway, so the check would not remove the ``try`` -- and between the
+    question and the answer the file can still go away.
+
+    ``OSError`` is caught as a whole rather than by subclass, because
+    every one of them means the same thing to us and the subclasses are
+    not the same everywhere: opening a directory raises
+    ``IsADirectoryError`` on Linux and ``PermissionError`` on Windows.
+    ``UnicodeDecodeError`` is named separately since it is not an
+    ``OSError``.
+
+    The message keeps what the system said. A failure we never thought
+    of still arrives described correctly, rather than being labelled
+    with the nearest guess we had prepared.
+
+    ``encoding`` is stated rather than left to the platform default: the
+    two of us read the same file on different machines.
+    """
+    try:
+        text = Path(path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as err:
+        raise ConfigFileError(f"{path}: {err}") from err
+    return parse_config(text, str(path))

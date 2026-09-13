@@ -3,7 +3,7 @@
 |                          |                                                                                                  |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
 | **Owner / 担当**   | so (W01, W02)                                                                                    |
-| **Status / 状態**  | draft — awaiting javi's review / javi のレビュー待ち                                            |
+| **Status / 状態**  | implemented 2026-09-13 — javi's review of §2 still pending / 実装済み。§2 の javi レビューは未了                                            |
 | **Date / 日付**    | 2026-09-02                                                                                       |
 | **Subject ref**    | §IV.2, §IV.3, §IV.4                                                                           |
 | **Related / 関連** | `Docs/pair_communication/01_kickoff.md` § 3.2, 3.9, 3.10; `architecture-overview.md` step 1 |
@@ -296,12 +296,15 @@ W05 がシード未指定時にシードを欲しければ、生成して表示�
 
 1. **The exception hierarchy and `Config`.** No logic yet — just the vocabulary both this module and W17 will use.
    Agreeing the type names before the code exists is the point of decision 3.9 = A.
-2. **`parse_config` — the line loop.** Strip, skip blanks and comments, split on the first `=`, collect into a
-   `dict[str, str]` keyed by line number. Syntax errors only; no value has a meaning yet.
-3. **Value conversion.** Each key gets its converter: positive `int`, `Coord`, `bool`, non-empty `str`. This is
-   where E7–E14 are handled.
-4. **Mandatory keys and cross-field checks.** All six present; `entry` and `exit` inside the grid and different
-   (see D2).
+2. **The line loop — `_read_pairs`.** Strip, skip blanks and comments, split on the first `=`, collect into a
+   `dict[str, tuple[str, int]]`: each value keyed by its name and carrying its line number. Syntax errors only; no
+   value has a meaning yet. Covers E6–E15.
+3. **Value conversion.** One converter per type — `_as_int` (with a `minimum` every caller must state), `_as_coord`,
+   `_as_bool`, `_as_filename` — each taking the value and a message prefix built by `_where`. Covers E16–E24 and
+   E28–E31.
+4. **Mandatory keys and cross-field checks — `parse_config`.** All six present, and all missing ones reported
+   together; each value read through `_take`, so its key is named once; `entry` and `exit` inside the grid
+   (`_require_inside`) and different. Covers E5 and E25–E27 (see D2).
 5. **`load_config`.** Read the file, translate every OS-level failure into `ConfigFileError`, delegate to
    `parse_config`.
 6. **The default `config.txt`.** §IV.3 requires one in the repository; the file currently at the repo root is
@@ -399,7 +402,7 @@ error messages instead of fast.
 | `test_unknown_key_ignored`                         | unit        | E13                                                     |
 | `test_error_message_carries_the_line_number`       | property    | every raised message contains`source:line`            |
 | `test_load_config_missing_file`                    | edge        | E1 — the only test that touches the filesystem         |
-| `test_committed_config_txt_loads`                  | integration | the repository's own default config parses (§IV.3)     |
+| `test_load_config_reads_the_committed_config`      | integration | the repository's own default config parses (§IV.3)     |
 
 **EN** — The last one is worth more than it looks: it is the only test that fails if we change a key name and
 forget the file the evaluator will actually run.
@@ -527,8 +530,16 @@ and "default" describes which mode the maze is graded as when the flag is off.
   the config, not from `Maze`.** Confirm, and this plan becomes the place that supplies all three. /
   javi の `MazeWriter.write` が既に `entry` / `exit` / `filepath` を引数で取っており、
   `maze-data-structure.md` の Q1 に答えている。**入口・出口は `Maze` ではなく設定から来る。** 確認したい。
-- [ ] **Q2 — for javi.** Does W17 want one `except ConfigError` or one per subtype? One is enough if the message is
-  already user-facing, which is what this plan assumes. / W17 は `except ConfigError` 1 つでよいか。
+- [x] **Q2 — answered by javi, 2026-09-12: one `except ConfigError`.** W17 catches the base class and prints the
+  message as it stands. That is what makes every message in this module user-facing by construction: there is no
+  layer left to reword it, so anything unclear here is unclear on the user's screen.
+  / **2026-09-12、javi の回答:`except ConfigError` 1 つ。** W17 は基底クラスを捕まえ、メッセージをそのまま表示する。
+  **このモジュールのメッセージは、書き換える層がもう存在しない。** ここで不明瞭なものは、画面でも不明瞭になる。
+- [ ] **Q2b — for javi.** `a_maze_ing.py` also checks for a missing file itself. `load_config` reports that case
+  and three more (a directory, an unreadable file, invalid UTF-8) as `ConfigFileError`, in the `source: problem`
+  format. Keeping both gives one failure two paths and two wordings. Asked on 2026-09-12, not yet answered.
+  / `a_maze_ing.py` 側にもファイル存在チェックがある。`load_config` は同じ場合と他 3 種を `ConfigFileError` で
+  報告する。両方残すと 1 つの失敗に 2 経路 2 書式。2026-09-12 に質問、未回答。
 - [ ] **Q3.** Decision 3.10 (seed) is still blank, and `SEED=` absent is its problem, not this module's. This plan
   only promises `seed: int | None`. / 決定 3.10 が空欄。`SEED` 未指定時の扱いは W05 の問題で、
   ここは `int | None` を渡すことしか約束しない。
@@ -558,15 +569,21 @@ would break every coordinate in the program in a way that only shows up on non-s
 **JA** — 明記しておく価値がある。あの一文は「順序を入れ替えろ」という指示に読め、
 実際に入れ替えると**プログラム中の全座標が壊れ、しかも正方形でない迷路でしか症状が出ない。**
 
-### 9.2 The repository's `config.txt` is empty / リポジトリの `config.txt` が空
+### 9.2 The repository's `config.txt` — resolved / リポジトリの `config.txt` — 解消済み
 
-**EN** — §IV.3 requires a default config file in the repository, and `make run` already points at `config.txt`.
-The file exists at the repo root but has no content, so `make run` cannot work even once the program does. Step 6
-fixes it, and `test_committed_config_txt_loads` keeps it fixed.
+**EN** — §IV.3 requires a default config file in the repository, and `make run` points at `config.txt`, which was
+empty until step 6. It now holds the subject's own example (20x15, `0,0` to `19,14`), so the evaluator sees numbers
+they already have and the "42" has room on the default run. Its comments explain the one thing users get wrong —
+the far corner is `19,14`, not `20,15` — and a commented-out `#SEED=42` documents the optional key while showing
+that comment lines are ignored. `test_load_config_reads_the_committed_config` keeps it loadable. It checks only
+that the file parses, so the demo values stay free to change.
 
-**JA** — §IV.3 はリポジトリに既定の設定ファイルを置くことを要求しており、`make run` は既に `config.txt` を指している。
-ファイルはリポジトリ直下に存在するが**中身が空**なので、プログラムが完成しても `make run` は動かない。
-ステップ 6 で埋め、`test_committed_config_txt_loads` がその状態を保つ。
+**JA** — §IV.3 は既定の設定ファイルを要求し、`make run` は `config.txt` を指している。ステップ 6 までは空だった。
+現在は subject 自身の例(20x15、`0,0` から `19,14`)を持つので、評価者の手元の数字と一致し、既定の実行でも「42」が
+収まる。コメントは利用者が間違える唯一の点(遠い角は `20,15` ではなく `19,14`)を説明し、コメントアウトした
+`#SEED=42` が任意キーを文書化しつつ、コメント行が無視されることを示す。
+`test_load_config_reads_the_committed_config` が読み込める状態を保つ。検査するのは「読めること」だけなので、
+デモ用の値は自由に変えられる。
 
 ## 10. Rejected alternatives / 却下した案
 
@@ -587,3 +604,7 @@ fixes it, and `test_committed_config_txt_loads` keeps it fixed.
 | 2026-09-03 | step 2 implemented as a private `_read_pairs` helper, with 14 tests | the syntax layer can be tested before the value and key layers exist / 値とキーの工程が無くても構文の工程だけをテストできる |
 | 2026-09-03 | D5 = A (`True` / `False` only) | one spelling in the subject, so a wider table would be generosity nobody asked for / subject の綴りは 1 つ。表を広げるのは誰も求めていない寛容さになる |
 | 2026-09-03 | step 3 shaped as one converter per **type**, not one branch per key | `WIDTH`/`HEIGHT` share a conversion and so do `ENTRY`/`EXIT`, so six keys need four functions and each rule is written once / `WIDTH`/`HEIGHT` と `ENTRY`/`EXIT` はそれぞれ同じ変換なので、6 キーが 4 関数に収まり、規則が 1 か所にだけ書かれる |
+| 2026-09-12 | Q2 answered by javi: one `except ConfigError` in `a_maze_ing.py` | the messages are already user-facing, so there is nothing for the handler to reword / メッセージは既に利用者向けなので、ハンドラが書き換えるものがない |
+| 2026-09-13 | step 4: `parse_config`, reading each value through `_take` and bounding coordinates with `_require_inside` | writing each key twice let a message name the key next to the one it read, and that passed lint, mypy and every test until the code was run / キーを 2 回書く形で、隣のキーを名乗るメッセージが lint・mypy・テストを通過し、実行するまで見つからなかった |
+| 2026-09-13 | step 5: `load_config` catches `OSError` as a whole rather than by subclass | opening a directory raises `IsADirectoryError` on Linux and `PermissionError` on Windows, and the pair works on both / ディレクトリを開くと Linux と Windows で違う例外になり、二人は両方の環境で作業している |
+| 2026-09-13 | step 6: `config.txt` filled with the §IV.3 example; status set to implemented | IV.3 requires a default config and `make run` already pointed at the empty file / §IV.3 が既定の設定を要求し、`make run` は空のファイルを指していた |

@@ -1,0 +1,19 @@
+# A-Maze-ing configuration. Used as: python3 a_maze_ing.py config.txt
+# One KEY=VALUE per line. A line starting with '#' is ignored.
+
+WIDTH=20
+HEIGHT=15
+
+# ENTRY and EXIT are x,y with the origin at the top-left corner,
+# so the far corner of a 20x15 maze is 19,14 -- not 20,15.
+ENTRY=0,0
+EXIT=19,14
+
+OUTPUT_FILE=maze.txt
+
+# True gives exactly one route between entry and exit.
+PERFECT=False
+
+# Optional. The same seed always builds the same maze; left out here so
+# that each run differs.
+#SEED=42
