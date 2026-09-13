@@ -125,7 +125,7 @@ type(scope): summary
 | `test` | テストの追加・変更のみ。 |
 | `refactor` | 振る舞いは変えず構造だけ変える。 |
 | `style` | 整形・flake8 対応・型ヒントのみの変更。振る舞いは変わらない。 |
-| `chore` | リポジトリの配管:`.gitignore`、`requirements.txt`、`Makefile`、パッケージ設定。 |
+| `chore` | リポジトリの配管: `.gitignore`、`requirements.txt`、`Makefile`、パッケージ設定。 |
 | `build` | `mazegen-*` パッケージ成果物の生成に関わるもの。 |
 
 ### この課題で使う scope
