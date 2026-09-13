@@ -540,13 +540,23 @@ and "default" describes which mode the maze is graded as when the flag is off.
   format. Keeping both gives one failure two paths and two wordings. Asked on 2026-09-12, not yet answered.
   / `a_maze_ing.py` 側にもファイル存在チェックがある。`load_config` は同じ場合と他 3 種を `ConfigFileError` で
   報告する。両方残すと 1 つの失敗に 2 経路 2 書式。2026-09-12 に質問、未回答。
-- [ ] **Q3.** Decision 3.10 (seed) is still blank, and `SEED=` absent is its problem, not this module's. This plan
-  only promises `seed: int | None`. / 決定 3.10 が空欄。`SEED` 未指定時の扱いは W05 の問題で、
-  ここは `int | None` を渡すことしか約束しない。
-- [ ] **Q4.** Is there a **minimum** size below which we refuse outright? §IV.4 says the "42" may be dropped on a
-  maze too small, with an error printed — so a small maze is legal and that check belongs to W09, not here. This
-  plan only enforces `>= 1`. / 「42」が入らない小さな迷路は許容され、コンソールにエラーを出す(§IV.4)。
-  つまり小さい迷路自体は合法で、その判定は W09。ここは `>= 1` しか見ない。
+- [x] **Q3 — decision 3.10 = A (2026-09-13).** When `SEED` is absent, the generator chooses a seed and exposes it,
+  and `a_maze_ing.py` prints it. Nothing changes in this module: it still only promises `seed: int | None`, and
+  `None` keeps meaning "the file did not say". See `generation-algorithm.md` Q2.
+  / **決定 3.10 = A(2026-09-13)。** `SEED` が無いときは、生成器がシードを選んで公開し、`a_maze_ing.py` が表示する。
+  このモジュールは何も変わらない。約束するのは引き続き `seed: int | None` だけで、`None` は「ファイルに書かれて
+  いなかった」を意味し続ける。`generation-algorithm.md` の Q2 を参照。
+- [x] **Q4 — answered 2026-09-13: this module still enforces only `>= 1`.** A small maze is legal, and §IV.4 lets
+  the "42" be dropped from one with an error printed. The one real minimum — a maze that is not perfect needs room
+  for two loops, so at least 3x2 or 2x3 — is checked by the generator alone, although it could be answered from the
+  file (see D2). The rule is about loops, which is the generator's knowledge, and stating it twice would let the
+  copies drift. The cost: `WIDTH=2`, `HEIGHT=2`, `PERFECT=False` passes here and is refused by the generator, with a
+  message that names the size but no line. See `generation-algorithm.md` Q6.
+  / **2026-09-13 回答:このモジュールが見るのは引き続き `>= 1` だけ。** 小さな迷路は合法で、§IV.4 はそういう迷路から
+  「42」を省き、エラーを表示することを認めている。本当の最小条件は 1 つだけで、完全迷路でない迷路にはループ 2 本分の
+  大きさ(3x2 か 2x3 以上)が要る。これはファイルだけで答えられる(D2 参照)が、生成器だけが確かめる。ループの規則は
+  生成器の知識であり、2 か所に書くと写しどうしが食い違いうるから。代償として、`WIDTH=2`・`HEIGHT=2`・`PERFECT=False` は
+  ここを通り、生成器が拒否する。メッセージは大きさを示すが、行番号は付かない。`generation-algorithm.md` の Q6 を参照。
 
 ## 9. Notes / 補足
 
@@ -608,3 +618,4 @@ that the file parses, so the demo values stay free to change.
 | 2026-09-13 | step 4: `parse_config`, reading each value through `_take` and bounding coordinates with `_require_inside` | writing each key twice let a message name the key next to the one it read, and that passed lint, mypy and every test until the code was run / キーを 2 回書く形で、隣のキーを名乗るメッセージが lint・mypy・テストを通過し、実行するまで見つからなかった |
 | 2026-09-13 | step 5: `load_config` catches `OSError` as a whole rather than by subclass | opening a directory raises `IsADirectoryError` on Linux and `PermissionError` on Windows, and the pair works on both / ディレクトリを開くと Linux と Windows で違う例外になり、二人は両方の環境で作業している |
 | 2026-09-13 | step 6: `config.txt` filled with the §IV.3 example; status set to implemented | IV.3 requires a default config and `make run` already pointed at the empty file / §IV.3 が既定の設定を要求し、`make run` は空のファイルを指していた |
+| 2026-09-13 | Q3 closed (3.10 = A) and Q4 answered: the two-loop minimum is left to the generator | the size rule is about loops; stating it here as well would give it two copies to keep in step / ループの規則であり、ここにも書くと 2 つの写しを揃え続けることになる |
