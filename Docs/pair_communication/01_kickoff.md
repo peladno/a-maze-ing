@@ -704,7 +704,15 @@ correct-by-construction は速く必ず終わるが、制約を生成ロジッ�
 | **B** | Generate and validate; retry up to N times, then fail with a clear message. | 生成して検証。N 回まで再試行し、超えたら明確なメッセージで失敗。 |
 | **C** | Post-process: detect wide areas and close a wall to break them.             | 後処理:広い領域を検出し、壁を 1 枚閉じて崩す。                   |
 
-> Decision:
+> Decision: **A** (2026-09-13) — check each wall before braiding removes it. Opening one wall can only complete a
+> 3x3 open area that contains both of its cells, so the check covers at most six 3x3 windows and costs the same on
+> any size of maze; the readability cost in the table above turned out not to apply. A 3x3 open area is defined as
+> nine cells whose twelve internal walls are all open. For the corners and the centre, see
+> `implementation_plans/generation-algorithm.md` Q4.
+> / **A**(2026-09-13)— braiding が壁を取り除く前に確かめる。壁 1 枚で完成しうる 3x3 はその両側のセルを含むものだけで、
+> 調べる枠は最大 6 つ。盤面の大きさに関係なく同じコストで、上の表にある「読みにくさ」は実際には生じなかった。
+> 3x3 の開放領域は「9 セルの内側の壁 12 枚がすべて開いている」と定義する。四隅と中央は
+> `implementation_plans/generation-algorithm.md` の Q4 を参照。
 
 ### 3.8 🟡 Shortest path / 最短経路
 
@@ -826,7 +834,13 @@ weird maze once" into a reproducible bug report — a habit that pays off during
 | **B** | Same instance, but absent seed means a fixed default so runs are always identical.           | 同じくインスタンス保持。未指定時は固定値にして常に同一の結果。       |
 | **C** | Global`random.seed()` for simplicity.                                                      | 簡潔さを取ってグローバルの`random.seed()`。                        |
 
-> Decision:
+> Decision: **A** (2026-09-13) — the generator owns one `random.Random(seed)` and generates a seed when the config
+> gives none. **Printing it is the entry point's job, not the generator's:** the generator exposes `seed` as a
+> property and `a_maze_ing.py` prints it, because the generator is the core of the reusable package (§VI) and must
+> not write to the console on its own.
+> / **A**(2026-09-13)— 生成器が `random.Random(seed)` を 1 つ持ち、設定にシードがなければ生成する。
+> **表示するのは生成器ではなくエントリポイント。** 生成器は `seed` を property として公開し、`a_maze_ing.py` が表示する。
+> 生成器は再利用パッケージ(§VI)の中核なので、勝手にコンソールへ書かない。
 
 ---
 
@@ -1457,10 +1471,10 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 3.4  | `PERFECT` modes / 2 つのモード             | 🔴 | A |               |       |
 | 3.5  | Generation algorithm / 生成アルゴリズム      | 🔴 | A — recursive backtracker, iterative / A — 再帰的バックトラッカー(反復版) | Default mode is `PERFECT=False`, so braiding must remove nearly every dead end; this algorithm starts with the fewest (~10% vs ~30%, to be measured per §5.4 of the reference). Recursion depth is removed by the iterative form. / 既定が `PERFECT=False` で braiding が行き止まりをほぼ全部潰す必要があり、開始時の行き止まりが最少。再帰の深さは反復版で消える。 | so |
 | 3.6  | "42" pattern / 「42」                        | 🔴 | A |               |       |
-| 3.7  | Corridor width / 通路幅                      | 🟡 |                 |               |       |
+| 3.7  | Corridor width / 通路幅                      | 🟡 | A — check before removing; 3x3 = all 12 internal walls open / A — 取り除く前に判定。3x3 = 内壁 12 枚がすべて開 |               | so |
 | 3.8  | Shortest path / 最短経路                     | 🟡 |                 |               |       |
 | 3.9  | Config keys & errors / 設定キーとエラー      | 🔴 | A |               |       |
-| 3.10 | Seed / シード                                | 🟡 |                 |               |       |
+| 3.10 | Seed / シード                                | 🟡 | A — own `Random`; `a_maze_ing.py` prints the seed / A — 自前の `Random`。表示は `a_maze_ing.py` |               | so / javi |
 | 4.1  | Terminal or MLX / 描画方式                   | 🔴 | A |               |       |
 | 4.2  | MLX per OS / OS ごとの MLX                   | 🟡 |                 |               |       |
 | 4.3  | Rendering and "42" / 描画と「42」            | 🟡 |                 |               |       |
