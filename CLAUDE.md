@@ -83,8 +83,10 @@ are bilingual in one file.
 Read the newest file in `Docs/work_log/` first — its §2 *Next* is the to-do list, and §5 is
 what the pair still owes each other.
 
-Two things outstanding across the whole repo:
+Outstanding across the whole repo:
 
-- **`a_maze_ing.py` does not exist**, though §IV.2 fixes that filename and `make run` calls it
-  (javi, W17).
-- **`config.txt` at the repo root is empty**, though §IV.3 requires a default config.
+- **`a_maze_ing.py` is only on javi's unmerged branch** `feature/a-maze-ing.py`, though §IV.2
+  fixes that filename and `make run` calls it (W17). It still needs the one `except ConfigError`
+  handler agreed in 3.9 = A.
+- **so's generator (W05–W09) has not been started.** The solver, the writer and the interactive
+  session all wait on it.
