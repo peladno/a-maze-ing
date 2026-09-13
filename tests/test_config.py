@@ -1,11 +1,17 @@
 import pytest
+from pathlib import Path
 from maze.config import _read_pairs
 from maze.config import _as_filename
 from maze.config import _as_bool
 from maze.config import _as_int
 from maze.config import _as_coord
+from maze.config import parse_config
+from maze.config import load_config
+from maze.config import Config
 from maze.config import ConfigSyntaxError
 from maze.config import ConfigValueError
+from maze.config import ConfigMissingKeyError
+from maze.config import ConfigFileError
 
 
 def test_line_without_equals_raises() -> None:
@@ -207,3 +213,117 @@ def test_as_coord_allows_spaces_around_numbers() -> None:
     where = "config.txt:3: ENTRY"
     result = _as_coord("5 , 3", where)
     assert result == (5, 3)
+
+
+def config_text(
+    width: str | None = "20",
+    height: str | None = "15",
+    entry: str | None = "0,0",
+    exit: str | None = "19,14",
+    output_file: str | None = "maze.txt",
+    perfect: str | None = "False",
+    seed: str | None = None
+) -> str:
+    config_list = [
+        ("WIDTH", width),
+        ("HEIGHT", height),
+        ("ENTRY", entry),
+        ("EXIT", exit),
+        ("OUTPUT_FILE", output_file),
+        ("PERFECT", perfect),
+        ("SEED", seed)
+    ]
+    line_list = []
+    for key, value in config_list:
+        if value is not None:
+            line_list.append(f"{key}={value}")
+    return "\n".join(line_list)
+
+
+def test_parse_config_reads_a_valid_config() -> None:
+    text = config_text()
+    config = Config(
+        width=20,
+        height=15,
+        entry=(0, 0),
+        exit=(19, 14),
+        output_file="maze.txt",
+        perfect=False,
+        seed=None
+    )
+    result = parse_config(text)
+    assert result == config
+
+
+def test_parse_config_missing_keys_names_all() -> None:
+    text = config_text(exit=None, perfect=None)
+    with pytest.raises(ConfigMissingKeyError) as excinfo:
+        parse_config(text)
+    assert "EXIT" in str(excinfo.value)
+    assert "PERFECT" in str(excinfo.value)
+
+
+def test_parse_config_seed_absent_is_none() -> None:
+    text = config_text()
+    result = parse_config(text)
+    assert result.seed is None
+
+
+def test_parse_config_seed_zero_is_kept() -> None:
+    text = config_text(seed="0")
+    result = parse_config(text)
+    assert result.seed == 0
+
+
+def test_parse_config_entry_outside_grid() -> None:
+    text = config_text(entry="99,0")
+    with pytest.raises(ConfigValueError) as excinfo:
+        parse_config(text)
+    assert "ENTRY" in str(excinfo.value)
+
+
+def test_parse_config_exit_outside_grid() -> None:
+    text = config_text(exit="99,0")
+    with pytest.raises(ConfigValueError) as excinfo:
+        parse_config(text)
+    assert "EXIT" in str(excinfo.value)
+
+
+def test_parse_config_entry_equals_exit() -> None:
+    text = config_text(exit="0,0")
+    with pytest.raises(ConfigValueError) as excinfo:
+        parse_config(text)
+    assert "EXIT" in str(excinfo.value)
+
+
+def test_load_config_reads_a_file(tmp_path: Path) -> None:
+    p = tmp_path / "config.txt"
+    p.write_text(config_text(), encoding="utf-8")
+    result = load_config(p)
+    config = Config(
+        width=20,
+        height=15,
+        entry=(0, 0),
+        exit=(19, 14),
+        output_file="maze.txt",
+        perfect=False,
+        seed=None
+    )
+    assert result == config
+
+
+def test_load_config_missing_file(tmp_path: Path) -> None:
+    p = tmp_path / "nope.txt"
+    with pytest.raises(ConfigFileError):
+        load_config(p)
+
+
+def test_load_config_directory(tmp_path: Path) -> None:
+    p = tmp_path
+    with pytest.raises(ConfigFileError):
+        load_config(p)
+
+
+def test_load_config_reads_the_committed_config() -> None:
+    p = Path(__file__).parent.parent / "config.txt"
+    load_config(p)
