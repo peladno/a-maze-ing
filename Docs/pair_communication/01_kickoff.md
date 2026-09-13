@@ -114,7 +114,7 @@ PR をなくすなら、別の仕組みで置き換える必要がある(7.3 参
 
 |             | EN                                                                                                             | JA                                                                             |
 | ----------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **A** | So's proposal as written: branch per person, direct merge to`main`, docs pushed straight to `main`.        | So の現案どおり:人ごとのブランチ、`main` へ直マージ、ドキュメントは直 push。 |
+| **A** | So's proposal as written: branch per person, direct merge to `main`, docs pushed straight to `main`.        | So の現案どおり:人ごとのブランチ、`main` へ直マージ、ドキュメントは直 push。 |
 | **B** | Same, but the merge is announced on Discord with a one-line summary so the other reads the diff.               | 同じだが、マージ時に Discord で 1 行要約を流し、相方が diff を読む。           |
 | **C** | PR required only for the shared contract areas (data structure, encoding, public API); direct merge elsewhere. | 共有契約の領域(データ構造・符号化・公開 API)だけ PR 必須。それ以外は直マージ。 |
 
@@ -206,8 +206,8 @@ Whoever owns it needs the AI-usage log to exist from day one, so agree now where
 
 |             | EN                                                                | JA                                                           |
 | ----------- | ----------------------------------------------------------------- | ------------------------------------------------------------ |
-| **A** | A line in`Docs/work_log/` each time AI is used, tagged `AI:`. | AI を使うたび`Docs/work_log/` に `AI:` タグ付きで 1 行。 |
-| **B** | A dedicated running file, e.g.`Docs/ai_usage.md`.               | 専用の通しファイル(例:`Docs/ai_usage.md`)。                |
+| **A** | A line in `Docs/work_log/` each time AI is used, tagged `AI:`. | AI を使うたび `Docs/work_log/` に `AI:` タグ付きで 1 行。 |
+| **B** | A dedicated running file, e.g. `Docs/ai_usage.md`.               | 専用の通しファイル(例: `Docs/ai_usage.md`)。                |
 
 > Decision:
 
@@ -248,8 +248,8 @@ OS の答えは、使える MLX wheel も決める(4.2 参照)。
 |             | EN                                                                   | JA                                                          |
 | ----------- | -------------------------------------------------------------------- | ----------------------------------------------------------- |
 | **A** | `python3 -m venv` + `pip install -r requirements.txt`.           | `python3 -m venv` + `pip install -r requirements.txt`。 |
-| **B** | `uv` for speed, with a `venv` fallback documented in the README. | 速度重視で`uv`。README に `venv` の代替手順を明記。     |
-| **C** | `pipx` for tools, `venv` for the project.                        | ツールは`pipx`、プロジェクトは `venv`。                 |
+| **B** | `uv` for speed, with a `venv` fallback documented in the README. | 速度重視で `uv`。README に `venv` の代替手順を明記。     |
+| **C** | `pipx` for tools, `venv` for the project.                        | ツールは `pipx`、プロジェクトは `venv`。                 |
 | **D** | Poetry — dependency management, virtualenv and build backend in one tool. | Poetry — 依存管理・仮想環境・ビルドバックエンドを 1 つのツールで。 |
 
 > Decision: ~~A~~ → **superseded by D (Poetry)** on 2026-08-20.
@@ -289,9 +289,9 @@ which is the part the evaluator asks about.
 
 |             | EN                                                                                        | JA                                                                               |
 | ----------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **A** | `mypy --strict` from day one; `lint-strict` is the real gate.                         | 初日から`mypy --strict`。`lint-strict` を本当の関門にする。                  |
-| **B** | Subject flags only during development; attempt`--strict` at the finalisation milestone. | 開発中は subject 指定のフラグのみ。仕上げのマイルストーンで`--strict` に挑戦。 |
-| **C** | Subject flags only; skip`lint-strict` entirely (it is optional).                        | subject 指定のフラグのみ。`lint-strict` は任意なのでやらない。                 |
+| **A** | `mypy --strict` from day one; `lint-strict` is the real gate.                         | 初日から `mypy --strict`。`lint-strict` を本当の関門にする。                  |
+| **B** | Subject flags only during development; attempt `--strict` at the finalisation milestone. | 開発中は subject 指定のフラグのみ。仕上げのマイルストーンで `--strict` に挑戦。 |
+| **C** | Subject flags only; skip `lint-strict` entirely (it is optional).                        | subject 指定のフラグのみ。`lint-strict` は任意なのでやらない。                 |
 
 > Decision:
 
@@ -356,7 +356,7 @@ generator is much cheaper than discovering its expectations after the generator 
 
 |             | EN                                                                                   | JA                                                            |
 | ----------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| **A** | Read it now together; add a`make check` rule that runs it on the generated output. | 今一緒に読む。生成結果に対して実行する`make check` を追加。 |
+| **A** | Read it now together; add a `make check` rule that runs it on the generated output. | 今一緒に読む。生成結果に対して実行する `make check` を追加。 |
 | **B** | Read it now; call it from the test suite instead of the Makefile.                    | 今読む。Makefile ではなくテストから呼ぶ。                     |
 | **C** | Use it manually before each integration checkpoint.                                  | 統合チェックポイントの前に手動で使う。                        |
 
@@ -404,7 +404,7 @@ constraint on the whole program.
 |             | EN                                                                             | JA                                                               |
 | ----------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
 | **A** | `list[list[int]]` — one 4-bit mask per cell, identical to the output digit. | `list[list[int]]` — 1 セル 4 ビットのマスク。出力の桁と同一。 |
-| **B** | A`Cell` class holding four wall flags plus its coordinates.                  | 4 つの壁フラグと座標を持つ`Cell` クラス。                      |
+| **B** | A `Cell` class holding four wall flags plus its coordinates.                  | 4 つの壁フラグと座標を持つ `Cell` クラス。                      |
 | **C** | A graph: cells as nodes, open passages as edges (closest to the theory).       | グラフ:セルをノード、開いた通路をエッジとする(理論に最も近い)。  |
 | **D** | Internal form of our choice + an explicit encoder to the hex form.             | 好きな内部形式 + 16 進形式への明示的なエンコーダ。               |
 
@@ -449,9 +449,9 @@ the cost above actually matters — a raw grid handed across the boundary pays i
 
 |             | EN                                                                  | JA                                                          |
 | ----------- | ------------------------------------------------------------------- | ----------------------------------------------------------- |
-| **A** | Origin top-left,`x` = column, `y` = row, stored `grid[y][x]`. | 原点は左上、`x` = 列、`y` = 行、格納は `grid[y][x]`。 |
-| **B** | Same, but stored`grid[x][y]` to match the config order literally. | 同じだが、設定の順序に合わせて`grid[x][y]` で格納。       |
-| **C** | A flat`list` with an index helper, no nesting at all.             | ネストせず、添字ヘルパー付きのフラットな`list`。          |
+| **A** | Origin top-left, `x` = column, `y` = row, stored `grid[y][x]`. | 原点は左上、`x` = 列、`y` = 行、格納は `grid[y][x]`。 |
+| **B** | Same, but stored `grid[x][y]` to match the config order literally. | 同じだが、設定の順序に合わせて `grid[x][y]` で格納。       |
+| **C** | A flat `list` with an index helper, no nesting at all.             | ネストせず、添字ヘルパー付きのフラットな `list`。          |
 
 > Decision: **A** — origin top-left, `x` = column, `y` = row, stored `grid[y][x]`. Agreed with javi after
 > reviewing the Consequences table: the output encoder (W13) and the renderer (W15) are both row-oriented, so
@@ -510,7 +510,7 @@ on is exactly the kind of design answer an evaluator is looking for.
 
 |             | EN                                                                                        | JA                                                                  |
 | ----------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **A** | Single`open_passage(a, b)` operation owns all wall mutation; nothing else writes walls. | 壁の変更は`open_passage(a, b)` 1 つだけが担う。他は壁を書かない。 |
+| **A** | Single `open_passage(a, b)` operation owns all wall mutation; nothing else writes walls. | 壁の変更は `open_passage(a, b)` 1 つだけが担う。他は壁を書かない。 |
 | **B** | Free mutation + a validator run before output.                                            | 自由に変更 + 出力前にバリデータを実行。                             |
 | **C** | Both: the operation for construction, the validator as a safety net in tests.             | 両方:構築は操作経由、バリデータはテストの安全網。                   |
 
@@ -555,9 +555,9 @@ with a switch usually costs less than maintaining two.
 
 |             | EN                                                                           | JA                                                                    |
 | ----------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| **A** | Perfect maze generator + a braiding step applied when`PERFECT=False`.      | 完全迷路の生成器 +`PERFECT=False` のとき braiding 段を適用。        |
+| **A** | Perfect maze generator + a braiding step applied when `PERFECT=False`.      | 完全迷路の生成器 +`PERFECT=False` のとき braiding 段を適用。        |
 | **B** | Two separate generation paths, each specialised.                             | 2 つの独立した生成経路。それぞれ専用。                                |
-| **C** | One generator with a "loop density" parameter;`PERFECT=True` is density 0. | 「ループ密度」パラメータ付きの単一生成器。`PERFECT=True` は密度 0。 |
+| **C** | One generator with a "loop density" parameter; `PERFECT=True` is density 0. | 「ループ密度」パラメータ付きの単一生成器。`PERFECT=True` は密度 0。 |
 
 > Decision: A
 
@@ -750,7 +750,7 @@ argues for the solver living on the engine side.
 
 |             | EN                                                                          | JA                                                  |
 | ----------- | --------------------------------------------------------------------------- | --------------------------------------------------- |
-| **A** | BFS in the engine;`MazeGenerator` exposes the path.                       | エンジン内で BFS。`MazeGenerator` が経路を公開。  |
+| **A** | BFS in the engine; `MazeGenerator` exposes the path.                       | エンジン内で BFS。`MazeGenerator` が経路を公開。  |
 | **B** | BFS in the output layer; the engine only exposes the structure.             | 出力層で BFS。エンジンは構造だけ公開。              |
 | **C** | Engine exposes a generic "solve" hook; the output layer formats the string. | エンジンは汎用の solve を公開。文字列整形は出力層。 |
 
@@ -792,8 +792,8 @@ Defining our own exception type is what lets the top-level handler distinguish "
 
 |             | EN                                                                                          | JA                                                                                          |
 | ----------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| **A** | Custom`ConfigError` / `MazeError` types; one handler in `a_maze_ing.py`; exit code 1. | 自前の`ConfigError` / `MazeError`。ハンドラは `a_maze_ing.py` に 1 つ。終了コード 1。 |
-| **B** | Built-in`ValueError` / `OSError` only; same single handler.                             | 組み込みの`ValueError` / `OSError` のみ。ハンドラは同じく 1 つ。                        |
+| **A** | Custom `ConfigError` / `MazeError` types; one handler in `a_maze_ing.py`; exit code 1. | 自前の `ConfigError` / `MazeError`。ハンドラは `a_maze_ing.py` に 1 つ。終了コード 1。 |
+| **B** | Built-in `ValueError` / `OSError` only; same single handler.                             | 組み込みの `ValueError` / `OSError` のみ。ハンドラは同じく 1 つ。                        |
 | **C** | Parser returns a result object with an error list instead of raising.                       | パーサは送出せず、エラー一覧を持つ結果オブジェクトを返す。                                  |
 
 > Decision: A
@@ -830,9 +830,9 @@ weird maze once" into a reproducible bug report — a habit that pays off during
 
 |             | EN                                                                                           | JA                                                                   |
 | ----------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| **A** | `random.Random(seed)` instance held by the generator; auto-generate and print when absent. | 生成器が`random.Random(seed)` を保持。未指定なら自動生成して表示。 |
+| **A** | `random.Random(seed)` instance held by the generator; auto-generate and print when absent. | 生成器が `random.Random(seed)` を保持。未指定なら自動生成して表示。 |
 | **B** | Same instance, but absent seed means a fixed default so runs are always identical.           | 同じくインスタンス保持。未指定時は固定値にして常に同一の結果。       |
-| **C** | Global`random.seed()` for simplicity.                                                      | 簡潔さを取ってグローバルの`random.seed()`。                        |
+| **C** | Global `random.seed()` for simplicity.                                                      | 簡潔さを取ってグローバルの `random.seed()`。                        |
 
 > Decision: **A** (2026-09-13) — the generator owns one `random.Random(seed)` and generates a seed when the config
 > gives none. **Printing it is the entry point's job, not the generator's:** the generator exposes `seed` as a
@@ -1082,7 +1082,7 @@ GPL のようなコピーレフトも再利用は許すが、後続プロジェ�
 
 |             | EN                                                                       | JA                                                                      |
 | ----------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
-| **A** | Keep MIT, rename to`LICENSE.md`, add both names to the copyright line. | MIT のまま`LICENSE.md` にリネームし、著作権表示に二人の名前を入れる。 |
+| **A** | Keep MIT, rename to `LICENSE.md`, add both names to the copyright line. | MIT のまま `LICENSE.md` にリネームし、著作権表示に二人の名前を入れる。 |
 | **B** | Switch to Apache-2.0 for the explicit patent grant.                      | 明示的な特許許諾を理由に Apache-2.0 へ変更。                            |
 | **C** | Switch to BSD-3-Clause.                                                  | BSD-3-Clause へ変更。                                                   |
 
@@ -1128,9 +1128,9 @@ This project has an unusually good property to test: same seed ⇒ identical maz
 
 |             | EN                                                                   | JA                                                                  |
 | ----------- | -------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **A** | pytest,`tests/test_<module>.py`, each tests their own code.        | pytest、`tests/test_<module>.py`、各自が自分のコードをテスト。    |
+| **A** | pytest, `tests/test_<module>.py`, each tests their own code.        | pytest、`tests/test_<module>.py`、各自が自分のコードをテスト。    |
 | **B** | pytest, and we swap: each writes the tests for the other's module.   | pytest、担当を交換:相手のモジュールのテストを書く。                 |
-| **C** | pytest for units, plus one end-to-end test driving`a_maze_ing.py`. | 単体は pytest、加えて`a_maze_ing.py` を動かす E2E テストを 1 本。 |
+| **C** | pytest for units, plus one end-to-end test driving `a_maze_ing.py`. | 単体は pytest、加えて `a_maze_ing.py` を動かす E2E テストを 1 本。 |
 
 > Decision:
 
@@ -1163,7 +1163,7 @@ few remaining places where quality is enforced, so it is worth being explicit ab
 
 |             | EN                                                                                                                     | JA                                                                                                             |
 | ----------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| **A** | Passes`make lint` + has tests for the edge cases in its plan file + accepted by `maze_analyzer.py` where relevant. | `make lint` が通る + 計画ファイルのエッジケースにテストがある + 該当時は `maze_analyzer.py` に受理される。 |
+| **A** | Passes `make lint` + has tests for the edge cases in its plan file + accepted by `maze_analyzer.py` where relevant. | `make lint` が通る + 計画ファイルのエッジケースにテストがある + 該当時は `maze_analyzer.py` に受理される。 |
 | **B** | Same, minus the analyzer (checked only at integration checkpoints).                                                    | 同じだが analyzer は除く(統合チェックポイントでのみ確認)。                                                     |
 | **C** | Author declares it done; reviewer may reopen it after reading.                                                         | 著者が完成を宣言。レビュアーは読んだ後に差し戻せる。                                                           |
 
@@ -1327,13 +1327,13 @@ is genuinely shared, because `both` often means nobody.
 | W11 | Entry / exit validation / 入口・出口の検証                            |           A           |           A           | so |                                                                |
 | W12 | Shortest-path solver / 最短経路ソルバ                                 |           A           |           A           | so | see 3.8, 7.2                                                   |
 | W13 | Hex output encoding / 16 進エンコード                                 |           B           |           B           | javi |                                                                |
-| W14 | Output file writing (entry, exit, path,`\n`) / 出力ファイル書き出し |           B           |           B           | javi |                                                                |
+| W14 | Output file writing (entry, exit, path, `\n`) / 出力ファイル書き出し |           B           |           B           | javi |                                                                |
 | W15 | Renderer (terminal / MLX) / 描画                                      |           B           |           B           | javi | see 4.1                                                        |
 | W16 | User interactions (regen, path, colours) / ユーザー操作               |           B           |           B           | javi | see §V                                                        |
 | W17 | `a_maze_ing.py` integration / 統合                                  |           B           |           B           | javi |                                                                |
 | W18 | `MazeGenerator` reusable class / 再利用クラス                       |           A           |           A           | so | see 5.1                                                        |
 | W19 | `mazegen-*` package build / パッケージビルド                        |           A           |      **B**      | so | **the two splits differ here** / ここだけ 2 案が食い違う |
-| W20 | Makefile, lint setup,`.gitignore` / ビルド・lint 設定               |           B           |           B           | javi | see 2.2, 2.3                                                   |
+| W20 | Makefile, lint setup, `.gitignore` / ビルド・lint 設定               |           B           |           B           | javi | see 2.2, 2.3                                                   |
 | W21 | Unit tests (core) / コアの単体テスト                                  |           A           |           A           | so | see 6.1                                                        |
 | W22 | Integration tests / 統合テスト                                        |           B           |           B           | javi |                                                                |
 | W23 | README / README                                                       |           B           |           B           | javi | **whole file to one owner** — see 1.4                   |
@@ -1465,7 +1465,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 2.2  | Lint configuration / lint 設定               | 🟡 |                 |               |       |
 | 2.3  | Makefile ownership / Makefile 担当           | 🟡 |                 |               |       |
 | 2.4  | `maze_analyzer.py` gate / 受け入れ判定     | 🟡 |                 |               |       |
-| 3.1  | Maze data structure / データ構造             | 🔴 | A + D. ただし`Maze` クラスで包む。 |               |       |
+| 3.1  | Maze data structure / データ構造             | 🔴 | A + D. ただし `Maze` クラスで包む。 |               |       |
 | 3.2  | Coordinate convention / 座標規約             | 🔴 | A — `grid[y][x]`, origin top-left / A — 原点左上、`grid[y][x]` |               |       |
 | 3.3  | Wall encoding invariant / 符号化の不変条件   | 🔴 | A |               |       |
 | 3.4  | `PERFECT` modes / 2 つのモード             | 🔴 | A |               |       |
@@ -1507,7 +1507,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | Q1 | Measure the real dead-end ratio for the backtracker, before and after braiding / backtracker の行き止まり率を braiding 前後で実測する | no — but it is the evidence behind 3.5 and the §VII justification / 3.5 の根拠と §VII の理由づけ | so — procedure in `learning_log/maze-generation-algorithms.md` §5.4 |
 | Q2 | Union-find in validation (W10). **Narrowed:** counting independent loops needs no union-find — it is `E − V + 1` (see `generation-algorithm.md` §4.2). It remains a candidate for checking **connectivity**. / W10 での union-find。**論点が狭まった:** 独立ループの計数に union-find は不要(`E − V + 1` の引き算)。**連結性**の確認の候補としては残る。 | no | so |
 | Q3 | W25 — who maintains `Docs/`? / `Docs/` の維持は誰か | no | both / 二人で |
-| Q4 | Where does `MazeGenerator` live? The skeleton has both `maze/generator.py` and `mazegen/generator.py`; §VI wants the generator in a standalone importable module. / `MazeGenerator` の置き場所。骨組みに両方あるが、§VI は独立モジュールを要求している。 | no — settle in `mazegen-package-api.md` | so — W18 / W19 |
+| Q4 | Where does `MazeGenerator` live? The skeleton has both `maze/generator.py` and `mazegen/generator.py`; §VI wants the generator in a standalone importable module. / `MazeGenerator` の置き場所。骨組みに両方あるが、§VI は独立モジュールを要求している。 **Answered 2026-09-13: `maze/generator.py`, next to `Maze`.** A test build showed the wheel contains only `mazegen/`, so `maze/` must be added to the package at W19 wherever the generator lives; keeping the core in one directory costs nothing extra. `mazegen/__init__.py` re-exports the class. / **2026-09-13 回答: `Maze` と同じ `maze/generator.py`。** 試しにビルドすると wheel には `mazegen/` しか入らなかった。生成器をどこに置いても W19 で `maze/` をパッケージに含める必要があるので、中核を 1 つのディレクトリにまとめても追加のコストはない。クラスは `mazegen/__init__.py` から公開する。 | no — settle in `mazegen-package-api.md` | so — W18 / W19 |
 | Q5 | Which machine will javi use on evaluation day? He develops on a company Windows PC, which cannot be brought to the defense (§IX). Affects how defensively W15 must be written. / 評価当日に javi はどのマシンを使うか。会社の Windows PC は持ち込めない。W15 の作り方に影響する。 | **yes, eventually** — §IX applies to both of us | javi — see `03_poetry_switch.md` §6 |
 
 ## TODO

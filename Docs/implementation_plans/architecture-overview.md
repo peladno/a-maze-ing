@@ -192,7 +192,7 @@ W13 が至る所で `grid[y][x]` と書いていたら、保存方法を変え�
 | --- | --- | --- | --- |
 | `maze/maze.py` | the grid, the wall bits, `open_passage` | `maze-data-structure.md` | so — W03, W04 |
 | `maze/config.py` | read `config.txt` into values | `config-parser.md` | so — W01, W02 |
-| `mazegen/generator.py` | build the maze; the reusable class of §VI | `generation-algorithm.md` | so — W05–W09, W18 |
+| `maze/generator.py` | build the maze; the reusable class of §VI — next to `Maze`, re-exported by `mazegen` at W19 | `generation-algorithm.md` | so — W05–W09, W18 |
 | `maze/solver.py` | shortest path as `NESW` | *not written yet* | so — W12 |
 | `maze/validator.py` | check the result independently | — | so — W10 |
 | `output/maze_writer.py` | hex digits and the output file | *not written yet* | javi — W13, W14 |

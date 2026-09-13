@@ -1,11 +1,11 @@
 # generation-algorithm
 
-| | |
-| --- | --- |
-| **Owner / 担当** | so (W05, W06, W07, W08, W09) |
-| **Status / 状態** | draft — Q1, Q2 and Q4 settled 2026-09-13; ready to implement / 下書き — Q1・Q2・Q4 は 2026-09-13 に決定。実装に着手できる |
-| **Date / 日付** | 2026-08-20 — rewritten with figures on 2026-09-13 / 2026-08-20 — 2026-09-13 に図を加えて改稿 |
-| **Subject ref** | §IV.4, §VI, §VIII |
+|                          |                                                                                                                                                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Owner / 担当**   | so (W05, W06, W07, W08, W09)                                                                                                                                                                               |
+| **Status / 状態**  | draft — Q1, Q2 and Q4 settled 2026-09-13; ready to implement / 下書き — Q1・Q2・Q4 は 2026-09-13 に決定。実装に着手できる                                                                                |
+| **Date / 日付**    | 2026-08-20 — rewritten with figures on 2026-09-13 / 2026-08-20 — 2026-09-13 に図を加えて改稿                                                                                                             |
+| **Subject ref**    | §IV.4, §VI, §VIII                                                                                                                                                                                       |
 | **Related / 関連** | `maze-data-structure.md`, `architecture-overview.md`, `Docs/pair_communication/01_kickoff.md` § 3.4, 3.5, 3.6, 3.7, 3.10, `Docs/learning_log/maze-generation-algorithms.md`, `maze_analyzer.py` |
 
 > **EN** — How to read this file. §0 explains what the generator does, in plain words and pictures. §1–§3 are the
@@ -91,17 +91,17 @@ them by the stage that satisfies them.
 **JA** — §IV.4 は多くの要件を並べているが、その大半は最初の工程が正しければ追加の手間なしに満たされる。
 表は要件を、それを満たす工程ごとに並べたもの。
 
-| Requirement (§IV.4) / 要件 | Satisfied by / 満たす工程 | Why (EN) | 理由(JA) |
-| --- | --- | --- | --- |
-| Reproducible from a seed / シードで再現できる | stage 1 | One `Random` owned by the generator; nothing else draws from it. | 生成器が持つ `Random` 1 つだけから乱数を引き、他の誰も引かない。 |
-| Neighbours agree on their shared wall / 隣接セルの共有壁が一致する | `Maze.open_passage` | The only operation that opens a wall always updates both sides. | 壁を開ける唯一の操作が、常に両側を更新する。 |
-| Every walkable cell reachable / すべてのセルに到達できる | stage 4 | A spanning tree reaches every cell it walks. | 全域木は、たどったセルすべてに届く。 |
-| A "42" drawn by closed cells / 閉じたセルで「42」を描く | stages 2–3 | Reserved cells are never carved, and every cell starts closed. | 確保セルは掘られず、すべてのセルは閉じた状態から始まる。 |
-| Exactly one path with `PERFECT=True` / `PERFECT=True` で経路がちょうど 1 本 | stage 4, then stop | A tree has exactly one path between any two of its cells. | 木では、任意の 2 セル間の経路がちょうど 1 本。 |
-| No 3x3 open area / 3x3 の開放領域を作らない | stage 4 for free, stage 6 by checking | A tree cannot contain one (§4.1); braiding checks before each wall (§4.5). | 木には存在しえない(§4.1)。braiding は壁ごとに事前確認する(§4.5)。 |
-| Corners and centre open / 四隅と中央が通路 | stage 2 | Guaranteed unless the "42" covers them (§4.3). | 「42」が覆わない限り保証される(§4.3)。 |
-| At least two independent loops / 独立ループ 2 本以上 | stage 6 | Each opened wall adds exactly one (§4.2). | 壁を 1 枚開けるたびにちょうど 1 本増える(§4.2)。 |
-| Dead ends rare / 行き止まりは稀 | stage 6 | Braiding opens a wall at each real dead end (§4.4). | braiding が本物の行き止まりごとに壁を開ける(§4.4)。 |
+| Requirement (§IV.4) / 要件                                                    | Satisfied by / 満たす工程             | Why (EN)                                                                     | 理由(JA)                                                            |
+| ------------------------------------------------------------------------------ | ------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| Reproducible from a seed / シードで再現できる                                  | stage 1                               | One `Random` owned by the generator; nothing else draws from it.            | 生成器が持つ `Random` 1 つだけから乱数を引き、他の誰も引かない。   |
+| Neighbours agree on their shared wall / 隣接セルの共有壁が一致する             | `Maze.open_passage`                 | The only operation that opens a wall always updates both sides.              | 壁を開ける唯一の操作が、常に両側を更新する。                        |
+| Every walkable cell reachable / すべてのセルに到達できる                       | stage 4                               | A spanning tree reaches every cell it walks.                                 | 全域木は、たどったセルすべてに届く。                                |
+| A "42" drawn by closed cells / 閉じたセルで「42」を描く                        | stages 2–3                           | Reserved cells are never carved, and every cell starts closed.               | 確保セルは掘られず、すべてのセルは閉じた状態から始まる。            |
+| Exactly one path with `PERFECT=True` / `PERFECT=True` で経路がちょうど 1 本 | stage 4, then stop                    | A tree has exactly one path between any two of its cells.                    | 木では、任意の 2 セル間の経路がちょうど 1 本。                      |
+| No 3x3 open area / 3x3 の開放領域を作らない                                    | stage 4 for free, stage 6 by checking | A tree cannot contain one (§4.1); braiding checks before each wall (§4.5). | 木には存在しえない(§4.1)。braiding は壁ごとに事前確認する(§4.5)。 |
+| Corners and centre open / 四隅と中央が通路                                     | stage 2                               | Guaranteed unless the "42" covers them (§4.3).                              | 「42」が覆わない限り保証される(§4.3)。                             |
+| At least two independent loops / 独立ループ 2 本以上                           | stage 6                               | Each opened wall adds exactly one (§4.2).                                   | 壁を 1 枚開けるたびにちょうど 1 本増える(§4.2)。                   |
+| Dead ends rare / 行き止まりは稀                                                | stage 6                               | Braiding opens a wall at each real dead end (§4.4).                         | braiding が本物の行き止まりごとに壁を開ける(§4.4)。                |
 
 **EN** — Read down the second column. Everything down to the corners is settled by simple stages or by code that
 already exists. Only the last three rows are real work, and all three live in stage 6.
@@ -116,6 +116,7 @@ already exists. Only the last three rows are real work, and all three live in st
 ### In scope / 対象
 
 **EN** —
+
 - Filling a `Maze` with passages so that it satisfies §IV.4, in both modes.
 - `PERFECT=True`: a spanning tree over the walkable cells.
 - `PERFECT=False` (**the default**): full connectivity, at least two independent loops, and at most two real dead
@@ -124,6 +125,7 @@ already exists. Only the last three rows are real work, and all three live in st
 - Computing the reserved "42" cells and leaving them untouched.
 
 **JA** —
+
 - 2 つのモードの両方で、§IV.4 を満たすように `Maze` に通路を掘ること。
 - `PERFECT=True`:歩けるセル全体の全域木。
 - `PERFECT=False`(**既定**):完全な連結性、独立ループ 2 本以上、本物の行き止まり 2 個以下。
@@ -132,13 +134,13 @@ already exists. Only the last three rows are real work, and all three live in st
 
 ### Out of scope / 対象外
 
-| Not here / ここではやらない | Where it belongs / 担当 | Why (EN) | 理由(JA) |
-| --- | --- | --- | --- |
-| The grid, the wall bits, `open_passage` / グリッド・壁のビット・`open_passage` | W03 / W04 — `maze-data-structure.md` | Already built and tested. The generator only calls it. | 実装・テスト済み。生成器は呼ぶだけ。 |
-| Independent verification of the result / 結果の独立した検証 | W10 — the validator | Checking must not trust the code that is being checked. | 検証は、検証対象のコードを信用してはならない。 |
-| Printing the seed / シードの表示 | W17 — `a_maze_ing.py` | A reusable module must not write to the console (Q2). | 再利用モジュールは勝手にコンソールへ書かない(Q2)。 |
-| Shortest path, hex output, rendering / 最短経路・16 進出力・描画 | W12 / W13 / W15 | They read the finished maze and never change it. | 完成した迷路を読むだけで、変更しない。 |
-| The public API of the reusable package / 再利用パッケージの公開 API | W18 — `mazegen-package-api.md` | This class is its core, but the packaging is a separate plan. | このクラスが中核だが、パッケージ化は別の計画。 |
+| Not here / ここではやらない                                                       | Where it belongs / 担当                | Why (EN)                                                      | 理由(JA)                                           |
+| --------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------- | -------------------------------------------------- |
+| The grid, the wall bits, `open_passage` / グリッド・壁のビット・ `open_passage` | W03 / W04 — `maze-data-structure.md` | Already built and tested. The generator only calls it.        | 実装・テスト済み。生成器は呼ぶだけ。               |
+| Independent verification of the result / 結果の独立した検証                       | W10 — the validator                   | Checking must not trust the code that is being checked.       | 検証は、検証対象のコードを信用してはならない。     |
+| Printing the seed / シードの表示                                                  | W17 — `a_maze_ing.py`                | A reusable module must not write to the console (Q2).         | 再利用モジュールは勝手にコンソールへ書かない(Q2)。 |
+| Shortest path, hex output, rendering / 最短経路・16 進出力・描画                  | W12 / W13 / W15                        | They read the finished maze and never change it.              | 完成した迷路を読むだけで、変更しない。             |
+| The public API of the reusable package / 再利用パッケージの公開 API               | W18 / W19 — `mazegen-package-api.md`       | This class is its core, but the packaging is a separate plan. The class lives in `maze/generator.py`, and a test build showed the wheel holds only `mazegen/`, so W19 must add `maze/` to the package and re-export the class from `mazegen`. | このクラスが中核だが、パッケージ化は別の計画。クラスは `maze/generator.py` に置く。試しにビルドすると wheel には `mazegen/` しか入らなかったので、W19 で `maze/` をパッケージに含め、`mazegen` からクラスを公開する必要がある。     |
 
 ### Requirements it satisfies / 対応する要件
 
@@ -199,17 +201,17 @@ class MazeGenerator:
 
 ### What each member is for / 各メンバーの役割
 
-| Member | What it does (EN) | 何をするか(JA) |
-| --- | --- | --- |
-| `GenerationError` | Raised when the parameters make a valid maze impossible, for example a default-mode board too small to hold two loops. | パラメータ上、妥当な迷路が作れないときに送出する。例えば、ループ 2 本を収められないほど小さい既定モードの盤面。 |
-| `__init__` | Stores the size, the mode and the seed. It builds nothing yet. | 大きさ・モード・シードを保存する。この時点ではまだ何も作らない。 |
-| `seed` | The seed actually used — the one given, or the one generated. Read back by `a_maze_ing.py`. | 実際に使ったシード。与えられたもの、または生成したもの。`a_maze_ing.py` が読み戻す。 |
-| `generate` | Runs the pipeline of §3 and returns a finished `Maze`. | §3 のパイプラインを実行し、完成した `Maze` を返す。 |
-| `_pattern_cells` | Stage 2: the cells the "42" occupies, or an empty set if it does not fit. | ステージ 2:「42」が占めるセル。収まらなければ空集合。 |
-| `_carve_spanning_tree` | Stage 4: the recursive backtracker, written with an explicit stack. | ステージ 4:再帰的バックトラッカー。明示的なスタックで書く。 |
-| `_dead_ends` | Stage 6: the **real** dead ends, counted the way the analyzer counts them (§4.4). | ステージ 6:**本物の**行き止まり。analyzer と同じ数え方(§4.4)。 |
-| `_completes_open_3x3` | Stage 6: would opening the wall between `a` and `b` complete a 3x3 open area? (§4.5) | ステージ 6:`a` と `b` の間の壁を開けると 3x3 の開放領域が完成するか(§4.5)。 |
-| `_braid` | Stage 6: opens a wall at each real dead end, skipping any wall `_completes_open_3x3` rejects. | ステージ 6:本物の行き止まりごとに壁を開ける。`_completes_open_3x3` が拒否した壁は飛ばす。 |
+| Member                   | What it does (EN)                                                                                                      | 何をするか(JA)                                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `GenerationError`      | Raised when the parameters make a valid maze impossible, for example a default-mode board too small to hold two loops. | パラメータ上、妥当な迷路が作れないときに送出する。例えば、ループ 2 本を収められないほど小さい既定モードの盤面。 |
+| `__init__`             | Stores the size, the mode and the seed. It builds nothing yet.                                                         | 大きさ・モード・シードを保存する。この時点ではまだ何も作らない。                                                |
+| `seed`                 | The seed actually used — the one given, or the one generated. Read back by `a_maze_ing.py`.                          | 実際に使ったシード。与えられたもの、または生成したもの。`a_maze_ing.py` が読み戻す。                          |
+| `generate`             | Runs the pipeline of §3 and returns a finished `Maze`.                                                               | §3 のパイプラインを実行し、完成した `Maze` を返す。                                                           |
+| `_pattern_cells`       | Stage 2: the cells the "42" occupies, or an empty set if it does not fit.                                              | ステージ 2:「42」が占めるセル。収まらなければ空集合。                                                           |
+| `_carve_spanning_tree` | Stage 4: the recursive backtracker, written with an explicit stack.                                                    | ステージ 4:再帰的バックトラッカー。明示的なスタックで書く。                                                     |
+| `_dead_ends`           | Stage 6: the**real** dead ends, counted the way the analyzer counts them (§4.4).                                | ステージ 6:**本物の**行き止まり。analyzer と同じ数え方(§4.4)。                                           |
+| `_completes_open_3x3`  | Stage 6: would opening the wall between `a` and `b` complete a 3x3 open area? (§4.5)                               | ステージ 6: `a` と `b` の間の壁を開けると 3x3 の開放領域が完成するか(§4.5)。                                |
+| `_braid`               | Stage 6: opens a wall at each real dead end, skipping any wall `_completes_open_3x3` rejects.                         | ステージ 6:本物の行き止まりごとに壁を開ける。`_completes_open_3x3` が拒否した壁は飛ばす。                     |
 
 **EN** — `perfect` defaults to `False` because §IV.4's default is the playable board, not the perfect maze. When
 the signature agrees with the subject, a whole class of "which one was the default again?" bugs disappears.
@@ -247,14 +249,14 @@ flowchart TD
     S6 --> R2["return the maze"]
 ```
 
-| # | Stage | What it achieves (EN) | 何を達成するか(JA) |
-| --- | --- | --- | --- |
-| 1 | Resolve the seed / シードを決める | One `Random` instance owned by this object. Nothing else in the program touches it. If no seed was given, one is generated here and kept for the `seed` property. | このオブジェクトが持つ `Random` を 1 つ作る。プログラムの他の部分は触れない。シードが与えられていなければここで生成し、`seed` property のために保持する。 |
-| 2 | Compute the "42" cells / 「42」のセルを計算する | The set of cells the pattern occupies. If the maze is too small to hold it, the set is empty and the caller reports an error on the console, as §IV.4 requires. The pattern must leave the corners and at least one centre candidate free (§4.3). | パターンが占めるセルの集合。迷路が小さすぎて収まらなければ空集合にし、§IV.4 の要求どおり呼び出し側がコンソールにエラーを出す。パターンは四隅と、中央候補の少なくとも 1 つを空けておく(§4.3)。 |
-| 3 | Build the `Maze` / `Maze` を作る | The set is passed as `reserved`. Every wall starts closed, so a reserved cell that is never touched stays `0xf` by itself. No code paints the "42". | その集合を `reserved` として渡す。すべての壁は閉じた状態から始まるので、一度も触らない確保セルは自然に `0xf` のまま残る。「42」を描くコードは存在しない。 |
-| 4 | Carve a spanning tree / 全域木を掘る | The recursive backtracker, **written iteratively with an explicit stack** (decision 3.5). It walks only non-reserved cells. Result: every walkable cell is reachable, and there is exactly one path between any two. | 再帰的バックトラッカーを、**明示的なスタックを使った反復で**書く(決定 3.5)。確保されていないセルだけをたどる。結果として、歩けるセルはすべて到達可能になり、任意の 2 セル間の経路がちょうど 1 本になる。 |
-| 5 | If `perfect` / `perfect` なら | Done. Return the maze. | 終わり。迷路を返す。 |
-| 6 | Otherwise, braid / そうでなければ braiding | Open a wall at each **real** dead end (§4.4), **checking before each removal** that no 3x3 open area would result (§4.5). Dead ends that face only the "42" or the border are neither counted nor fixable. Target: at least two loops and at most two real dead ends; zero is the §VIII bonus. | **本物の**行き止まり(§4.4)ごとに壁を開ける。**取り除く前に毎回**、3x3 の開放領域ができないことを確かめる(§4.5)。「42」や外周にしか面していない行き止まりは、数えられず、直すこともできない。目標はループ 2 本以上・本物の行き止まり 2 個以下。0 個なら §VIII のボーナス。 |
+| # | Stage                                           | What it achieves (EN)                                                                                                                                                                                                                                                                                        | 何を達成するか(JA)                                                                                                                                                                                                                                                                       |
+| - | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | Resolve the seed / シードを決める               | One `Random` instance owned by this object. Nothing else in the program touches it. If no seed was given, one is generated here and kept for the `seed` property.                                                                                                                                         | このオブジェクトが持つ `Random` を 1 つ作る。プログラムの他の部分は触れない。シードが与えられていなければここで生成し、`seed` property のために保持する。                                                                                                                             |
+| 2 | Compute the "42" cells / 「42」のセルを計算する | The set of cells the pattern occupies. If the maze is too small to hold it, the set is empty and the caller reports an error on the console, as §IV.4 requires. The pattern must leave the corners and at least one centre candidate free (§4.3).                                                          | パターンが占めるセルの集合。迷路が小さすぎて収まらなければ空集合にし、§IV.4 の要求どおり呼び出し側がコンソールにエラーを出す。パターンは四隅と、中央候補の少なくとも 1 つを空けておく(§4.3)。                                                                                          |
+| 3 | Build the `Maze` / `Maze` を作る             | The set is passed as `reserved`. Every wall starts closed, so a reserved cell that is never touched stays `0xf` by itself. No code paints the "42".                                                                                                                                                       | その集合を `reserved` として渡す。すべての壁は閉じた状態から始まるので、一度も触らない確保セルは自然に `0xf` のまま残る。「42」を描くコードは存在しない。                                                                                                                             |
+| 4 | Carve a spanning tree / 全域木を掘る            | The recursive backtracker,**written iteratively with an explicit stack** (decision 3.5). It walks only non-reserved cells. Result: every walkable cell is reachable, and there is exactly one path between any two.                                                                                    | 再帰的バックトラッカーを、**明示的なスタックを使った反復で**書く(決定 3.5)。確保されていないセルだけをたどる。結果として、歩けるセルはすべて到達可能になり、任意の 2 セル間の経路がちょうど 1 本になる。                                                                           |
+| 5 | If `perfect` / `perfect` なら                | Done. Return the maze.                                                                                                                                                                                                                                                                                       | 終わり。迷路を返す。                                                                                                                                                                                                                                                                     |
+| 6 | Otherwise, braid / そうでなければ braiding      | Open a wall at each**real** dead end (§4.4), **checking before each removal** that no 3x3 open area would result (§4.5). Dead ends that face only the "42" or the border are neither counted nor fixable. Target: at least two loops and at most two real dead ends; zero is the §VIII bonus. | **本物の**行き止まり(§4.4)ごとに壁を開ける。**取り除く前に毎回**、3x3 の開放領域ができないことを確かめる(§4.5)。「42」や外周にしか面していない行き止まりは、数えられず、直すこともできない。目標はループ 2 本以上・本物の行き止まり 2 個以下。0 個なら §VIII のボーナス。 |
 
 **EN** — Stages 4 and 6 are the whole design: **one pipeline, one algorithm, and `PERFECT=True` is simply the
 pipeline stopping early** (decision 3.4 = A). There is no second generator to keep in step with the first.
@@ -282,20 +284,20 @@ coordinates are (x, y): x is the column, y the row, origin top-left
 (0,2)  (1,2)  (2,2)
 ```
 
-| step | top of stack | unvisited neighbours | action | stack afterwards |
-| --- | --- | --- | --- | --- |
-| 0 | — | — | start at (0,0) | (0,0) |
-| 1 | (0,0) | (1,0) (0,1) | open to **(0,1)**, push | (0,0) (0,1) |
-| 2 | (0,1) | (1,1) (0,2) | open to **(1,1)**, push | (0,0) (0,1) (1,1) |
-| 3 | (1,1) | (1,0) (2,1) (1,2) | open to **(1,2)**, push | … (1,1) (1,2) |
-| 4 | (1,2) | (0,2) (2,2) | open to **(0,2)**, push | … (1,2) (0,2) |
-| 5 | (0,2) | none | pop | … (1,1) (1,2) |
-| 6 | (1,2) | (2,2) | open to **(2,2)**, push | … (1,2) (2,2) |
-| 7 | (2,2) | (2,1) | open to **(2,1)**, push | … (2,2) (2,1) |
-| 8 | (2,1) | (2,0) | open to **(2,0)**, push | … (2,1) (2,0) |
-| 9 | (2,0) | (1,0) | open to **(1,0)**, push | … (2,0) (1,0) |
-| 10 | (1,0) | none | pop | … (2,1) (2,0) |
-| 11–17 | each remaining cell | none | pop | empty — done |
+| step   | top of stack        | unvisited neighbours | action                       | stack afterwards  |
+| ------ | ------------------- | -------------------- | ---------------------------- | ----------------- |
+| 0      | —                  | —                   | start at (0,0)               | (0,0)             |
+| 1      | (0,0)               | (1,0) (0,1)          | open to**(0,1)**, push | (0,0) (0,1)       |
+| 2      | (0,1)               | (1,1) (0,2)          | open to**(1,1)**, push | (0,0) (0,1) (1,1) |
+| 3      | (1,1)               | (1,0) (2,1) (1,2)    | open to**(1,2)**, push | … (1,1) (1,2)    |
+| 4      | (1,2)               | (0,2) (2,2)          | open to**(0,2)**, push | … (1,2) (0,2)    |
+| 5      | (0,2)               | none                 | pop                          | … (1,1) (1,2)    |
+| 6      | (1,2)               | (2,2)                | open to**(2,2)**, push | … (1,2) (2,2)    |
+| 7      | (2,2)               | (2,1)                | open to**(2,1)**, push | … (2,2) (2,1)    |
+| 8      | (2,1)               | (2,0)                | open to**(2,0)**, push | … (2,1) (2,0)    |
+| 9      | (2,0)               | (1,0)                | open to**(1,0)**, push | … (2,0) (1,0)    |
+| 10     | (1,0)               | none                 | pop                          | … (2,1) (2,0)    |
+| 11–17 | each remaining cell | none                 | pop                          | empty — done     |
 
 **EN** — Eight walls were opened, one for every cell except the first: `V − 1` passages, which is exactly what a
 spanning tree has. Note also that `Maze.neighbours` already skips positions outside the grid and reserved cells, so
@@ -346,11 +348,11 @@ at each step:
 **JA** — 連結な迷路では、独立ループの数は `E − V + 1` になる。`E` は開いている通路の数、`V` は歩けるセルの数。
 `maze_analyzer.py` もまさにこの式を使っている。§0.2 の迷路で、各段階の値は次のとおり:
 
-| state / 状態 | passages `E` | cells `V` | loops `E − V + 1` |
-| --- | --- | --- | --- |
-| after stage 4 / ステージ 4 の後 | 8 | 9 | **0** — a perfect maze / 完全迷路 |
-| one wall opened / 壁を 1 枚開けた | 9 | 9 | **1** — not enough / 足りない |
-| two walls opened / 壁を 2 枚開けた | 10 | 9 | **2** — meets §IV.4 / §IV.4 を満たす |
+| state / 状態                       | passages `E` | cells `V` | loops `E − V + 1`                           |
+| ---------------------------------- | ------------- | ---------- | --------------------------------------------- |
+| after stage 4 / ステージ 4 の後    | 8             | 9          | **0** — a perfect maze / 完全迷路      |
+| one wall opened / 壁を 1 枚開けた  | 9             | 9          | **1** — not enough / 足りない          |
+| two walls opened / 壁を 2 枚開けた | 10            | 9          | **2** — meets §IV.4 / §IV.4 を満たす |
 
 **EN** — Stage 4 always leaves exactly `V − 1` passages, so **every wall stage 6 opens adds exactly one loop**. Two
 openings already satisfy the requirement. The loops are the easy half; the hard half is the dead-end count (§4.4).
@@ -574,17 +576,17 @@ twelve walls each, **whatever the size of the maze** — one small function, and
 
 ## 5. Edge cases / エッジケース
 
-| # | Input / situation | Expected behaviour (EN) | 期待する挙動(JA) |
-| --- | --- | --- | --- |
-| E1 | Maze too small for the "42" / 「42」に対して迷路が小さすぎる | Skip the pattern, report an error on the console, **continue** (§IV.4). | パターンを省き、コンソールにエラーを出し、**続行する**(§IV.4)。 |
-| E2 | The pattern would cover a corner, or every centre candidate, in default mode / 既定モードで、パターンが角か、中央候補のすべてを覆う | Reposition or skip it — never produce a board that violates §IV.4. | 位置をずらすか省く。§IV.4 に違反する盤面は決して作らない。 |
-| E3 | The reserved cells cut the walkable region in two / 確保セルが歩ける領域を分断する | `GenerationError`. Detectable after stage 4: fewer cells were visited than there are walkable cells. | `GenerationError`。ステージ 4 の後に検出できる:訪問したセル数が歩けるセル数より少ない。 |
-| E4 | `width` or `height` of 1 / 幅か高さが 1 | A single row or column is a legal spanning tree, so `PERFECT=True` works. It has no room for any loop, so `PERFECT=False` must fail explicitly rather than return a board that violates §IV.4. | 1 行・1 列でも正当な全域木なので `PERFECT=True` は動く。ループの余地がまったくないので、`PERFECT=False` は §IV.4 に違反する盤面を返さず、明示的に失敗する。 |
-| E5 | Default mode on a maze too small for two loops / ループ 2 本に対して小さすぎる既定モード | `GenerationError`, naming the minimum. Without the "42", the smallest boards that can hold two loops are 2x3 and 3x2: 7 internal walls and 6 cells give 7 − 6 + 1 = 2. A 2x2 gives only 1. | 最小サイズを示して `GenerationError`。「42」がなければ、ループ 2 本を収められる最小の盤面は 2x3 と 3x2。内側の壁 7 枚・セル 6 個で 7 − 6 + 1 = 2。2x2 では 1 本にしかならない。 |
-| E6 | Same seed, same parameters / 同じシード・同じパラメータ | Byte-identical maze, every time. | 毎回、1 バイトも違わない迷路。 |
-| E7 | Opening a wall would complete a 3x3 open area / 壁を開けると 3x3 の開放領域が完成する | The wall stays closed and braiding moves on — checked before removal (Q1). | その壁は閉じたままにし、braiding は次へ進む。取り除く前に確認する(Q1)。 |
-| E8 | `generate()` called twice on the same object / 同じオブジェクトで `generate()` を 2 回呼ぶ | Returns an equivalent maze. The second call must not continue from the first call's random state. | 同等の迷路を返す。2 回目の呼び出しが 1 回目の乱数の状態から続いてはならない。 |
-| E9 | A real dead end whose every openable wall would complete a 3x3 area / 開けられる壁がすべて 3x3 を完成させてしまう本物の行き止まり | It stays. The analyzer tolerates two real dead ends. Starting from a tree this should be rare; if tests ever show more than two remaining, revisit. | そのまま残す。analyzer は本物の行き止まりを 2 個まで許容する。木から始める以上まれなはず。テストで 3 個以上残ることがあれば見直す。 |
+| #  | Input / situation                                                                                                                   | Expected behaviour (EN)                                                                                                                                                                            | 期待する挙動(JA)                                                                                                                                                                  |
+| -- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| E1 | Maze too small for the "42" / 「42」に対して迷路が小さすぎる                                                                        | Skip the pattern, report an error on the console,**continue** (§IV.4).                                                                                                                      | パターンを省き、コンソールにエラーを出し、**続行する**(§IV.4)。                                                                                                            |
+| E2 | The pattern would cover a corner, or every centre candidate, in default mode / 既定モードで、パターンが角か、中央候補のすべてを覆う | Reposition or skip it — never produce a board that violates §IV.4.                                                                                                                               | 位置をずらすか省く。§IV.4 に違反する盤面は決して作らない。                                                                                                                       |
+| E3 | The reserved cells cut the walkable region in two / 確保セルが歩ける領域を分断する                                                  | `GenerationError`. Detectable after stage 4: fewer cells were visited than there are walkable cells.                                                                                             | `GenerationError`。ステージ 4 の後に検出できる:訪問したセル数が歩けるセル数より少ない。                                                                                         |
+| E4 | `width` or `height` of 1 / 幅か高さが 1                                                                                         | A single row or column is a legal spanning tree, so `PERFECT=True` works. It has no room for any loop, so `PERFECT=False` must fail explicitly rather than return a board that violates §IV.4. | 1 行・1 列でも正当な全域木なので `PERFECT=True` は動く。ループの余地がまったくないので、`PERFECT=False` は §IV.4 に違反する盤面を返さず、明示的に失敗する。                   |
+| E5 | Default mode on a maze too small for two loops / ループ 2 本に対して小さすぎる既定モード                                            | `GenerationError`, naming the minimum. Without the "42", the smallest boards that can hold two loops are 2x3 and 3x2: 7 internal walls and 6 cells give 7 − 6 + 1 = 2. A 2x2 gives only 1.      | 最小サイズを示して `GenerationError`。「42」がなければ、ループ 2 本を収められる最小の盤面は 2x3 と 3x2。内側の壁 7 枚・セル 6 個で 7 − 6 + 1 = 2。2x2 では 1 本にしかならない。 |
+| E6 | Same seed, same parameters / 同じシード・同じパラメータ                                                                             | Byte-identical maze, every time.                                                                                                                                                                   | 毎回、1 バイトも違わない迷路。                                                                                                                                                    |
+| E7 | Opening a wall would complete a 3x3 open area / 壁を開けると 3x3 の開放領域が完成する                                               | The wall stays closed and braiding moves on — checked before removal (Q1).                                                                                                                        | その壁は閉じたままにし、braiding は次へ進む。取り除く前に確認する(Q1)。                                                                                                           |
+| E8 | `generate()` called twice on the same object / 同じオブジェクトで `generate()` を 2 回呼ぶ                                      | Returns an equivalent maze. The second call must not continue from the first call's random state.                                                                                                  | 同等の迷路を返す。2 回目の呼び出しが 1 回目の乱数の状態から続いてはならない。                                                                                                     |
+| E9 | A real dead end whose every openable wall would complete a 3x3 area / 開けられる壁がすべて 3x3 を完成させてしまう本物の行き止まり   | It stays. The analyzer tolerates two real dead ends. Starting from a tree this should be rare; if tests ever show more than two remaining, revisit.                                                | そのまま残す。analyzer は本物の行き止まりを 2 個まで許容する。木から始める以上まれなはず。テストで 3 個以上残ることがあれば見直す。                                               |
 
 ---
 
@@ -593,13 +595,13 @@ twelve walls each, **whatever the size of the maze** — one small function, and
 **EN** — Let `V = width × height` be the number of cells.
 **JA** — セル数を `V = width × height` とする。
 
-| Stage | Time | Space | Why acceptable (EN) | 許容できる理由(JA) |
-| --- | --- | --- | --- | --- |
-| 4 — carve / 掘る | O(V) | O(V) | Every cell is pushed and popped once; the stack and the visited set hold at most V cells. | 各セルは 1 回積まれ 1 回取り出される。スタックと訪問済み集合が持つのは最大 V セル。 |
-| 6 — find dead ends / 行き止まりを探す | O(V) | O(V) | Each cell has at most four walls to inspect. | 各セルで調べる壁は最大 4 枚。 |
-| 6 — 3x3 check, per wall / 3x3 の確認(壁 1 枚あたり) | O(1) | — | At most 6 windows × 12 walls, whatever the size (§4.5). | 大きさに関係なく最大で枠 6 つ × 壁 12 枚(§4.5)。 |
-| 6 — braid / braiding | O(V) | — | Bounded by the number of dead ends, itself at most V, times the constant check. | 行き止まりの数(最大 V)に、定数時間の確認を掛けた分で収まる。 |
-| whole `generate()` / 全体 | **O(V)** | O(V) | 20×15 = 300 cells is instant; 500×500 = 250,000 cells is still linear. | 20×15 = 300 セルは一瞬。500×500 = 25 万セルでも線形のまま。 |
+| Stage                                                | Time           | Space | Why acceptable (EN)                                                                       | 許容できる理由(JA)                                                                  |
+| ---------------------------------------------------- | -------------- | ----- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| 4 — carve / 掘る                                    | O(V)           | O(V)  | Every cell is pushed and popped once; the stack and the visited set hold at most V cells. | 各セルは 1 回積まれ 1 回取り出される。スタックと訪問済み集合が持つのは最大 V セル。 |
+| 6 — find dead ends / 行き止まりを探す               | O(V)           | O(V)  | Each cell has at most four walls to inspect.                                              | 各セルで調べる壁は最大 4 枚。                                                       |
+| 6 — 3x3 check, per wall / 3x3 の確認(壁 1 枚あたり) | O(1)           | —    | At most 6 windows × 12 walls, whatever the size (§4.5).                                 | 大きさに関係なく最大で枠 6 つ × 壁 12 枚(§4.5)。                                  |
+| 6 — braid / braiding                                | O(V)           | —    | Bounded by the number of dead ends, itself at most V, times the constant check.           | 行き止まりの数(最大 V)に、定数時間の確認を掛けた分で収まる。                        |
+| whole `generate()` / 全体                           | **O(V)** | O(V)  | 20×15 = 300 cells is instant; 500×500 = 250,000 cells is still linear.                  | 20×15 = 300 セルは一瞬。500×500 = 25 万セルでも線形のまま。                       |
 
 **EN** — The iterative form matters here. Written recursively, stage 4's depth reaches O(V) on the interpreter's
 stack, which Python caps at about 1000. With an explicit stack the same O(V) lives in an ordinary list, and the
@@ -612,19 +614,19 @@ Python はそれを 1000 前後で打ち切る。明示的なスタックなら�
 
 ## 7. Test plan / テスト方針
 
-| Test | Kind | Checks (EN) | 何を保証するか(JA) |
-| --- | --- | --- | --- |
-| `test_same_seed_same_maze` | property | Two generators with the same seed produce identical `rows()` output. | 同じシードの生成器 2 つが、同一の `rows()` を出力する。 |
-| `test_perfect_is_a_tree` | invariant | Open passages = walkable cells − 1, and every cell is reachable. | 開いた通路の数 = 歩けるセル − 1、かつ全セルに到達できる。 |
-| `test_all_cells_reachable` | invariant | In both modes, a search from any walkable cell reaches all of them. | 両モードで、任意の歩けるセルからの探索が全セルに届く。 |
-| `test_pattern_cells_stay_closed` | invariant | Every reserved cell is still `0xf` after `generate()`. | `generate()` の後も、すべての確保セルが `0xf` のまま。 |
-| `test_default_mode_has_two_loops` | unit | `E − V + 1 ≥ 2` (§4.2). | `E − V + 1 ≥ 2`(§4.2)。 |
-| `test_default_mode_dead_ends` | unit | At most 2 **real** dead ends, counted the way the analyzer counts them (§4.4). | **本物の**行き止まりが 2 個以下。analyzer と同じ数え方で(§4.4)。 |
-| `test_no_3x3_open_area` | edge | After braiding, no 3x3 window has all twelve internal walls open (§4.5). The analyzer does not check this, so only this test does. | braiding の後、内側の壁 12 枚がすべて開いた 3x3 の枠が存在しない(§4.5)。analyzer は検査しないので、守るのはこのテストだけ。 |
-| `test_corners_and_a_centre_candidate_open` | unit | In default mode, the four corners and at least one centre candidate are reachable (§4.3). | 既定モードで、四隅と中央候補の少なくとも 1 つに到達できる(§4.3)。 |
-| `test_too_small_for_pattern_warns` | edge | E1 — an error is reported and generation continues. | E1 — エラーが報告され、生成は続行する。 |
-| `test_generate_twice` | edge | E8. | E8。 |
-| `test_generate_prints_nothing` | design | `capsys` captures no output — printing the seed is the entry point's job (Q2). | `capsys` が何も捕まえない。シードの表示はエントリポイントの仕事(Q2)。 |
+| Test                                         | Kind      | Checks (EN)                                                                                                                         | 何を保証するか(JA)                                                                                                           |
+| -------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `test_same_seed_same_maze`                 | property  | Two generators with the same seed produce identical `rows()` output.                                                               | 同じシードの生成器 2 つが、同一の `rows()` を出力する。                                                                     |
+| `test_perfect_is_a_tree`                   | invariant | Open passages = walkable cells − 1, and every cell is reachable.                                                                   | 開いた通路の数 = 歩けるセル − 1、かつ全セルに到達できる。                                                                   |
+| `test_all_cells_reachable`                 | invariant | In both modes, a search from any walkable cell reaches all of them.                                                                 | 両モードで、任意の歩けるセルからの探索が全セルに届く。                                                                       |
+| `test_pattern_cells_stay_closed`           | invariant | Every reserved cell is still `0xf` after `generate()`.                                                                           | `generate()` の後も、すべての確保セルが `0xf` のまま。                                                                   |
+| `test_default_mode_has_two_loops`          | unit      | `E − V + 1 ≥ 2` (§4.2).                                                                                                        | `E − V + 1 ≥ 2`(§4.2)。                                                                                                 |
+| `test_default_mode_dead_ends`              | unit      | At most 2**real** dead ends, counted the way the analyzer counts them (§4.4).                                                | **本物の**行き止まりが 2 個以下。analyzer と同じ数え方で(§4.4)。                                                      |
+| `test_no_3x3_open_area`                    | edge      | After braiding, no 3x3 window has all twelve internal walls open (§4.5). The analyzer does not check this, so only this test does. | braiding の後、内側の壁 12 枚がすべて開いた 3x3 の枠が存在しない(§4.5)。analyzer は検査しないので、守るのはこのテストだけ。 |
+| `test_corners_and_a_centre_candidate_open` | unit      | In default mode, the four corners and at least one centre candidate are reachable (§4.3).                                          | 既定モードで、四隅と中央候補の少なくとも 1 つに到達できる(§4.3)。                                                           |
+| `test_too_small_for_pattern_warns`         | edge      | E1 — an error is reported and generation continues.                                                                                | E1 — エラーが報告され、生成は続行する。                                                                                     |
+| `test_generate_twice`                      | edge      | E8.                                                                                                                                 | E8。                                                                                                                         |
+| `test_generate_prints_nothing`             | design    | `capsys` captures no output — printing the seed is the entry point's job (Q2).                                                   | `capsys` が何も捕まえない。シードの表示はエントリポイントの仕事(Q2)。                                                      |
 
 **EN** — `maze_analyzer.py` is **used, and this is the module where it matters most**. The analyzer reports whether
 the output is a perfect maze or a playable board, which is exactly what stages 4 and 6 claim. Run it on both modes
@@ -638,15 +640,15 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
 
 ## 8. Rejected alternatives / 却下した案
 
-| Option | Why rejected (EN) | 却下した理由(JA) |
-| --- | --- | --- |
-| Randomized Prim (3.5 B) / ランダム化 Prim | Roughly three times as many dead ends to start from — precisely the work stage 6 has to undo. | 開始時点の行き止まりがおよそ 3 倍。それはまさにステージ 6 が取り消さねばならない作業。 |
-| Randomized Kruskal (3.5 C) / ランダム化 Kruskal | On a grid, adjacency follows from the coordinates, so an edge list plus union-find is more machinery for the same result. | 格子では隣接関係が座標から決まるので、エッジ一覧と union-find は同じ結果に対して仕組みが多すぎる。 |
-| Two separate generation paths (3.4 B) / 生成経路を 2 本持つ | Twice the code to write, test and explain, for two modes that share everything except the last stage. | 最後の工程以外すべてを共有する 2 つのモードのために、書く・テストする・説明するコードが 2 倍になる。 |
-| Carve first, then close the "42" (3.6 B) / 先に掘ってから「42」を閉じる | Closing cells afterwards can disconnect the maze, and repairing that can break the corridor-width or dead-end rules — a fix that needs a fix. | 後からセルを閉じると迷路が分断されうる。その修復が通路幅や行き止まりの規則を壊しうる。直すための直しが要る。 |
-| Recursive backtracker (3.5 A, recursive form) / 再帰版のバックトラッカー | Depth reaches one call per cell on the interpreter's stack; §IV.3 lets the configuration ask for a maze large enough to hit the limit. | インタプリタのスタックにセル 1 つにつき 1 回分の深さが積まれる。§IV.3 により、設定はその上限に届く大きさの迷路を要求できる。 |
-| Braid freely, then validate and retry (3.7 B) / 自由に braiding して検証・再試行 | Every attempt scans the whole board and needs an attempt limit and a failure message, while checking each wall first costs a constant (§4.5). | 毎回盤面全体を調べ、試行上限と失敗時のメッセージが必要になる。一方、壁ごとの事前確認は定数時間で済む(§4.5)。 |
-| Find 3x3 areas afterwards and close a wall (3.7 C) / 後から 3x3 を見つけて壁を閉じる | Closing a wall can create a new dead end, which the dead-end rule then has to undo. | 壁を閉じると新しい行き止まりができうる。それを行き止まりの規則がまた直すことになる。 |
+| Option                                                                               | Why rejected (EN)                                                                                                                              | 却下した理由(JA)                                                                                                              |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Randomized Prim (3.5 B) / ランダム化 Prim                                            | Roughly three times as many dead ends to start from — precisely the work stage 6 has to undo.                                                 | 開始時点の行き止まりがおよそ 3 倍。それはまさにステージ 6 が取り消さねばならない作業。                                        |
+| Randomized Kruskal (3.5 C) / ランダム化 Kruskal                                      | On a grid, adjacency follows from the coordinates, so an edge list plus union-find is more machinery for the same result.                      | 格子では隣接関係が座標から決まるので、エッジ一覧と union-find は同じ結果に対して仕組みが多すぎる。                            |
+| Two separate generation paths (3.4 B) / 生成経路を 2 本持つ                          | Twice the code to write, test and explain, for two modes that share everything except the last stage.                                          | 最後の工程以外すべてを共有する 2 つのモードのために、書く・テストする・説明するコードが 2 倍になる。                          |
+| Carve first, then close the "42" (3.6 B) / 先に掘ってから「42」を閉じる              | Closing cells afterwards can disconnect the maze, and repairing that can break the corridor-width or dead-end rules — a fix that needs a fix. | 後からセルを閉じると迷路が分断されうる。その修復が通路幅や行き止まりの規則を壊しうる。直すための直しが要る。                  |
+| Recursive backtracker (3.5 A, recursive form) / 再帰版のバックトラッカー             | Depth reaches one call per cell on the interpreter's stack; §IV.3 lets the configuration ask for a maze large enough to hit the limit.        | インタプリタのスタックにセル 1 つにつき 1 回分の深さが積まれる。§IV.3 により、設定はその上限に届く大きさの迷路を要求できる。 |
+| Braid freely, then validate and retry (3.7 B) / 自由に braiding して検証・再試行     | Every attempt scans the whole board and needs an attempt limit and a failure message, while checking each wall first costs a constant (§4.5). | 毎回盤面全体を調べ、試行上限と失敗時のメッセージが必要になる。一方、壁ごとの事前確認は定数時間で済む(§4.5)。                 |
+| Find 3x3 areas afterwards and close a wall (3.7 C) / 後から 3x3 を見つけて壁を閉じる | Closing a wall can create a new dead end, which the dead-end rule then has to undo.                                                            | 壁を閉じると新しい行き止まりができうる。それを行き止まりの規則がまた直すことになる。                                          |
 
 ---
 
@@ -666,7 +668,6 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   「読みにくさ」は実際には生じない。確認は小さな関数 1 つと `if` 1 つで済む。**定義(我々の解釈):** 3x3 の開放領域とは、
   9 セルの内側の壁 12 枚がすべて開いている状態。§IV.4 は例しか示さず、analyzer もこの規則を検査しないので、
   説明できるようにここに明記する。
-
 - [x] **Q2 — decision 3.10 = A (2026-09-13): the generator owns the seed, the entry point prints it.**
 
   **EN** — The generator owns one `Random(seed)` and, when the configuration gives no seed, generates one and keeps
@@ -676,7 +677,6 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   **JA** — 生成器は `Random(seed)` を 1 つ持ち、設定にシードがなければ生成して `seed` property のために保持する。
   **表示はしない。** `a_maze_ing.py` が property を読んで表示する。生成器は再利用モジュール(§VI)の中核であり、
   勝手にコンソールへ書いてはならないから。
-
 - [x] **Q3 — how rare is "rare"? Answered by `maze_analyzer.py --help` (2026-09-01).**
 
   ```text
@@ -693,7 +693,6 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   **独立ループ 2 本以上、本物の行き止まり 2 個以下**で、§VIII のボーナスは `--max-dead-ends 0`。
   ループ側は安い。壁を 1 枚開けるたびにループが 1 本増えるから(§4.2)。**本当の目標は行き止まりの数**で、
   それは解釈すべき言葉ではなく、実装しながら測れる数になった。
-
 - [x] **Q4 — where is "the centre"? The analyzer's definition (2026-09-13).**
 
   **EN** — `maze_analyzer.py` (`_centre_candidates`) takes the middle cell for an odd size and both middle indices
@@ -705,7 +704,6 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   最大 4 候補とし、そのうち**どれか 1 つ**に届けば合格とする(§4.3)。これをそのまま採用する。より厳しい規則にしても
   採点上の利点はなく、「42」を置ける場所が狭まるだけ。analyzer は `(row, col)`、我々の `Coord` は `(x, y)` で書く点に
   注意する。
-
 - [ ] **Q5 — for javi: how `a_maze_ing.py` calls the generator.**
 
   **EN** — The skeleton on `feature/a-maze-ing.py` has a TODO calling `generate_maze(config)`, a function. This plan
@@ -722,9 +720,10 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
 
 ## 10. Changelog / 変更履歴
 
-| Date | Change (EN) | 変更(JA) | Reason (EN) | 理由(JA) |
-| --- | --- | --- | --- | --- |
-| 2026-08-20 | initial draft | 初稿 | 3.5 decided; W05 can start once Q1–Q4 are answered | 3.5 が決定。Q1〜Q4 が決まれば W05 に着手できる |
-| 2026-09-01 | Q3 answered from `maze_analyzer.py --help` | Q3 を `maze_analyzer.py --help` から回答 | the acceptance line is 2 loops and 2 dead ends, not a word to interpret | 合格線はループ 2 本・行き止まり 2 個で、解釈すべき言葉ではない |
-| 2026-09-13 | Q1 = 3.7 A (check before removal, 3x3 defined), Q2 = 3.10 A (the entry point prints the seed), Q4 = the analyzer's centre | Q1 = 3.7 A(取り除く前に確認、3x3 を定義)、Q2 = 3.10 A(シードはエントリポイントが表示)、Q4 = analyzer の中央 | settles everything stage 6 needs; reading the analyzer showed it counts only real dead ends and does not check 3x3 areas at all | ステージ 6 に必要なことがすべて決まった。analyzer を読んで、数えるのは本物の行き止まりだけで、3x3 は一切検査しないと分かった |
-| 2026-09-13 | rewritten with figures and full Japanese; §0, §3.1, §4.4, §4.5 and Q5 added; `_completes_open_3x3` added to the interface | 図と完全な日本語を加えて改稿。§0・§3.1・§4.4・§4.5・Q5 を追加。インターフェースに `_completes_open_3x3` を追加 | the plan for the hardest module has to be understandable before it is implemented, by both of us (§IX) | 最も難しいモジュールの計画は、実装の前に二人とも理解できなければならない(§IX) |
+| Date       | Change (EN)                                                                                                                    | 変更(JA)                                                                                                            | Reason (EN)                                                                                                                     | 理由(JA)                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 2026-08-20 | initial draft                                                                                                                  | 初稿                                                                                                                | 3.5 decided; W05 can start once Q1–Q4 are answered                                                                             | 3.5 が決定。Q1〜Q4 が決まれば W05 に着手できる                                                                               |
+| 2026-09-01 | Q3 answered from `maze_analyzer.py --help`                                                                                    | Q3 を `maze_analyzer.py --help` から回答                                                                           | the acceptance line is 2 loops and 2 dead ends, not a word to interpret                                                         | 合格線はループ 2 本・行き止まり 2 個で、解釈すべき言葉ではない                                                               |
+| 2026-09-13 | Q1 = 3.7 A (check before removal, 3x3 defined), Q2 = 3.10 A (the entry point prints the seed), Q4 = the analyzer's centre      | Q1 = 3.7 A(取り除く前に確認、3x3 を定義)、Q2 = 3.10 A(シードはエントリポイントが表示)、Q4 = analyzer の中央         | settles everything stage 6 needs; reading the analyzer showed it counts only real dead ends and does not check 3x3 areas at all | ステージ 6 に必要なことがすべて決まった。analyzer を読んで、数えるのは本物の行き止まりだけで、3x3 は一切検査しないと分かった |
+| 2026-09-13 | rewritten with figures and full Japanese; §0, §3.1, §4.4, §4.5 and Q5 added; `_completes_open_3x3` added to the interface | 図と完全な日本語を加えて改稿。§0・§3.1・§4.4・§4.5・Q5 を追加。インターフェースに `_completes_open_3x3` を追加 | the plan for the hardest module has to be understandable before it is implemented, by both of us (§IX)                         | 最も難しいモジュールの計画は、実装の前に二人とも理解できなければならない(§IX)                                               |
+| 2026-09-13 | the class goes in `maze/generator.py`; W19 must add `maze/` to the package | クラスは `maze/generator.py` に置く。W19 で `maze/` をパッケージに含める | a test build showed the wheel contains only `mazegen/`, so the packaging fix is needed wherever the generator lives, and keeping the core together costs nothing | 試しにビルドすると wheel には `mazegen/` しか入らなかった。生成器をどこに置いても設定の修正は必要なので、中核をまとめて置いても余計なコストはない |
