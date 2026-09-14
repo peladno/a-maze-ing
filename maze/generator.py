@@ -220,3 +220,48 @@ class MazeGenerator:
                 f'only {len(visited)} of {walkable} walkable cells '
                 'can be reached from (0, 0)'
             )
+
+    def _dead_ends(self, maze: Maze) -> list[Coord]:
+        """Return the real dead ends, in row order.
+
+        A real dead end is a cell with exactly one open passage and at
+        least one closed wall facing an ordinary cell, so that opening
+        that wall would give the cell a second way out. This is how
+        ``maze_analyzer.py`` counts them.
+
+        Parameters
+        ----------
+        maze:
+            The maze to inspect. It is not changed.
+
+        Returns
+        -------
+        list[Coord]
+            Top row first, each row left to right. The same maze always
+            gives the same list, which keeps a braid driven by it
+            reproducible.
+
+        Notes
+        -----
+        ``Maze.neighbours`` already leaves out positions outside the
+        grid and reserved cells, so every cell it offers is an ordinary
+        one. A cell with one open passage and two or more of them has a
+        wall it could open. With only one, that one is its passage, and
+        the cell is enclosed by the border and the "42". Enclosed dead
+        ends are counted neither here nor by the analyzer, since no wall
+        could remove them.
+
+        Reserved cells have no open passage at all, so they are never
+        taken for dead ends.
+        """
+        dead_ends: list[Coord] = []
+        for y in range(maze.height):
+            for x in range(maze.width):
+                pos = (x, y)
+                open_cells = list(maze.open_neighbours(pos))
+                adjacent = list(maze.neighbours(pos))
+                if len(open_cells) != 1:
+                    continue
+                if len(adjacent) >= 2:
+                    dead_ends.append(pos)
+        return dead_ends
