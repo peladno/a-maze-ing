@@ -126,3 +126,41 @@ def test_carve_leaves_reserved_cells_closed() -> None:
     assert _count_passages(m) == walkable - 1
     assert _count_reachable(m) == walkable
     assert m.walls_at((1, 1)) == _ALL_WALLS
+
+
+def test_generate_returns_a_perfect_maze() -> None:
+    gen = MazeGenerator(5, 3, perfect=True)
+    m = gen.generate()
+    assert _count_passages(m) == m.width * m.height - 1
+    assert _count_reachable(m) == m.width * m.height
+
+
+def test_generate_twice_gives_the_same_maze() -> None:
+    gen = MazeGenerator(5, 3, perfect=True)
+    m1 = gen.generate()
+    m2 = gen.generate()
+    rows1 = tuple(m1.rows())
+    rows2 = tuple(m2.rows())
+    assert rows1 == rows2
+
+
+def test_generate_not_perfect_is_not_implemented() -> None:
+    gen = MazeGenerator(5, 3, perfect=False)
+    with pytest.raises(NotImplementedError):
+        gen.generate()
+
+
+def test_carve_detects_a_split_maze() -> None:
+    m = Maze(3, 3, reserved=frozenset({(0, 1), (1, 1), (2, 1)}))
+    gen = MazeGenerator(m.width, m.height, perfect=True)
+    with pytest.raises(GenerationError) as excinfo:
+        gen._carve_spanning_tree(m, Random(0))
+    assert "only 3 of 6" in str(excinfo.value)
+
+
+def test_generate_prints_nothing(capsys: pytest.CaptureFixture[str]) -> None:
+    gen = MazeGenerator(5, 3, perfect=True, seed=0)
+    gen.generate()
+    result = capsys.readouterr()
+    assert result.out == ""
+    assert result.err == ""
