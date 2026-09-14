@@ -6,6 +6,9 @@ size, a mode and optionally a seed, and hands back a Maze.
 """
 
 import random
+from random import Random
+from maze.maze import Maze
+from maze.maze import Coord
 from maze.maze import MazeError
 
 
@@ -109,3 +112,69 @@ class MazeGenerator:
             it is the caller's decision; this class prints nothing.
         """
         return self._seed
+
+    def _carve_spanning_tree(self, maze: Maze, rng: Random) -> None:
+        """Carve a spanning tree: every walkable cell joined, no loop.
+
+        The recursive backtracker, written with an explicit stack. From
+        the cell on top of the stack, a neighbour not yet visited is
+        chosen at random, the wall between them is opened, and the
+        neighbour is pushed. When no such neighbour is left, the cell is
+        popped and the walk steps back.
+
+        Parameters
+        ----------
+        maze:
+            A maze with every wall closed. It is changed in place.
+        rng:
+            The source of every choice, so that the same seed carves the
+            same maze.
+
+        Notes
+        -----
+        The walk starts at ``(0, 0)``, which always exists and is never
+        reserved: the "42" must leave the corners free. Where it starts
+        changes the shape of the maze but not its correctness, since a
+        spanning tree reaches every walkable cell from anywhere, as long
+        as those cells are connected.
+
+        No loop can form. A wall is opened only towards a cell that has
+        not been visited, and so is not yet joined to the rest; joining
+        two cells that already are is exactly what would close a loop.
+        One wall is therefore opened per walkable cell after the first.
+        Reserved cells are never offered by ``Maze.neighbours``, so they
+        are never entered.
+
+        The loop ends, in time proportional to the number of cells. A
+        cell is pushed only if it is not in ``visited``, and it enters
+        ``visited`` in the same step; nothing ever leaves ``visited``.
+        Each cell is therefore pushed at most once and popped at most
+        once, and every pass through the loop does one or the other.
+        ``visited`` is a set so that asking about it does not slow down
+        as it grows.
+
+        Candidates are kept in the order ``Maze.neighbours`` yields them.
+        Choosing from a collection whose order could vary would let the
+        same seed carve a different maze.
+
+        The explicit stack replaces recursion, whose depth would reach
+        one call per cell and stop at Python's limit of about 1000.
+        """
+        start = (0, 0)
+        stack: list[Coord] = []
+        visited: set[Coord] = set()
+        stack.append(start)
+        visited.add(start)
+        while len(stack) > 0:
+            current = stack[-1]
+            candidates = []
+            for _, neighbour in maze.neighbours(current):
+                if neighbour not in visited:
+                    candidates.append(neighbour)
+            if len(candidates) == 0:
+                stack.pop()
+                continue
+            chosen = rng.choice(candidates)
+            maze.open_passage(current, chosen)
+            stack.append(chosen)
+            visited.add(chosen)
