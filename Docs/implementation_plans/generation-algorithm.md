@@ -580,7 +580,7 @@ twelve walls each, **whatever the size of the maze** — one small function, and
 | -- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | E1 | Maze too small for the "42" / 「42」に対して迷路が小さすぎる                                                                        | Skip the pattern, report an error on the console,**continue** (§IV.4).                                                                                                                      | パターンを省き、コンソールにエラーを出し、**続行する**(§IV.4)。                                                                                                            |
 | E2 | The pattern would cover a corner, or every centre candidate, in default mode / 既定モードで、パターンが角か、中央候補のすべてを覆う | Reposition or skip it — never produce a board that violates §IV.4.                                                                                                                               | 位置をずらすか省く。§IV.4 に違反する盤面は決して作らない。                                                                                                                       |
-| E3 | The reserved cells cut the walkable region in two / 確保セルが歩ける領域を分断する                                                  | `GenerationError`. Detectable after stage 4: fewer cells were visited than there are walkable cells.                                                                                             | `GenerationError`。ステージ 4 の後に検出できる:訪問したセル数が歩けるセル数より少ない。                                                                                         |
+| E3 | The reserved cells cut the walkable region in two / 確保セルが歩ける領域を分断する                                                  | `GenerationError`, raised at the end of `_carve_spanning_tree`: fewer cells were visited than there are walkable cells (Q8).                                                                                             | `_carve_spanning_tree` の最後で `GenerationError`:訪問したセル数が歩けるセル数より少ない(Q8)。                                                                                         |
 | E4 | `width` or `height` of 1 / 幅か高さが 1                                                                                         | A single row or column is a legal spanning tree, so `PERFECT=True` works. It has no room for any loop, so `PERFECT=False` must fail explicitly rather than return a board that violates §IV.4. | 1 行・1 列でも正当な全域木なので `PERFECT=True` は動く。ループの余地がまったくないので、`PERFECT=False` は §IV.4 に違反する盤面を返さず、明示的に失敗する。                   |
 | E5 | Default mode on a maze too small for two loops / ループ 2 本に対して小さすぎる既定モード                                            | `GenerationError` from `__init__`, naming the minimum — checked there and nowhere else (Q6). Without the "42", the smallest boards that can hold two loops are 2x3 and 3x2: 7 internal walls and 6 cells give 7 − 6 + 1 = 2. A 2x2 gives only 1. In general a width by height board holds at most (width − 1) × (height − 1) loops, one per 2x2 block of cells.      | `__init__` で、最小サイズを示して `GenerationError`。確かめるのはここだけ(Q6)。「42」がなければ、ループ 2 本を収められる最小の盤面は 2x3 と 3x2。内側の壁 7 枚・セル 6 個で 7 − 6 + 1 = 2。2x2 では 1 本にしかならない。一般に、幅 × 高さの盤面が持てるループは最大 (幅 − 1) × (高さ − 1) 本で、2x2 のブロック 1 つにつき 1 本。 |
 | E6 | Same seed, same parameters / 同じシード・同じパラメータ                                                                             | Byte-identical maze, every time.                                                                                                                                                                   | 毎回、1 バイトも違わない迷路。                                                                                                                                                    |
@@ -733,6 +733,30 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   決定 D2 に従えば確かめることもできる。しかしこれはループの規則で、このモジュールの知識であり、2 つ目の写しは
   1 つ目と食い違いうる。代償として、`WIDTH=2`・`HEIGHT=2`・`PERFECT=False` と正しく書かれた `config.txt` は
   パーサを通り、ここで拒否される。メッセージは大きさ(`got 2x2`)を示すが、行番号は付かない。
+- [x] **Q7 — a maze that is not perfect, before braiding exists: fail loudly (2026-09-14).**
+
+  **EN** — Until stage 6 is written, `generate` raises `NotImplementedError` for a maze that is not perfect, rather
+  than returning the unbraided tree. The tree would look like a finished maze while breaking §IV.4's default mode —
+  no loop, many dead ends — and the default `config.txt` asks for exactly that mode, so a wrong maze would reach
+  the output file with nobody noticing. This follows the rule in `implementation_plans/README.md`: a part that is
+  not written yet must fail where it is called, not quietly return something.
+
+  **JA** — ステージ 6 を書くまでは、完全迷路でない迷路を求められたら、`generate` は braiding していない木を返さず、
+  `NotImplementedError` を投げる。木は完成した迷路のように見えるが、§IV.4 の既定モードを満たさない(ループが無く、
+  行き止まりが多い)。そして既定の `config.txt` が求めるのはまさにそのモードなので、誤った迷路が誰にも気づかれずに
+  出力ファイルまで届いてしまう。これは `implementation_plans/README.md` の規則に従っている。まだ書いていない部分は、
+  黙って何かを返すのではなく、呼ばれた場所で失敗しなければならない。
+- [x] **Q8 — where E3 is detected: at the end of `_carve_spanning_tree` (2026-09-14).**
+
+  **EN** — When the walk ends, `visited` holds every cell reachable from `(0, 0)`. If that is fewer than the walkable
+  cells — `width × height` minus the reserved ones — the reserved cells have cut the board in two, and a
+  `GenerationError` is raised there. The number is already in hand at that point, so no second walk is needed. The
+  tests' `_count_reachable` computes the same number from outside, which is what makes it a fair check on this one.
+
+  **JA** — 探索が終わった時点で、`visited` には `(0, 0)` から届くすべてのセルが入っている。その数が歩けるセルの数
+  (`width × height` から確保セルを引いたもの)より少なければ、確保セルが盤面を分断しているので、その場で
+  `GenerationError` を投げる。この数はその時点ですでに手元にあるので、もう一度歩き直す必要はない。テストの
+  `_count_reachable` は同じ数を外側から数える。だからこそ、こちらの判定を公平に確かめられる。
 
 ---
 
@@ -746,3 +770,4 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
 | 2026-09-13 | rewritten with figures and full Japanese; §0, §3.1, §4.4, §4.5 and Q5 added; `_completes_open_3x3` added to the interface | 図と完全な日本語を加えて改稿。§0・§3.1・§4.4・§4.5・Q5 を追加。インターフェースに `_completes_open_3x3` を追加 | the plan for the hardest module has to be understandable before it is implemented, by both of us (§IX)                         | 最も難しいモジュールの計画は、実装の前に二人とも理解できなければならない(§IX)                                               |
 | 2026-09-13 | the class goes in `maze/generator.py`; W19 must add `maze/` to the package | クラスは `maze/generator.py` に置く。W19 で `maze/` をパッケージに含める | a test build showed the wheel contains only `mazegen/`, so the packaging fix is needed wherever the generator lives, and keeping the core together costs nothing | 試しにビルドすると wheel には `mazegen/` しか入らなかった。生成器をどこに置いても設定の修正は必要なので、中核をまとめて置いても余計なコストはない |
 | 2026-09-13 | Q6: the size rule is checked in `__init__` only; E5 states the general bound | Q6:大きさの規則は `__init__` だけで確かめる。E5 に一般の上限を明記 | the rule is about loops, which is the generator's knowledge; the parser could answer it from the file, but a second copy could drift | ループの規則は生成器の知識。パーサもファイルから答えられるが、2 つ目の写しは食い違いうる |
+| 2026-09-14 | Q7: `generate` raises `NotImplementedError` for a maze that is not perfect until braiding exists. Q8: E3 is detected at the end of `_carve_spanning_tree` | Q7:braiding ができるまで、完全迷路でない場合 `generate` は `NotImplementedError`。Q8:E3 は `_carve_spanning_tree` の最後で検出する | an unbraided tree would pass for a default-mode maze without being one; the reachable count is already in hand when the walk ends | braiding していない木は既定モードの迷路に見えてしまう。届いたセルの数は、探索が終わった時点ですでに手元にある |
