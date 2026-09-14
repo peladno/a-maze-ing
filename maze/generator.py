@@ -113,6 +113,34 @@ class MazeGenerator:
         """
         return self._seed
 
+    def generate(self) -> Maze:
+        """Build and return a new maze.
+
+        Every call starts a fresh ``Random`` from the stored seed, so
+        calling this twice gives the same maze.
+
+        Returns
+        -------
+        Maze
+            With every walkable cell reachable. In a perfect maze there is
+            exactly one path between any two cells.
+
+        Raises
+        ------
+        NotImplementedError
+            For a maze that is not perfect. The step that adds loops and
+            removes dead ends is not written yet, and a maze without it
+            is a board §IV.4 does not accept, so nothing is returned
+            rather than something that looks finished.
+        GenerationError
+            If the reserved cells split the maze.
+        """
+        if not self._perfect:
+            raise NotImplementedError
+        maze = Maze(self._width, self._height)
+        self._carve_spanning_tree(maze, Random(self.seed))
+        return maze
+
     def _carve_spanning_tree(self, maze: Maze, rng: Random) -> None:
         """Carve a spanning tree: every walkable cell joined, no loop.
 
@@ -129,6 +157,13 @@ class MazeGenerator:
         rng:
             The source of every choice, so that the same seed carves the
             same maze.
+
+        Raises
+        ------
+        GenerationError
+            If the walk ends before reaching every walkable cell, which
+            happens only when the reserved cells split the maze. The count
+            comes from ``visited``, so nothing is walked a second time.
 
         Notes
         -----
@@ -178,3 +213,10 @@ class MazeGenerator:
             maze.open_passage(current, chosen)
             stack.append(chosen)
             visited.add(chosen)
+        walkable = maze.width * maze.height - len(maze.reserved)
+        if len(visited) != walkable:
+            raise GenerationError(
+                'the reserved cells split the maze: '
+                f'only {len(visited)} of {walkable} walkable cells '
+                'can be reached from (0, 0)'
+            )
