@@ -164,3 +164,58 @@ def test_generate_prints_nothing(capsys: pytest.CaptureFixture[str]) -> None:
     result = capsys.readouterr()
     assert result.out == ""
     assert result.err == ""
+
+
+def test_dead_ends_of_a_tree() -> None:
+    m = Maze(3, 3)
+    gen = MazeGenerator(m.width, m.height, perfect=True)
+    tree = [
+        ((0, 0), (0, 1)),
+        ((0, 1), (1, 1)),
+        ((1, 1), (1, 2)),
+        ((1, 2), (0, 2)),
+        ((1, 2), (2, 2)),
+        ((2, 2), (2, 1)),
+        ((2, 1), (2, 0)),
+        ((2, 0), (1, 0))
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    assert gen._dead_ends(m) == [(0, 0), (1, 0), (0, 2)]
+
+
+def test_dead_end_facing_only_reserved_is_not_counted() -> None:
+    m = Maze(3, 3, reserved=frozenset({(1, 0)}))
+    gen = MazeGenerator(m.width, m.height, perfect=True)
+    tree = [
+        ((0, 0), (0, 1)),
+        ((0, 1), (1, 1)),
+        ((1, 1), (2, 1)),
+        ((2, 1), (2, 0)),
+        ((1, 1), (1, 2)),
+        ((1, 2), (0, 2)),
+        ((1, 2), (2, 2))
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    assert gen._dead_ends(m) == [(0, 2), (2, 2)]
+
+
+def test_braided_maze_has_no_dead_ends() -> None:
+    m = Maze(3, 3)
+    gen = MazeGenerator(m.width, m.height, perfect=True)
+    tree = [
+        ((0, 0), (0, 1)),
+        ((0, 1), (1, 1)),
+        ((1, 1), (1, 2)),
+        ((1, 2), (0, 2)),
+        ((1, 2), (2, 2)),
+        ((2, 2), (2, 1)),
+        ((2, 1), (2, 0)),
+        ((2, 0), (1, 0)),
+        ((0, 0), (1, 0)),
+        ((0, 2), (0, 1)),
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    assert gen._dead_ends(m) == []
