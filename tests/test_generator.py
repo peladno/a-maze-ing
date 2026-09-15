@@ -219,3 +219,93 @@ def test_braided_maze_has_no_dead_ends() -> None:
     for a, b in tree:
         m.open_passage(a, b)
     assert gen._dead_ends(m) == []
+
+
+def _open_all_but(
+    width: int,
+    height: int,
+    closed: frozenset[tuple[Coord, Coord]] = frozenset(),
+    reserved: frozenset[Coord] = frozenset()
+) -> Maze:
+    m = Maze(width, height, reserved=reserved)
+    for y in range(m.height):
+        for x in range(m.width):
+            pairs = []
+            a = (x, y)
+            if x + 1 < width:
+                pairs.append((a, (x + 1, y)))
+            if y + 1 < height:
+                pairs.append((a, (x, y + 1)))
+            for pair in pairs:
+                if pair in closed:
+                    continue
+                a, b = pair
+                if m.is_reserved(a) or m.is_reserved(b):
+                    continue
+                m.open_passage(a, b)
+    return m
+
+
+def test_closed_walls_in_counts_the_twelve() -> None:
+    m_closed = Maze(3, 3)
+    gen_closed = MazeGenerator(m_closed.width, m_closed.height)
+    m_open = _open_all_but(3, 3)
+    gen_open = MazeGenerator(m_open.width, m_open.height)
+    assert gen_closed._closed_walls_in(m_closed, 0, 0) == 12
+    assert gen_open._closed_walls_in(m_open, 0, 0) == 0
+
+
+def test_last_wall_of_a_3x3_completes_it() -> None:
+    a = (1, 1)
+    b = (2, 1)
+    m = _open_all_but(3, 3, closed=frozenset({(a, b)}))
+    gen = MazeGenerator(m.width, m.height)
+    assert gen._completes_open_3x3(m, a, b)
+
+
+def test_vertical_wall_completes_a_3x3() -> None:
+    a = (1, 1)
+    b = (1, 2)
+    m = _open_all_but(3, 3, closed=frozenset({(a, b)}))
+    gen = MazeGenerator(m.width, m.height)
+    assert gen._completes_open_3x3(m, a, b)
+
+
+def test_two_closed_walls_do_not_complete_a_3x3() -> None:
+    a = (1, 1)
+    b = (1, 2)
+    c = (1, 0)
+    d = (2, 0)
+    m = _open_all_but(3, 3, closed=frozenset({(a, b), (c, d)}))
+    gen = MazeGenerator(m.width, m.height)
+    assert not gen._completes_open_3x3(m, a, b)
+    assert not gen._completes_open_3x3(m, c, d)
+
+
+def test_no_3x3_fits_on_a_3_by_2_board() -> None:
+    a = (0, 1)
+    b = (1, 1)
+    m = _open_all_but(3, 2, closed=frozenset({(a, b)}))
+    gen = MazeGenerator(m.width, m.height)
+    assert not gen._completes_open_3x3(m, a, b)
+
+
+def test_windows_outside_the_grid_are_skipped() -> None:
+    a = (0, 0)
+    b = (1, 0)
+    m = _open_all_but(4, 4, closed=frozenset({(a, b)}))
+    gen = MazeGenerator(m.width, m.height)
+    assert gen._completes_open_3x3(m, a, b)
+
+
+def test_reserved_cell_never_completes_a_3x3() -> None:
+    a = (1, 1)
+    b = (2, 1)
+    m = _open_all_but(
+        5,
+        5,
+        closed=frozenset({(a, b)}),
+        reserved=frozenset({(2, 2)})
+    )
+    gen = MazeGenerator(m.width, m.height)
+    assert not gen._completes_open_3x3(m, a, b)
