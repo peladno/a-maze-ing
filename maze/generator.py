@@ -124,22 +124,36 @@ class MazeGenerator:
         -------
         Maze
             With every walkable cell reachable. In a perfect maze there is
-            exactly one path between any two cells.
+            exactly one path between any two cells. Otherwise there are at
+            least two independent loops, and every real dead end has been
+            given a second way out wherever that did not complete a 3x3
+            open area, as §IV.4 asks.
 
         Raises
         ------
-        NotImplementedError
-            For a maze that is not perfect. The step that adds loops and
-            removes dead ends is not written yet, and a maze without it
-            is a board §IV.4 does not accept, so nothing is returned
-            rather than something that looks finished.
         GenerationError
-            If the reserved cells split the maze.
+            If the reserved cells split the maze, or leave no room for two
+            loops.
+
+        Notes
+        -----
+        One pipeline serves both modes. A perfect maze is the spanning
+        tree as carved; the default mode goes on to braid it and, when
+        that left fewer than two loops, to open the walls still missing.
+
+        A single ``Random`` is shared by every stage, each one taking up
+        the sequence where the previous stopped. A fresh ``Random`` for
+        each stage would replay the same numbers in all of them, tying
+        the choices of one stage to those of another.
         """
-        if not self._perfect:
-            raise NotImplementedError
         maze = Maze(self._width, self._height)
-        self._carve_spanning_tree(maze, Random(self.seed))
+        rng = Random(self.seed)
+        self._carve_spanning_tree(maze, rng)
+        if self._perfect:
+            return maze
+        loops = self._braid(maze, rng)
+        if loops < 2:
+            self._add_loops(maze, rng, 2 - loops)
         return maze
 
     def _carve_spanning_tree(self, maze: Maze, rng: Random) -> None:
@@ -413,3 +427,79 @@ class MazeGenerator:
                 maze.open_passage(dead_end, rng.choice(open_candidates))
                 open_count += 1
         return open_count
+
+    def _add_loops(self, maze: Maze, rng: Random, count: int) -> None:
+        """Open ``count`` more walls, each one adding a loop.
+
+        Braiding opens one wall per dead end it fixes, which on a small
+        board can be fewer than the two loops §IV.4 asks for: one wall
+        may fix two neighbouring dead ends at once. This opens the walls
+        still missing.
+
+        Parameters
+        ----------
+        maze:
+            A connected maze, normally one just braided. It is changed in
+            place.
+        rng:
+            The source of every choice, so that the same seed gives the
+            same maze.
+        count:
+            How many walls to open. Zero or less opens none.
+
+        Raises
+        ------
+        GenerationError
+            If no wall is left that may be opened before ``count`` walls
+            have been. Following a braided spanning tree on a size
+            ``__init__`` accepted, that happens only when the reserved
+            cells take the room the loops would need.
+
+        Notes
+        -----
+        A candidate is a closed wall between two walkable cells that
+        would not complete a 3x3 open area. Each cell offers only its
+        east and south walls, so every wall is looked at once, and the
+        bounds check keeps the outer border out.
+
+        Candidates are collected again for every wall. A wall once
+        opened is no longer closed, and could otherwise be chosen a
+        second time: ``Maze.open_passage`` accepts an open wall without
+        complaint, so the loop would silently not be added.
+
+        While fewer than two loops exist, no wall can complete a 3x3
+        area: a block with a single closed internal wall already holds
+        three loops. The check is made anyway, so the rule is enforced
+        in one place and does not rest on that argument. Opening a wall
+        never creates a dead end, so what braiding achieved still holds.
+        """
+        for _ in range(count):
+            closed_walls = []
+            for y in range(maze.height):
+                for x in range(maze.width):
+                    cell = (x, y)
+                    east = (x + 1, y)
+                    south = (x, y + 1)
+                    if maze.is_reserved(cell):
+                        continue
+                    if (
+                        x + 1 < maze.width
+                        and not maze.is_reserved(east)
+                        and not maze.is_open(cell, Direction.EAST)
+                    ):
+                        if not self._completes_open_3x3(maze, cell, east):
+                            closed_walls.append((cell, east))
+                    if (
+                        y + 1 < maze.height
+                        and not maze.is_reserved(south)
+                        and not maze.is_open(cell, Direction.SOUTH)
+                    ):
+                        if not self._completes_open_3x3(maze, cell, south):
+                            closed_walls.append((cell, south))
+            if len(closed_walls) == 0:
+                raise GenerationError(
+                    'the reserved cells leave no room for two loops: '
+                    'no wall between two walkable cells can be opened'
+                )
+            a, b = rng.choice(closed_walls)
+            maze.open_passage(a, b)

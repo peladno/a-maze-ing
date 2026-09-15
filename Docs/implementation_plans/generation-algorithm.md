@@ -787,6 +787,12 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   行き止まりが多い)。そして既定の `config.txt` が求めるのはまさにそのモードなので、誤った迷路が誰にも気づかれずに
   出力ファイルまで届いてしまう。これは `implementation_plans/README.md` の規則に従っている。まだ書いていない部分は、
   黙って何かを返すのではなく、呼ばれた場所で失敗しなければならない。
+
+  **EN** — **Resolved (2026-09-15).** Braiding and stage 7 are written, and `generate` now builds the default mode.
+  `NotImplementedError` is gone, and the test that expected it was replaced by tests of the finished board.
+
+  **JA** — **解決(2026-09-15)。** braiding とステージ 7 を書き、`generate` は既定モードを作るようになった。
+  `NotImplementedError` はなくなり、それを期待していたテストは、完成した盤面を確かめるテストに差し替えた。
 - [x] **Q8 — where E3 is detected: at the end of `_carve_spanning_tree` (2026-09-14).**
 
   **EN** — When the walk ends, `visited` holds every cell reachable from `(0, 0)`. If that is fewer than the walkable
@@ -826,3 +832,4 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
 | 2026-09-13 | Q6: the size rule is checked in `__init__` only; E5 states the general bound | Q6:大きさの規則は `__init__` だけで確かめる。E5 に一般の上限を明記 | the rule is about loops, which is the generator's knowledge; the parser could answer it from the file, but a second copy could drift | ループの規則は生成器の知識。パーサもファイルから答えられるが、2 つ目の写しは食い違いうる |
 | 2026-09-14 | Q7: `generate` raises `NotImplementedError` for a maze that is not perfect until braiding exists. Q8: E3 is detected at the end of `_carve_spanning_tree` | Q7:braiding ができるまで、完全迷路でない場合 `generate` は `NotImplementedError`。Q8:E3 は `_carve_spanning_tree` の最後で検出する | an unbraided tree would pass for a default-mode maze without being one; the reachable count is already in hand when the walk ends | braiding していない木は既定モードの迷路に見えてしまう。届いたセルの数は、探索が終わった時点ですでに手元にある |
 | 2026-09-15 | Q9: stage 7 opens more walls when braiding leaves fewer than two loops; `_braid` returns the number of walls it opened; E10 and a 3x2 figure in §4.2 | Q9:braiding の後でループが 2 本未満なら、ステージ 7 がさらに壁を開ける。`_braid` は開けた壁の枚数を返す。E10 と、§4.2 に 3x2 の図を追加 | on a 3x2 board one wall can fix both dead ends, leaving one loop on a size `__init__` accepted | 3x2 の盤面では壁 1 枚で両方の行き止まりが直り、`__init__` が受け入れた大きさでループが 1 本しか残らない |
+| 2026-09-15 | Q7 resolved: `generate` builds the default mode through stages 6 and 7, sharing one `Random` | Q7 解決:`generate` はステージ 6 と 7 を通して既定モードを作る。`Random` は 1 つを共有する | braiding and the loop top-up are written and tested | braiding とループの補充を書き、テストした |
