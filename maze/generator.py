@@ -9,6 +9,7 @@ import random
 from random import Random
 from maze.maze import Maze
 from maze.maze import Coord
+from maze.maze import Direction
 from maze.maze import MazeError
 
 
@@ -265,3 +266,86 @@ class MazeGenerator:
                 if len(adjacent) >= 2:
                     dead_ends.append(pos)
         return dead_ends
+
+    def _closed_walls_in(self, maze: Maze, wx: int, wy: int) -> int:
+        """Count the closed walls inside a 3x3 block of cells.
+
+        Parameters
+        ----------
+        maze:
+            The maze to inspect. It is not changed.
+        wx, wy:
+            The top-left cell of the block. The whole block must lie
+            inside the grid.
+
+        Returns
+        -------
+        int
+            From 0 to 12. Only the walls between the nine cells count;
+            the walls on the block's outer edge say nothing about how
+            wide the area inside it is.
+
+        Notes
+        -----
+        Each internal wall is counted once, from the cell to its west or
+        north: east walls on all three rows but only the left two
+        columns, and south walls on all three columns but only the top
+        two rows. Counting both directions on every cell of the block
+        would count its outer edge as well.
+        """
+        n = 0
+        for y in range(wy, wy + 3):
+            for x in range(wx, wx + 2):
+                if not maze.is_open((x, y), Direction.EAST):
+                    n += 1
+        for y in range(wy, wy + 2):
+            for x in range(wx, wx + 3):
+                if not maze.is_open((x, y), Direction.SOUTH):
+                    n += 1
+        return n
+
+    def _completes_open_3x3(self, maze: Maze, a: Coord, b: Coord) -> bool:
+        """Tell whether opening the wall between a and b completes a 3x3.
+
+        Parameters
+        ----------
+        maze:
+            The maze to inspect. It is not changed.
+        a, b:
+            Two adjacent cells whose shared wall is still closed.
+
+        Returns
+        -------
+        bool
+            True if some 3x3 block would then have all twelve of its
+            internal walls open, which §IV.4 forbids: a corridor may be
+            two cells wide, never three.
+
+        Notes
+        -----
+        Only blocks holding both a and b can change, because only in
+        those is the wall between them internal. Such a block starts at
+        a column from ``max(x) - 2`` to ``min(x)`` and a row from
+        ``max(y) - 2`` to ``min(y)``: six blocks whichever way the wall
+        runs, so the check costs the same on any maze. Blocks reaching
+        past the grid are skipped.
+
+        Every block considered contains the wall between a and b, and
+        that wall is closed. Opening it completes the block exactly when
+        it is the block's only closed wall, so there is no need to check
+        which wall the remaining closed one is.
+
+        A block holding a reserved cell never completes, since every wall
+        of a reserved cell stays closed.
+        """
+        ax, ay = a
+        bx, by = b
+        for wy in range(max(ay, by) - 2, min(ay, by) + 1):
+            for wx in range(max(ax, bx) - 2, min(ax, bx) + 1):
+                if not (
+                    maze.contains((wx, wy)) and maze.contains((wx + 2, wy + 2))
+                ):
+                    continue
+                if self._closed_walls_in(maze, wx, wy) == 1:
+                    return True
+        return False
