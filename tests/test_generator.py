@@ -309,3 +309,91 @@ def test_reserved_cell_never_completes_a_3x3() -> None:
     )
     gen = MazeGenerator(m.width, m.height)
     assert not gen._completes_open_3x3(m, a, b)
+
+
+def test_braid_fixes_the_traced_tree() -> None:
+    m = Maze(3, 3)
+    gen = MazeGenerator(m.width, m.height, perfect=True, seed=0)
+    tree = [
+        ((0, 0), (0, 1)),
+        ((0, 1), (1, 1)),
+        ((1, 1), (1, 2)),
+        ((1, 2), (0, 2)),
+        ((1, 2), (2, 2)),
+        ((2, 2), (2, 1)),
+        ((2, 1), (2, 0)),
+        ((2, 0), (1, 0))
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    assert gen._braid(m, Random(gen.seed)) == 2
+    assert gen._dead_ends(m) == []
+
+
+def test_braid_one_wall_can_fix_two_dead_ends() -> None:
+    m = Maze(3, 2)
+    gen = MazeGenerator(m.width, m.height, perfect=True, seed=0)
+    tree = [
+            ((0, 0), (1, 0)),
+            ((1, 0), (2, 0)),
+            ((2, 0), (2, 1)),
+            ((2, 1), (1, 1)),
+            ((1, 1), (0, 1))
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    assert gen._braid(m, Random(gen.seed)) == 1
+    assert gen._dead_ends(m) == []
+
+
+def test_braid_returns_the_walls_it_opened() -> None:
+    gen = MazeGenerator(20, 15, perfect=True, seed=0)
+    m = gen.generate()
+    passages_before = _count_passages(m)
+    result = gen._braid(m, Random(gen.seed))
+    passages_after = _count_passages(m)
+    assert result == passages_after - passages_before
+
+
+def test_braid_skips_a_wall_that_would_complete_a_3x3() -> None:
+    m = _open_all_but(3, 3, closed=frozenset({((0, 0), (1, 0))}))
+    gen = MazeGenerator(m.width, m.height, perfect=True, seed=0)
+    assert gen._braid(m, Random(gen.seed)) == 0
+    assert not m.is_open((0, 0), Direction.EAST)
+    assert gen._dead_ends(m) == [(0, 0)]
+
+
+def test_braid_same_seed_same_maze() -> None:
+    gen = MazeGenerator(20, 15, perfect=True, seed=0)
+    m1 = gen.generate()
+    m2 = gen.generate()
+    gen._braid(m1, Random(1))
+    gen._braid(m2, Random(1))
+    assert tuple(m1.rows()) == tuple(m2.rows())
+
+
+def test_braid_leaves_reserved_cells_closed() -> None:
+    m = Maze(3, 3, reserved=frozenset({(1, 0)}))
+    gen = MazeGenerator(m.width, m.height, perfect=True)
+    tree = [
+        ((0, 0), (0, 1)),
+        ((0, 1), (1, 1)),
+        ((1, 1), (2, 1)),
+        ((2, 1), (2, 0)),
+        ((1, 1), (1, 2)),
+        ((1, 2), (0, 2)),
+        ((1, 2), (2, 2))
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    gen._braid(m, Random(0))
+    assert m.walls_at((1, 0)) == _ALL_WALLS
+
+
+def test_braid_leaves_no_3x3_open_area() -> None:
+    gen = MazeGenerator(20, 15, perfect=True, seed=0)
+    m = gen.generate()
+    gen._braid(m, Random(gen.seed))
+    for y in range(m.height - 2):
+        for x in range(m.width - 2):
+            assert gen._closed_walls_in(m, x, y) >= 1
