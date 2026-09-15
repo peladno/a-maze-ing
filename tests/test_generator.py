@@ -148,7 +148,7 @@ def test_generate_default_mode_is_playable() -> None:
     for seed in range(20):
         gen = MazeGenerator(20, 15, seed=seed)
         m = gen.generate()
-        walkable = m.width * m.height
+        walkable = m.width * m.height - len(m.reserved)
         assert _count_reachable(m) == walkable
         assert _count_passages(m) - (walkable - 1) >= 2
         assert len(gen._dead_ends(m)) <= 2
@@ -171,6 +171,58 @@ def test_generate_smallest_boards_have_two_loops() -> None:
             walkable = m.width * m.height
             assert _count_reachable(m) == walkable
             assert _count_passages(m) - (walkable - 1) == 2
+
+
+def test_pattern_is_omitted_below_9x7() -> None:
+    assert MazeGenerator(8, 7)._pattern_cells() == frozenset()
+    assert MazeGenerator(9, 6)._pattern_cells() == frozenset()
+    assert len(MazeGenerator(9, 7)._pattern_cells()) == 18
+
+
+def test_pattern_sits_in_the_middle() -> None:
+    cells = MazeGenerator(20, 15)._pattern_cells()
+    assert min(x for x, _ in cells) == 7
+    assert max(x for x, _ in cells) == 13
+    assert min(y for _, y in cells) == 5
+    assert max(y for _, y in cells) == 9
+    assert not any(x == 10 for x, _ in cells)
+
+
+def test_pattern_leaves_corners_and_a_centre_candidate_open() -> None:
+    for width in range(9, 30):
+        for height in range(7, 30):
+            cells = MazeGenerator(width, height)._pattern_cells()
+            right = width - 1
+            bottom = height - 1
+            corners = {(0, 0), (right, 0), (0, bottom), (right, bottom)}
+            assert not corners & cells
+            xs = {width // 2, (width - 1) // 2}
+            ys = {height // 2, (height - 1) // 2}
+            assert any((x, y) not in cells for x in xs for y in ys)
+
+
+def test_generate_keeps_the_pattern_closed() -> None:
+    for perfect in (True, False):
+        gen = MazeGenerator(20, 15, perfect=perfect, seed=0)
+        m = gen.generate()
+        assert m.reserved == gen._pattern_cells()
+        for cell in m.reserved:
+            assert m.walls_at(cell) == _ALL_WALLS
+
+
+def test_generate_smallest_board_with_the_pattern() -> None:
+    for perfect in (True, False):
+        for seed in range(50):
+            gen = MazeGenerator(9, 7, perfect=perfect, seed=seed)
+            m = gen.generate()
+            walkable = m.width * m.height - len(m.reserved)
+            assert len(m.reserved) == 18
+            assert _count_reachable(m) == walkable
+            loops = _count_passages(m) - (walkable - 1)
+            if perfect:
+                assert loops == 0
+            else:
+                assert loops >= 2
 
 
 def test_generate_default_mode_same_seed_same_maze() -> None:
