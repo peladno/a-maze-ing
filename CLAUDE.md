@@ -88,7 +88,8 @@ Outstanding across the whole repo:
 - **`a_maze_ing.py` is only on javi's unmerged branch** `feature/a-maze-ing.py`, though §IV.2
   fixes that filename and `make run` calls it (W17). It still needs the one `except ConfigError`
   handler agreed in 3.9 = A.
-- **so's generator (W05–W09) is on `feature/generator`, not merged yet.** A perfect maze is generated
-  and passes `maze_analyzer.py`. A maze that is not perfect raises `NotImplementedError` until
-  braiding (stage 6) exists, and the "42" (stage 2) is not placed yet. Plan:
-  `generation-algorithm.md` §3; the next stage is braiding.
+- **so's generator (W05–W09) is on `feature/generator`, not merged yet.** Both modes are generated:
+  a perfect maze, and the default mode braided with at least two loops (stage 7 tops them up on
+  small boards). `maze_analyzer.py` judges them PERFECT and Pac-Man-USABLE, with no real dead end.
+  The "42" (stage 2) is not placed yet. Plan: `generation-algorithm.md` §3; the next stage is the
+  "42".
