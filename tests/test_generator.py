@@ -144,10 +144,41 @@ def test_generate_twice_gives_the_same_maze() -> None:
     assert rows1 == rows2
 
 
-def test_generate_not_perfect_is_not_implemented() -> None:
-    gen = MazeGenerator(5, 3, perfect=False)
-    with pytest.raises(NotImplementedError):
-        gen.generate()
+def test_generate_default_mode_is_playable() -> None:
+    for seed in range(20):
+        gen = MazeGenerator(20, 15, seed=seed)
+        m = gen.generate()
+        walkable = m.width * m.height
+        assert _count_reachable(m) == walkable
+        assert _count_passages(m) - (walkable - 1) >= 2
+        assert len(gen._dead_ends(m)) <= 2
+
+
+def test_generate_default_mode_has_no_3x3_open_area() -> None:
+    for seed in range(20):
+        gen = MazeGenerator(20, 15, seed=seed)
+        m = gen.generate()
+        for y in range(m.height - 2):
+            for x in range(m.width - 2):
+                assert gen._closed_walls_in(m, x, y) >= 1
+
+
+def test_generate_smallest_boards_have_two_loops() -> None:
+    for width, height in ((3, 2), (2, 3)):
+        for seed in range(50):
+            gen = MazeGenerator(width, height, seed=seed)
+            m = gen.generate()
+            walkable = m.width * m.height
+            assert _count_reachable(m) == walkable
+            assert _count_passages(m) - (walkable - 1) == 2
+
+
+def test_generate_default_mode_same_seed_same_maze() -> None:
+    gen1 = MazeGenerator(20, 15, seed=7)
+    gen2 = MazeGenerator(20, 15, seed=7)
+    rows1 = tuple(gen1.generate().rows())
+    assert tuple(gen1.generate().rows()) == rows1
+    assert tuple(gen2.generate().rows()) == rows1
 
 
 def test_carve_detects_a_split_maze() -> None:
@@ -334,11 +365,11 @@ def test_braid_one_wall_can_fix_two_dead_ends() -> None:
     m = Maze(3, 2)
     gen = MazeGenerator(m.width, m.height, perfect=True, seed=0)
     tree = [
-            ((0, 0), (1, 0)),
-            ((1, 0), (2, 0)),
-            ((2, 0), (2, 1)),
-            ((2, 1), (1, 1)),
-            ((1, 1), (0, 1))
+        ((0, 0), (1, 0)),
+        ((1, 0), (2, 0)),
+        ((2, 0), (2, 1)),
+        ((2, 1), (1, 1)),
+        ((1, 1), (0, 1))
     ]
     for a, b in tree:
         m.open_passage(a, b)
@@ -397,3 +428,68 @@ def test_braid_leaves_no_3x3_open_area() -> None:
     for y in range(m.height - 2):
         for x in range(m.width - 2):
             assert gen._closed_walls_in(m, x, y) >= 1
+
+
+def test_add_loops_tops_up_the_3x2_path() -> None:
+    m = Maze(3, 2)
+    gen = MazeGenerator(m.width, m.height, perfect=True)
+    tree = [
+        ((0, 0), (1, 0)),
+        ((1, 0), (2, 0)),
+        ((2, 0), (2, 1)),
+        ((2, 1), (1, 1)),
+        ((1, 1), (0, 1))
+    ]
+    for a, b in tree:
+        m.open_passage(a, b)
+    gen._braid(m, Random(0))
+    gen._add_loops(m, Random(0), 1)
+    assert _count_passages(m) == m.width * m.height + 1
+
+
+def test_add_loops_reaches_the_last_row_and_column() -> None:
+    m1 = _open_all_but(
+        3, 2,
+        closed=frozenset({((0, 1), (1, 1)), ((1, 1), (2, 1))})
+    )
+    gen1 = MazeGenerator(m1.width, m1.height, perfect=True)
+    passages_before = _count_passages(m1)
+    gen1._add_loops(m1, Random(0), 1)
+    assert _count_passages(m1) == passages_before + 1
+    m2 = _open_all_but(
+        2, 3,
+        closed=frozenset({((1, 0), (1, 1)), ((1, 1), (1, 2))})
+    )
+    gen2 = MazeGenerator(m2.width, m2.height, perfect=True)
+    passages_before = _count_passages(m2)
+    gen2._add_loops(m2, Random(0), 1)
+    assert _count_passages(m2) == passages_before + 1
+
+
+def test_add_loops_raises_when_no_wall_can_open() -> None:
+    m1 = _open_all_but(
+        3, 2,
+        closed=frozenset({((1, 0), (1, 1))})
+    )
+    gen1 = MazeGenerator(m1.width, m1.height, perfect=True)
+    with pytest.raises(GenerationError):
+        gen1._add_loops(m1, Random(0), 2)
+    m2 = _open_all_but(3, 2, reserved=frozenset({(1, 1)}))
+    gen2 = MazeGenerator(m2.width, m2.height, perfect=True)
+    with pytest.raises(GenerationError):
+        gen2._add_loops(m2, Random(0), 1)
+
+
+def test_add_loops_never_completes_a_3x3() -> None:
+    south_walls = _open_all_but(
+        4, 3,
+        closed=frozenset({((1, 1), (1, 2)), ((3, 0), (3, 1))})
+    )
+    east_walls = _open_all_but(
+        3, 4,
+        closed=frozenset({((1, 1), (2, 1)), ((0, 3), (1, 3))})
+    )
+    for m in (south_walls, east_walls):
+        gen = MazeGenerator(m.width, m.height, perfect=True)
+        with pytest.raises(GenerationError):
+            gen._add_loops(m, Random(0), 2)
