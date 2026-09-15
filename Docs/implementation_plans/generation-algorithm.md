@@ -438,15 +438,15 @@ K = corner, always required     C = centre candidate, one of them required
 ```
 
 **EN** — For the default `config.txt`, 20x15, the candidates are `(9,7)` and `(10,7)`: the width is even, so both
-middle columns count, and the height is odd, so only row 7 does. The figure below is **one possible** placement of
-a 5-row "42", only to show the constraint. The real shape and position are W09's decision.
+middle columns count, and the height is odd, so only row 7 does. The figure below places the "42" of Q10 in the
+middle of the board, only to show the constraint. The position is W09's decision.
 
 **JA** — 既定の `config.txt`(20x15)では、候補は `(9,7)` と `(10,7)`。幅が偶数なので真ん中の 2 列とも数え、
-高さは奇数なので 7 行目だけを数える。下の図は 5 行の「42」の配置の**一例**で、制約を示すためだけのもの。
-実際の形と位置は W09 で決める。
+高さは奇数なので 7 行目だけを数える。下の図は Q10 の「42」を盤面の中央に置いたもので、制約を示すためだけのもの。
+位置は W09 で決める。
 
 ```text
-WIDTH=20, HEIGHT=15 — one possible "42", for illustration only
+WIDTH=20, HEIGHT=15 — the "42" of Q10, placed in the middle for illustration
 
    x: 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
 y  0  K . . . . . . . . . . . . . . . . . . K
@@ -454,19 +454,19 @@ y  0  K . . . . . . . . . . . . . . . . . . K
    2  . . . . . . . . . . . . . . . . . . . .
    3  . . . . . . . . . . . . . . . . . . . .
    4  . . . . . . . . . . . . . . . . . . . .
-   5  . . . . . . # . # . # # # . . . . . . .
-   6  . . . . . . # . # . . . # . . . . . . .
-   7  . . . . . . # # # C # # # . . . . . . .
-   8  . . . . . . . . # . # . . . . . . . . .
-   9  . . . . . . . . # . # # # . . . . . . .
+   5  . . . . . . . # . . . # # # . . . . . .
+   6  . . . . . . . # . . . . . # . . . . . .
+   7  . . . . . . . # # # C # # # . . . . . .
+   8  . . . . . . . . . # . # . . . . . . . .
+   9  . . . . . . . . . # . # # # . . . . . .
   10  . . . . . . . . . . . . . . . . . . . .
   11  . . . . . . . . . . . . . . . . . . . .
   12  . . . . . . . . . . . . . . . . . . . .
   13  . . . . . . . . . . . . . . . . . . . .
   14  K . . . . . . . . . . . . . . . . . . K
 
-# = reserved cell of the "42"      K = corner      C = the candidate (9,7), left open
-the other candidate, (10,7), is covered by the "2" — allowed, because one candidate is enough
+# = reserved cell of the "42"      K = corner      C = the candidate (10,7), left open
+the other candidate, (9,7), is covered by the "4" — allowed, because one candidate is enough
 ```
 
 **EN** — Note that the analyzer writes coordinates as `(row, col)`, while our `Coord` is `(x, y)`. Anything copied
@@ -616,9 +616,9 @@ twelve walls each, **whatever the size of the maze** — one small function, and
 
 | #  | Input / situation                                                                                                                   | Expected behaviour (EN)                                                                                                                                                                            | 期待する挙動(JA)                                                                                                                                                                  |
 | -- | ----------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E1 | Maze too small for the "42" / 「42」に対して迷路が小さすぎる                                                                        | Skip the pattern, report an error on the console,**continue** (§IV.4).                                                                                                                      | パターンを省き、コンソールにエラーを出し、**続行する**(§IV.4)。                                                                                                            |
-| E2 | The pattern would cover a corner, or every centre candidate, in default mode / 既定モードで、パターンが角か、中央候補のすべてを覆う | Reposition or skip it — never produce a board that violates §IV.4.                                                                                                                               | 位置をずらすか省く。§IV.4 に違反する盤面は決して作らない。                                                                                                                       |
-| E3 | The reserved cells cut the walkable region in two / 確保セルが歩ける領域を分断する                                                  | `GenerationError`, raised at the end of `_carve_spanning_tree`: fewer cells were visited than there are walkable cells (Q8).                                                                                             | `_carve_spanning_tree` の最後で `GenerationError`:訪問したセル数が歩けるセル数より少ない(Q8)。                                                                                         |
+| E1 | Maze too small for the "42" / 「42」に対して迷路が小さすぎる | Below 9x7, `_pattern_cells` returns an empty set and the maze is built without the pattern (Q11). The generator prints nothing: the caller sees that `maze.reserved` is empty, reports the error on the console and **continues** (§IV.4). | 9x7 未満なら `_pattern_cells` は空集合を返し、パターン無しで迷路を作る(Q11)。生成器は何も表示しない。呼び出し側が `maze.reserved` が空だと分かり、コンソールにエラーを出して**続行する**(§IV.4)。 |
+| E2 | The pattern would cover a corner, or every centre candidate, in default mode / 既定モードで、パターンが角か、中央候補のすべてを覆う | Cannot happen with the placement of Q11: from 9x7 up the centred block leaves a margin of at least one cell, and its open column always crosses a centre candidate. | Q11 の配置では起きない。9x7 以上なら中央に置いたブロックの周りに 1 セル以上の余白が残り、ブロックの空き列は必ず中央候補の 1 つを通る。 |
+| E3 | The reserved cells cut the walkable region in two / 確保セルが歩ける領域を分断する | Cannot be caused by the "42" of Q10 and Q11: every open cell of the block touches its edge, and the margin joins them all. `GenerationError` is still raised at the end of `_carve_spanning_tree` if it ever happens (Q8), as a guard for reserved cells from elsewhere. | Q10・Q11 の「42」では起きない。ブロック内の開いたセルはすべて縁に面し、余白がそれらを全部つなぐ。それでも起きた場合に備え、`_carve_spanning_tree` の最後の `GenerationError` は残す(Q8)。ほかから与えられた確保セルに対する安全装置。 |
 | E4 | `width` or `height` of 1 / 幅か高さが 1                                                                                         | A single row or column is a legal spanning tree, so `PERFECT=True` works. It has no room for any loop, so `PERFECT=False` must fail explicitly rather than return a board that violates §IV.4. | 1 行・1 列でも正当な全域木なので `PERFECT=True` は動く。ループの余地がまったくないので、`PERFECT=False` は §IV.4 に違反する盤面を返さず、明示的に失敗する。                   |
 | E5 | Default mode on a maze too small for two loops / ループ 2 本に対して小さすぎる既定モード                                            | `GenerationError` from `__init__`, naming the minimum — checked there and nowhere else (Q6). Without the "42", the smallest boards that can hold two loops are 2x3 and 3x2: 7 internal walls and 6 cells give 7 − 6 + 1 = 2. A 2x2 gives only 1. In general a width by height board holds at most (width − 1) × (height − 1) loops, one per 2x2 block of cells.      | `__init__` で、最小サイズを示して `GenerationError`。確かめるのはここだけ(Q6)。「42」がなければ、ループ 2 本を収められる最小の盤面は 2x3 と 3x2。内側の壁 7 枚・セル 6 個で 7 − 6 + 1 = 2。2x2 では 1 本にしかならない。一般に、幅 × 高さの盤面が持てるループは最大 (幅 − 1) × (高さ − 1) 本で、2x2 のブロック 1 つにつき 1 本。 |
 | E6 | Same seed, same parameters / 同じシード・同じパラメータ                                                                             | Byte-identical maze, every time.                                                                                                                                                                   | 毎回、1 バイトも違わない迷路。                                                                                                                                                    |
@@ -665,7 +665,7 @@ Python はそれを 1000 前後で打ち切る。明示的なスタックなら�
 | `test_default_mode_dead_ends`              | unit      | At most 2 **real** dead ends, counted the way the analyzer counts them (§4.4).                                                | **本物の**行き止まりが 2 個以下。analyzer と同じ数え方で(§4.4)。                                                      |
 | `test_no_3x3_open_area`                    | edge      | After braiding, no 3x3 window has all twelve internal walls open (§4.5). The analyzer does not check this, so only this test does. | braiding の後、内側の壁 12 枚がすべて開いた 3x3 の枠が存在しない(§4.5)。analyzer は検査しないので、守るのはこのテストだけ。 |
 | `test_corners_and_a_centre_candidate_open` | unit      | In default mode, the four corners and at least one centre candidate are reachable (§4.3).                                          | 既定モードで、四隅と中央候補の少なくとも 1 つに到達できる(§4.3)。                                                           |
-| `test_too_small_for_pattern_warns`         | edge      | E1 — an error is reported and generation continues.                                                                                | E1 — エラーが報告され、生成は続行する。                                                                                     |
+| `test_pattern_omitted_below_9x7` | edge | E1 — an 8x7 and a 9x6 board get no reserved cells; 9x7 gets all 18, placed at (1, 1). | E1 — 8x7 と 9x6 の盤面には確保セルが無く、9x7 には (1, 1) に 18 セルすべてが置かれる。 |
 | `test_generate_twice`                      | edge      | E8.                                                                                                                                 | E8。                                                                                                                         |
 | `test_generate_prints_nothing`             | design    | `capsys` captures no output — printing the seed is the entry point's job (Q2).                                                   | `capsys` が何も捕まえない。シードの表示はエントリポイントの仕事(Q2)。                                                      |
 
@@ -818,6 +818,61 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   (§4.2)。ほかの案は、既定モードの最小サイズを引き上げること(何セルなら必ず足りるかの証明が要り、Q6 の規則を変える)と、
   まれに不合格の盤面が出るのを受け入れること(Q7 ですでに退けた、黙って誤った結果を返す形)だった。
 
+- [x] **Q10 — the shape of the "42": the subject's image, as so read it (2026-09-15).**
+
+  **EN** — Each digit fits a block 3 cells wide and 5 tall, and one open column separates them, so the "42" is
+  7 wide and 5 tall. so read the strokes from the image in the subject, starting at each digit's top-left cell:
+  the "4" is ↓↓→→↓↓ and the "2" is →→↓↓←←↓↓→→. The "4" is drawn as that single stroke, so the top two cells of
+  its right-hand bar stay open. Cells, as `(x, y)` offsets from the top-left of the block:
+
+  **JA** — 数字はそれぞれ幅 3・高さ 5 のブロックに収まり、間に開いた列を 1 列はさむので、「42」全体は幅 7・高さ 5。
+  形は so が subject の画像から読み取った筆順で、各数字の左上のセルから始めて、「4」が ↓↓→→↓↓、「2」が
+  →→↓↓←←↓↓→→。「4」はこの一筆のとおりに描くので、右の縦線の上 2 セルは開いたまま。セルは、ブロックの左上からの
+  `(x, y)` のずれで表す:
+
+  ```text
+    x: 0 1 2 3 4 5 6
+  y 0  # . . . # # #      "4" (7 cells):  (0,0) (0,1) (0,2) (1,2) (2,2) (2,3) (2,4)
+    1  # . . . . . #      "2" (11 cells): (4,0) (5,0) (6,0) (6,1) (4,2) (5,2) (6,2)
+    2  # # # . # # #                      (4,3) (4,4) (5,4) (6,4)
+    3  . . # . # . .
+    4  . . # . # # #      18 reserved cells in all / 確保セルは合計 18
+  ```
+
+- [x] **Q11 — where the "42" goes: in the middle, from 9x7 up (2026-09-15).**
+
+  **EN** — The top-left of the 7x5 block is `(width // 2 - 3, height // 2 - 2)`: `(7, 5)` on 20x15, `(1, 1)`
+  on 9x7. Below 9 wide or 7 tall, the pattern is left out (E1). This one placement settles three constraints on any
+  size, which is why nothing else has to check them:
+
+  **JA** — 7x5 のブロックの左上は `(width // 2 - 3, height // 2 - 2)`。20x15 なら `(7, 5)`、9x7 なら `(1, 1)`。
+  幅 9 未満か高さ 7 未満なら、パターンを省く(E1)。この配置ひとつで、どの大きさでも 3 つの制約が満たされる。
+  だから、ほかでそれを確かめる必要がない:
+
+  | constraint / 制約 | why it holds (EN) | 成り立つ理由(JA) |
+  | --- | --- | --- |
+  | a centre candidate stays open / 中央候補が 1 つ空く | The open column of the block (offset x = 3) lands on column `width // 2`: the middle column for an odd width, the right of the two middle columns for an even one. Offset y = 2 lands on row `height // 2` the same way. That column is open from top to bottom. On 20x15 the open candidate is `(10, 7)`. | ブロックの空き列(ずれ x = 3)は列 `width // 2` に重なる。幅が奇数なら真ん中の列、偶数なら真ん中 2 列の右。ずれ y = 2 も同じように行 `height // 2` に重なる。空き列は上から下まで開いている。20x15 で空く候補は `(10, 7)`。 |
+  | the corners stay open / 四隅が空く | From 9 wide and 7 tall, the centred block has at least one free cell on every side, so it cannot reach a corner. | 幅 9・高さ 7 以上なら、中央のブロックの四方に 1 セル以上の空きがあるので、角には届かない。 |
+  | the walkable cells stay connected / 歩けるセルがつながったまま | Every open cell inside the block touches its edge: the top right of the "4", its bottom left, the open column, and the two notches of the "2". The margin runs all the way round and joins them. | ブロック内の開いたセルは、どれも縁に面している。「4」の右上と左下、空き列、「2」の 2 つのくぼみ。余白が一周してそれらをつなぐ。 |
+
+  **EN** — All three were checked by script on every size from 9x7 to 60x60, and `maze_analyzer.py` judges the
+  generated boards PERFECT or Pac-Man-USABLE. The two notches of the "2" are dead ends enclosed by the pattern,
+  which the analyzer tolerates. **The bound is a little stricter than it has to be.** On smaller boards the
+  placement fails like this: 8 wide or less, or 5 tall, covers a corner or splits the walkable cells, but 9x6
+  works, with the block touching the bottom edge. The exact rule would be "at least 9x6"; a margin of one cell on
+  every side is the easier one to explain, and it only gives up boards 6 tall.
+
+  **EN** — A perfect maze uses the same placement, though it does not need the corners and centre: one rule is
+  simpler to explain and to test than two.
+
+  **JA** — 3 つとも、9x7 から 60x60 までのすべての大きさでスクリプトにより確かめた。生成した盤面は
+  `maze_analyzer.py` でも PERFECT か Pac-Man-USABLE と判定される。「2」の 2 つのくぼみはパターンに囲まれた
+  行き止まりで、analyzer はこれを許容する。**この境界は、必要よりも少し厳しい。** より小さい盤面では、幅 8 以下か
+  高さ 5 だと角を塞ぐか歩けるセルが分断されるが、9x6 なら(ブロックが下の端に接した状態で)成り立つ。正確な規則は
+  「9x6 以上」になるが、「四方に 1 セルの余白」のほうが説明しやすく、手放すのは高さ 6 の盤面だけ。
+
+  **JA** — 完全迷路は四隅と中央を必要としないが、同じ配置を使う。規則が 1 つなら、2 つより説明もテストも簡単。
+
 ---
 
 ## 10. Changelog / 変更履歴
@@ -833,3 +888,6 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
 | 2026-09-14 | Q7: `generate` raises `NotImplementedError` for a maze that is not perfect until braiding exists. Q8: E3 is detected at the end of `_carve_spanning_tree` | Q7:braiding ができるまで、完全迷路でない場合 `generate` は `NotImplementedError`。Q8:E3 は `_carve_spanning_tree` の最後で検出する | an unbraided tree would pass for a default-mode maze without being one; the reachable count is already in hand when the walk ends | braiding していない木は既定モードの迷路に見えてしまう。届いたセルの数は、探索が終わった時点ですでに手元にある |
 | 2026-09-15 | Q9: stage 7 opens more walls when braiding leaves fewer than two loops; `_braid` returns the number of walls it opened; E10 and a 3x2 figure in §4.2 | Q9:braiding の後でループが 2 本未満なら、ステージ 7 がさらに壁を開ける。`_braid` は開けた壁の枚数を返す。E10 と、§4.2 に 3x2 の図を追加 | on a 3x2 board one wall can fix both dead ends, leaving one loop on a size `__init__` accepted | 3x2 の盤面では壁 1 枚で両方の行き止まりが直り、`__init__` が受け入れた大きさでループが 1 本しか残らない |
 | 2026-09-15 | Q7 resolved: `generate` builds the default mode through stages 6 and 7, sharing one `Random` | Q7 解決:`generate` はステージ 6 と 7 を通して既定モードを作る。`Random` は 1 つを共有する | braiding and the loop top-up are written and tested | braiding とループの補充を書き、テストした |
+| 2026-09-15 | Q10: the shape of the "42" is fixed, 7x5 with 18 cells; the §4.3 figure redrawn to match | Q10:「42」の形を決定。7x5、18 セル。§4.3 の図をそれに合わせて描き直した | stage 2 needs the exact cells before its position and minimum size can be worked out | ステージ 2 の位置と最小サイズを考えるには、まず正確なセルが要る |
+| 2026-09-15 | Q11: the "42" is centred and left out below 9x7; E1, E2, E3 and the E1 test rewritten | Q11:「42」は中央に置き、9x7 未満では省く。E1・E2・E3 と E1 のテストを書き直した | one placement keeps a centre candidate and the corners open and the board connected on every size | 配置ひとつで、どの大きさでも中央候補と四隅が空き、盤面がつながったままになる |
+| 2026-09-15 | Q11 follows the code: the top-left is `(width // 2 - 3, height // 2 - 2)`, so `(10,7)` is the open candidate on 20x15; the smaller boards re-checked (the exact bound is 9x6) | Q11 をコードに合わせた。左上は `(width // 2 - 3, height // 2 - 2)` で、20x15 で空く候補は `(10,7)`。小さい盤面を調べ直した(正確な境界は 9x6) | so's formula puts the open column on `width // 2`, which is simpler to explain; it shifts even sizes by one | so の式は空き列を `width // 2` に置き、説明しやすい。偶数の大きさでは 1 つずれる |

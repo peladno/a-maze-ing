@@ -21,6 +21,18 @@ class GenerationError(MazeError):
     """
 
 
+_PATTERN_OFFSETS = frozenset(
+    {
+        # 4
+        (0, 0), (0, 1), (0, 2), (1, 2),
+        (2, 2), (2, 3), (2, 4),
+        # 2
+        (4, 0), (5, 0), (6, 0), (6, 1), (6, 2), (5, 2),
+        (4, 2), (4, 3), (4, 4), (5, 4), (6, 4)
+    }
+)
+
+
 class MazeGenerator:
     """Build a maze from a size, a mode and a seed.
 
@@ -146,7 +158,7 @@ class MazeGenerator:
         each stage would replay the same numbers in all of them, tying
         the choices of one stage to those of another.
         """
-        maze = Maze(self._width, self._height)
+        maze = Maze(self._width, self._height, self._pattern_cells())
         rng = Random(self.seed)
         self._carve_spanning_tree(maze, rng)
         if self._perfect:
@@ -155,6 +167,47 @@ class MazeGenerator:
         if loops < 2:
             self._add_loops(maze, rng, 2 - loops)
         return maze
+
+    def _pattern_cells(self) -> frozenset[Coord]:
+        """Return the cells the "42" covers, or none if it does not fit.
+
+        Returns
+        -------
+        frozenset[Coord]
+            The 18 cells of the pattern, placed in the middle of the
+            board, or an empty set on a board narrower than 9 or shorter
+            than 7. Given to ``Maze`` as its reserved cells, they keep
+            every wall closed and so draw the "42" §IV.4 asks for.
+
+        Notes
+        -----
+        The pattern is 7 cells wide and 5 tall: a "4" and a "2", each 3
+        wide, with an open column between them. ``_PATTERN_OFFSETS``
+        holds its cells relative to the top-left of that block, so the
+        shape is written once and only the position depends on the size.
+
+        The block is placed so that its open column, 3 cells in, lies on
+        column ``width // 2`` and its third row on row ``height // 2``.
+        That cell is a centre cell as ``maze_analyzer.py`` defines the
+        centre, and the open column is open from top to bottom, so a
+        centre cell always stays free.
+
+        From 9x7 up there is at least one free cell on every side of the
+        block. No corner is covered, and every open cell inside the block
+        touches its edge, so that margin joins them to the rest of the
+        board. On a smaller board the pattern is left out; whoever called
+        the generator can tell from an empty ``Maze.reserved``, and
+        reports it, as §IV.4 requires.
+        """
+        if self._width < 9 or self._height < 7:
+            return frozenset()
+        cells: set[Coord] = set()
+        left = self._width // 2 - 3
+        top = self._height // 2 - 2
+        for dx, dy in _PATTERN_OFFSETS:
+            cells.add((left + dx, top + dy))
+        result = frozenset(cells)
+        return result
 
     def _carve_spanning_tree(self, maze: Maze, rng: Random) -> None:
         """Carve a spanning tree: every walkable cell joined, no loop.
