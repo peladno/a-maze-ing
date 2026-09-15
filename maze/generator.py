@@ -349,3 +349,67 @@ class MazeGenerator:
                 if self._closed_walls_in(maze, wx, wy) == 1:
                     return True
         return False
+
+    def _braid(self, maze: Maze, rng: Random) -> int:
+        """Open a wall at each real dead end, and say how many were opened.
+
+        For every real dead end, one closed wall towards an ordinary
+        neighbour is chosen at random and opened, so the cell gains a
+        second way out. A wall that would complete a 3x3 open area is
+        never a candidate.
+
+        Parameters
+        ----------
+        maze:
+            The maze to braid, normally a spanning tree just carved. It
+            is changed in place.
+        rng:
+            The source of every choice, so that the same seed braids the
+            same maze.
+
+        Returns
+        -------
+        int
+            The number of walls opened. Starting from a spanning tree,
+            which has one passage fewer than it has walkable cells, every
+            wall opened adds exactly one independent loop, so this is
+            also the number of loops. It can be below two on a small
+            board, where one wall may fix two dead ends at once.
+
+        Notes
+        -----
+        The list of dead ends is made once, and each cell in it is looked
+        at once, so the loop always ends. One pass is enough: opening a
+        wall only adds passages, so it never turns a cell into a dead
+        end, and every dead end there will ever be is already in the
+        list.
+
+        The list does go stale, though. When a dead end is fixed by
+        opening the wall to a neighbour that was also a dead end, that
+        neighbour is fixed too, and it is still in the list. Its open
+        passages are counted again when its turn comes, and it is skipped
+        if it has more than one, rather than given a loop it does not
+        need.
+
+        A dead end whose every candidate would complete a 3x3 open area,
+        which §IV.4 forbids, is left as it is. ``maze_analyzer.py``
+        tolerates two real dead ends.
+
+        Candidates keep the order ``Maze.neighbours`` yields them in, as
+        in the carving, so the same seed gives the same maze.
+        """
+        open_count = 0
+        for dead_end in self._dead_ends(maze):
+            open_cells = list(maze.open_neighbours(dead_end))
+            if len(open_cells) != 1:
+                continue
+            open_candidates = []
+            for _, candidate in maze.neighbours(dead_end):
+                if candidate in open_cells:
+                    continue
+                if not self._completes_open_3x3(maze, dead_end, candidate):
+                    open_candidates.append(candidate)
+            if len(open_candidates) >= 1:
+                maze.open_passage(dead_end, rng.choice(open_candidates))
+                open_count += 1
+        return open_count

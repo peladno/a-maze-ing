@@ -196,7 +196,9 @@ class MazeGenerator:
 
     def _completes_open_3x3(self, maze: Maze, a: Coord, b: Coord) -> bool: ...
 
-    def _braid(self, maze: Maze, rng: Random) -> None: ...
+    def _braid(self, maze: Maze, rng: Random) -> int: ...
+
+    def _add_loops(self, maze: Maze, rng: Random, count: int) -> None: ...
 ```
 
 ### What each member is for / 各メンバーの役割
@@ -211,7 +213,8 @@ class MazeGenerator:
 | `_carve_spanning_tree` | Stage 4: the recursive backtracker, written with an explicit stack.                                                    | ステージ 4:再帰的バックトラッカー。明示的なスタックで書く。                                                     |
 | `_dead_ends`           | Stage 6: the**real** dead ends, counted the way the analyzer counts them (§4.4).                                | ステージ 6:**本物の**行き止まり。analyzer と同じ数え方(§4.4)。                                           |
 | `_completes_open_3x3`  | Stage 6: would opening the wall between `a` and `b` complete a 3x3 open area? (§4.5)                               | ステージ 6: `a` と `b` の間の壁を開けると 3x3 の開放領域が完成するか(§4.5)。                                |
-| `_braid`               | Stage 6: opens a wall at each real dead end, skipping any wall `_completes_open_3x3` rejects.                         | ステージ 6:本物の行き止まりごとに壁を開ける。`_completes_open_3x3` が拒否した壁は飛ばす。                     |
+| `_braid`               | Stage 6: opens a wall at each real dead end, skipping any wall `_completes_open_3x3` rejects, and returns how many walls it opened, which is the number of loops (§4.2). | ステージ 6:本物の行き止まりごとに壁を開ける。`_completes_open_3x3` が拒否した壁は飛ばす。開けた壁の枚数を返し、それがループの数になる(§4.2)。 |
+| `_add_loops`           | Stage 7: opens `count` more walls when braiding left fewer than two loops (Q9). | ステージ 7:braiding の後でループが 2 本に届かなければ、さらに `count` 枚の壁を開ける(Q9)。 |
 
 **EN** — `perfect` defaults to `False` because §IV.4's default is the playable board, not the perfect maze. When
 the signature agrees with the subject, a whole class of "which one was the default again?" bugs disappears.
@@ -246,7 +249,10 @@ flowchart TD
     S4 --> Q{"5. perfect?"}
     Q -- yes --> R1["return the maze"]
     Q -- no --> S6["6. Braid the real dead ends<br/>check each wall for 3x3 first"]
-    S6 --> R2["return the maze"]
+    S6 --> Q2{"7. at least two loops?"}
+    Q2 -- yes --> R2["return the maze"]
+    Q2 -- no --> S7["open more walls<br/>check each wall for 3x3 first"]
+    S7 --> R2
 ```
 
 | # | Stage                                           | What it achieves (EN)                                                                                                                                                                                                                                                                                        | 何を達成するか(JA)                                                                                                                                                                                                                                                                       |
@@ -257,6 +263,7 @@ flowchart TD
 | 4 | Carve a spanning tree / 全域木を掘る            | The recursive backtracker,**written iteratively with an explicit stack** (decision 3.5). It walks only non-reserved cells. Result: every walkable cell is reachable, and there is exactly one path between any two.                                                                                    | 再帰的バックトラッカーを、**明示的なスタックを使った反復で**書く(決定 3.5)。確保されていないセルだけをたどる。結果として、歩けるセルはすべて到達可能になり、任意の 2 セル間の経路がちょうど 1 本になる。                                                                           |
 | 5 | If `perfect` / `perfect` なら                | Done. Return the maze.                                                                                                                                                                                                                                                                                       | 終わり。迷路を返す。                                                                                                                                                                                                                                                                     |
 | 6 | Otherwise, braid / そうでなければ braiding      | Open a wall at each**real** dead end (§4.4), **checking before each removal** that no 3x3 open area would result (§4.5). Dead ends that face only the "42" or the border are neither counted nor fixable. Target: at least two loops and at most two real dead ends; zero is the §VIII bonus. | **本物の**行き止まり(§4.4)ごとに壁を開ける。**取り除く前に毎回**、3x3 の開放領域ができないことを確かめる(§4.5)。「42」や外周にしか面していない行き止まりは、数えられず、直すこともできない。目標はループ 2 本以上・本物の行き止まり 2 個以下。0 個なら §VIII のボーナス。 |
+| 7 | Top up the loops / ループを補う | `_braid` returns how many walls it opened, which is the number of loops (§4.2). If that is below two, `_add_loops` opens the missing ones: one at a time, each a closed wall between two walkable cells that does not complete a 3x3 area. This is needed only on small boards, where one wall can fix two neighbouring dead ends at once (Q9). Opening a wall never creates a dead end, so stage 6's result still holds. | `_braid` は開けた壁の枚数を返し、それがループの数になる(§4.2)。2 本未満なら、`_add_loops` が足りない分を開ける。1 枚ずつ、歩けるセルどうしの閉じた壁で、3x3 の領域を完成させないものを選ぶ。必要になるのは小さな盤面だけで、隣り合う 2 つの行き止まりが壁 1 枚で同時に直ってしまう場合(Q9)。壁を開けても行き止まりは生まれないので、ステージ 6 の結果は保たれる。 |
 
 **EN** — Stages 4 and 6 are the whole design: **one pipeline, one algorithm, and `PERFECT=True` is simply the
 pipeline stopping early** (decision 3.4 = A). There is no second generator to keep in step with the first.
@@ -359,6 +366,37 @@ openings already satisfy the requirement. The loops are the easy half; the hard 
 
 **JA** — ステージ 4 は常にちょうど `V − 1` 本の通路を残すので、**ステージ 6 で壁を 1 枚開けるたびに、ループが
 ちょうど 1 本増える。** 2 枚開ければ要件は満たされる。ループは簡単な方の半分で、難しいのは行き止まりの数(§4.4)。
+
+**EN** — **But braiding does not always open two walls.** On a 3x2 board the tree can be a single path whose
+two ends sit side by side. Opening the wall between them fixes both dead ends at once, so braiding has nothing left
+to do after one wall, and the board has one loop. The analyzer rejects it, although `__init__` accepted the size.
+Stage 7 opens the missing walls (Q9).
+
+**JA** — **ただし、braiding が必ず 2 枚開けるとは限らない。** 3x2 の盤面では、木が一本道になり、その両端が隣り合う
+ことがある。その間の壁を開けると 2 つの行き止まりが同時に直るので、braiding は壁 1 枚でやることがなくなり、
+盤面のループは 1 本になる。`__init__` はこの大きさを受け入れたのに、analyzer は不合格にする。
+足りない壁はステージ 7 が開ける(Q9)。
+
+```text
+after stage 4 / ステージ 4 の後        after braiding / braiding の後
+
++---+---+---+                          +---+---+---+
+| A         |   one path:              |           |   0 dead ends
++---+---+   +   A → → → ↓ ← ← B        +   +---+   +   but 1 loop, a ring of six cells
+| B         |   dead ends: A and B     |           |   → the analyzer rejects it
++---+---+---+                          +---+---+---+
+E = 5, V = 6, loops = 0                E = 6, V = 6, loops = 1
+```
+
+**EN** — When stage 7 runs, **no wall can complete a 3x3 open area.** A 3x3 block with a single closed internal
+wall has 11 open passages among its 9 cells, which is 11 − 9 + 1 = 3 loops inside that block alone, and a maze with
+fewer than two loops cannot contain three. The check is called anyway: the rule then lives in one place, and the
+code does not rest on this argument.
+
+**JA** — ステージ 7 が動く時点では、**どの壁も 3x3 の開放領域を完成させられない。** 内側の閉じた壁が 1 枚だけの 3x3
+ブロックには、9 セルの間に開いた通路が 11 本あり、そのブロックだけで 11 − 9 + 1 = 3 本のループを持つ。ループが
+2 本未満の迷路に、3 本は含まれえない。それでも確認は呼ぶ。そうすれば規則は 1 か所にまとまり、コードがこの論証に
+依存しない。
 
 **EN** — This also narrowed Q2 in `01_kickoff.md`, which listed union-find as the tool for counting loops. Counting
 needs no union-find — a subtraction does it. Union-find remains a reasonable way to check **connectivity**, which is
@@ -587,6 +625,7 @@ twelve walls each, **whatever the size of the maze** — one small function, and
 | E7 | Opening a wall would complete a 3x3 open area / 壁を開けると 3x3 の開放領域が完成する                                               | The wall stays closed and braiding moves on — checked before removal (Q1).                                                                                                                        | その壁は閉じたままにし、braiding は次へ進む。取り除く前に確認する(Q1)。                                                                                                           |
 | E8 | `generate()` called twice on the same object / 同じオブジェクトで `generate()` を 2 回呼ぶ                                      | Returns an equivalent maze. The second call must not continue from the first call's random state.                                                                                                  | 同等の迷路を返す。2 回目の呼び出しが 1 回目の乱数の状態から続いてはならない。                                                                                                     |
 | E9 | A real dead end whose every openable wall would complete a 3x3 area / 開けられる壁がすべて 3x3 を完成させてしまう本物の行き止まり   | It stays. The analyzer tolerates two real dead ends. Starting from a tree this should be rare; if tests ever show more than two remaining, revisit.                                                | そのまま残す。analyzer は本物の行き止まりを 2 個まで許容する。木から始める以上まれなはず。テストで 3 個以上残ることがあれば見直す。                                               |
+| E10 | Braiding opens fewer than two walls / braiding が開ける壁が 2 枚未満 | Stage 7 opens the missing walls (Q9). If no closed wall between two walkable cells is left, the reserved cells took the room for the loops: `GenerationError`. | ステージ 7 が足りない壁を開ける(Q9)。歩けるセルどうしの閉じた壁がもう残っていなければ、確保セルがループの余地を奪っているので `GenerationError`。 |
 
 ---
 
@@ -601,6 +640,7 @@ twelve walls each, **whatever the size of the maze** — one small function, and
 | 6 — find dead ends / 行き止まりを探す               | O(V)           | O(V)  | Each cell has at most four walls to inspect.                                              | 各セルで調べる壁は最大 4 枚。                                                       |
 | 6 — 3x3 check, per wall / 3x3 の確認(壁 1 枚あたり) | O(1)           | —    | At most 6 windows × 12 walls, whatever the size (§4.5).                                 | 大きさに関係なく最大で枠 6 つ × 壁 12 枚(§4.5)。                                  |
 | 6 — braid / braiding                                | O(V)           | —    | Bounded by the number of dead ends, itself at most V, times the constant check.           | 行き止まりの数(最大 V)に、定数時間の確認を掛けた分で収まる。                        |
+| 7 — add loops / ループを補う | O(V) | O(V) | At most two walls, each chosen from one pass over the board's walls. | 開ける壁は最大 2 枚で、1 枚ごとに盤面の壁を 1 回見渡して選ぶ。 |
 | whole `generate()` / 全体                           | **O(V)** | O(V)  | 20×15 = 300 cells is instant; 500×500 = 250,000 cells is still linear.                  | 20×15 = 300 セルは一瞬。500×500 = 25 万セルでも線形のまま。                       |
 
 **EN** — The iterative form matters here. Written recursively, stage 4's depth reaches O(V) on the interpreter's
@@ -621,6 +661,7 @@ Python はそれを 1000 前後で打ち切る。明示的なスタックなら�
 | `test_all_cells_reachable`                 | invariant | In both modes, a search from any walkable cell reaches all of them.                                                                 | 両モードで、任意の歩けるセルからの探索が全セルに届く。                                                                       |
 | `test_pattern_cells_stay_closed`           | invariant | Every reserved cell is still `0xf` after `generate()`.                                                                           | `generate()` の後も、すべての確保セルが `0xf` のまま。                                                                   |
 | `test_default_mode_has_two_loops`          | unit      | `E − V + 1 ≥ 2` (§4.2).                                                                                                        | `E − V + 1 ≥ 2`(§4.2)。                                                                                                 |
+| `test_small_board_still_has_two_loops` | edge | E10 — a 3x2 board whose two dead ends sit side by side still ends with two loops. | E10 — 2 つの行き止まりが隣り合う 3x2 の盤面でも、最後にはループが 2 本ある。 |
 | `test_default_mode_dead_ends`              | unit      | At most 2 **real** dead ends, counted the way the analyzer counts them (§4.4).                                                | **本物の**行き止まりが 2 個以下。analyzer と同じ数え方で(§4.4)。                                                      |
 | `test_no_3x3_open_area`                    | edge      | After braiding, no 3x3 window has all twelve internal walls open (§4.5). The analyzer does not check this, so only this test does. | braiding の後、内側の壁 12 枚がすべて開いた 3x3 の枠が存在しない(§4.5)。analyzer は検査しないので、守るのはこのテストだけ。 |
 | `test_corners_and_a_centre_candidate_open` | unit      | In default mode, the four corners and at least one centre candidate are reachable (§4.3).                                          | 既定モードで、四隅と中央候補の少なくとも 1 つに到達できる(§4.3)。                                                           |
@@ -758,6 +799,19 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
   `GenerationError` を投げる。この数はその時点ですでに手元にあるので、もう一度歩き直す必要はない。テストの
   `_count_reachable` は同じ数を外側から数える。だからこそ、こちらの判定を公平に確かめられる。
 
+- [x] **Q9 — a board where braiding leaves fewer than two loops: open more walls (2026-09-15).**
+
+  **EN** — `_braid` returns how many walls it opened. Stage 4 leaves exactly `V − 1` passages, so that count is the
+  number of loops, and nothing has to be counted again (the same reasoning as Q8). If it is below two,
+  `_add_loops` opens the rest, each wall checked for 3x3 first (§4.2). The alternatives were to raise the minimum size
+  of the default mode, which would need a proof of how large is always large enough and would change the rule of
+  Q6, or to accept the rare failing board, which is the silent wrong result Q7 already refused.
+
+  **JA** — `_braid` は開けた壁の枚数を返す。ステージ 4 はちょうど `V − 1` 本の通路を残すので、その枚数がループの数に
+  なり、数え直す必要はない(Q8 と同じ考え方)。2 本未満なら、`_add_loops` が残りを開ける。どの壁も先に 3x3 を確かめる
+  (§4.2)。ほかの案は、既定モードの最小サイズを引き上げること(何セルなら必ず足りるかの証明が要り、Q6 の規則を変える)と、
+  まれに不合格の盤面が出るのを受け入れること(Q7 ですでに退けた、黙って誤った結果を返す形)だった。
+
 ---
 
 ## 10. Changelog / 変更履歴
@@ -771,3 +825,4 @@ at every integration checkpoint. Remember that it does not check the 3x3 rule �
 | 2026-09-13 | the class goes in `maze/generator.py`; W19 must add `maze/` to the package | クラスは `maze/generator.py` に置く。W19 で `maze/` をパッケージに含める | a test build showed the wheel contains only `mazegen/`, so the packaging fix is needed wherever the generator lives, and keeping the core together costs nothing | 試しにビルドすると wheel には `mazegen/` しか入らなかった。生成器をどこに置いても設定の修正は必要なので、中核をまとめて置いても余計なコストはない |
 | 2026-09-13 | Q6: the size rule is checked in `__init__` only; E5 states the general bound | Q6:大きさの規則は `__init__` だけで確かめる。E5 に一般の上限を明記 | the rule is about loops, which is the generator's knowledge; the parser could answer it from the file, but a second copy could drift | ループの規則は生成器の知識。パーサもファイルから答えられるが、2 つ目の写しは食い違いうる |
 | 2026-09-14 | Q7: `generate` raises `NotImplementedError` for a maze that is not perfect until braiding exists. Q8: E3 is detected at the end of `_carve_spanning_tree` | Q7:braiding ができるまで、完全迷路でない場合 `generate` は `NotImplementedError`。Q8:E3 は `_carve_spanning_tree` の最後で検出する | an unbraided tree would pass for a default-mode maze without being one; the reachable count is already in hand when the walk ends | braiding していない木は既定モードの迷路に見えてしまう。届いたセルの数は、探索が終わった時点ですでに手元にある |
+| 2026-09-15 | Q9: stage 7 opens more walls when braiding leaves fewer than two loops; `_braid` returns the number of walls it opened; E10 and a 3x2 figure in §4.2 | Q9:braiding の後でループが 2 本未満なら、ステージ 7 がさらに壁を開ける。`_braid` は開けた壁の枚数を返す。E10 と、§4.2 に 3x2 の図を追加 | on a 3x2 board one wall can fix both dead ends, leaving one loop on a size `__init__` accepted | 3x2 の盤面では壁 1 枚で両方の行き止まりが直り、`__init__` が受け入れた大きさでループが 1 本しか残らない |
