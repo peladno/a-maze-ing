@@ -754,7 +754,10 @@ argues for the solver living on the engine side.
 | **B** | BFS in the output layer; the engine only exposes the structure.             | 出力層で BFS。エンジンは構造だけ公開。              |
 | **C** | Engine exposes a generic "solve" hook; the output layer formats the string. | エンジンは汎用の solve を公開。文字列整形は出力層。 |
 
-> Decision:
+> Decision: **A, adapted** (2026-09-17) — BFS in the engine, but exposed as functions in `maze/solver.py` rather
+> than as a `MazeGenerator` method: §VI asks the module for access to a solution, and the generator keeps no maze
+> to solve. `shortest_path` returns the cells for the renderer, `to_directions` the `NESW` string for the writer,
+> and `SolveError` (a `MazeError`) is raised when no path exists. Details: `shortest-path-solver.md` §9.
 
 ### 3.9 🔴 Config keys and error policy / 設定キーとエラー方針
 
@@ -1472,7 +1475,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 3.5  | Generation algorithm / 生成アルゴリズム      | 🔴 | A — recursive backtracker, iterative / A — 再帰的バックトラッカー(反復版) | Default mode is `PERFECT=False`, so braiding must remove nearly every dead end; this algorithm starts with the fewest (~10% vs ~30%, to be measured per §5.4 of the reference). Recursion depth is removed by the iterative form. / 既定が `PERFECT=False` で braiding が行き止まりをほぼ全部潰す必要があり、開始時の行き止まりが最少。再帰の深さは反復版で消える。 | so |
 | 3.6  | "42" pattern / 「42」                        | 🔴 | A |               |       |
 | 3.7  | Corridor width / 通路幅                      | 🟡 | A — check before removing; 3x3 = all 12 internal walls open / A — 取り除く前に判定。3x3 = 内壁 12 枚がすべて開 |               | so |
-| 3.8  | Shortest path / 最短経路                     | 🟡 |                 |               |       |
+| 3.8  | Shortest path / 最短経路                     | 🟡 | A, adapted — BFS as functions in `maze/solver.py` / A を調整 — `maze/solver.py` の関数として BFS |               | so |
 | 3.9  | Config keys & errors / 設定キーとエラー      | 🔴 | A |               |       |
 | 3.10 | Seed / シード                                | 🟡 | A — own `Random`; `a_maze_ing.py` prints the seed / A — 自前の `Random`。表示は `a_maze_ing.py` |               | so / javi |
 | 4.1  | Terminal or MLX / 描画方式                   | 🔴 | A |               |       |
