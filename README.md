@@ -111,6 +111,7 @@ The application adheres to a strict error-handling contract: it will **never cra
 - Invalid configuration syntax, duplicate keys, missing keys, out-of-bounds coordinates, or unreachable file paths raise specialized subclasses of `ConfigError` (`ConfigSyntaxError`, `ConfigMissingKeyError`, `ConfigValueError`, `ConfigFileError`).
 - Every configuration error provides exact location context formatted as `source:line: problem`.
 - The top-level entry point in `a_maze_ing.py` intercepts errors, displays a clear, human-readable error message to `sys.stderr`, and terminates with exit code `1`.
+- Generation and solving report problems with subclasses of `MazeError` instead: `GenerationError` (a size that cannot hold a valid maze) and `SolveError` (an entry or exit placed on the "42", or an exit that cannot be reached). `ConfigError` and `MazeError` are separate families, so the entry point catches both. Their messages give cells in the `x,y` form of the configuration file.
 
 ---
 
@@ -121,9 +122,9 @@ We implemented the **Iterative Recursive Backtracker (Depth-First Search)** algo
 ### Execution Pipeline
 
 1. **Seed Initialization:** A dedicated `random.Random(seed)` instance is created. If `SEED` is omitted in the config, a random seed is generated and preserved in the `MazeGenerator.seed` property so `a_maze_ing.py` can output it for full reproducibility.
-2. **"42" Pattern Reservation:** If the grid is large enough (at least 5 rows tall and 13 columns wide) and does not overlap the 4 corners or all center candidates, the pattern cells are computed and marked as `reserved`. These cells remain untouched throughout generation and naturally stay fully closed (`0xf`). If the grid is too small, an informational warning is issued and generation proceeds without the logo.
+2. **"42" Pattern Reservation:** The pattern is a 7x5 block — a "4" and a "2", each 3 cells wide, with an open column between them, 18 cells in all. From 9x7 up, its top-left is placed at `(WIDTH // 2 - 3, HEIGHT // 2 - 2)`, which puts the open column on the middle column: a centre cell always stays free, a margin of at least one cell keeps the corners free, and every walkable cell stays connected (checked on every size from 9x7 to 60x60). The pattern cells are marked as `reserved`, remain untouched throughout generation, and naturally stay fully closed (`0xf`). On a smaller board the pattern is left out: `maze.reserved` is empty, and the entry point reports it while generation proceeds.
 3. **Maze Initialization:** A `Maze` object is initialized where every cell starts with all four walls closed (`15` / `0xf`).
-4. **Spanning Tree Carving (DFS):** Starting from an unreserved cell, the backtracker iteratively visits neighbouring unvisited cells using an explicit, heap-allocated stack. As passages are carved, `Maze.open_passage(a, b)` removes shared walls simultaneously on both adjacent cells. This stage guarantees complete connectivity and reaches every non-reserved cell in $O(V)$ time.
+4. **Spanning Tree Carving (DFS):** Starting from `(0, 0)`, which the "42" never covers, the backtracker iteratively visits neighbouring unvisited cells using an explicit, heap-allocated stack. As passages are carved, `Maze.open_passage(a, b)` removes shared walls simultaneously on both adjacent cells. This stage guarantees complete connectivity and reaches every non-reserved cell in $O(V)$ time.
 5. **Mode Branching:**
    - If `PERFECT=True`: Generation completes. The resulting maze is a spanning tree with exactly $V - 1$ open passages, zero loops, and exactly one path between entry and exit.
    - If `PERFECT=False` (default): Proceed to Stage 6 (Braiding).
@@ -131,7 +132,9 @@ We implemented the **Iterative Recursive Backtracker (Depth-First Search)** algo
    - Walkable cells with only 1 open passage facing a standard interior cell are identified as "real dead ends" (as defined by `maze_analyzer.py`).
    - Walls at real dead ends are selectively opened to create alternative loops.
    - **Corridor Width Constraint:** Before any wall between cell $a$ and cell $b$ is opened, `_completes_open_3x3(maze, a, b)` verifies that opening the wall will not complete a $3 \times 3$ open area (defined as 9 cells with all 12 internal walls open). Because only the $\le 6$ overlapping $3 \times 3$ windows containing both cells can be affected, this check is executed in constant $O(1)$ time.
-   - Braiding continues until at least 2 independent cycles are created ($E - V + 1 \ge 2$) and dead ends are minimized ($\le 2$, reaching $0$ for bonus criteria).
+   - The list of real dead ends is made once and walked once: opening a wall never creates a dead end, but it can fix two neighbouring dead ends at once, so each cell's open passages are counted again on its turn. Starting from a spanning tree, every wall opened adds exactly one independent loop ($E - V + 1$), so the number of walls opened is the number of loops.
+   - On every generated board tested (20x15, 40x30 and 9x7, with and without the "42"), no real dead end is left, which meets the bonus criterion.
+7. **Loop Top-Up:** On the smallest boards (3x2, 2x3) one wall can fix both dead ends and leave a single loop. If braiding opened fewer than two walls, further closed walls between walkable cells are opened, one at a time and each checked for $3 \times 3$ areas, until there are two loops.
 
 ---
 
@@ -149,6 +152,18 @@ We evaluated three classic spanning-tree algorithms (Recursive Backtracker, Rand
    Reserving the "42" pattern cells _before_ generation means the backtracker simply treats those coordinates as out-of-bounds. The spanning tree naturally navigates around the obstacle. Carving around reserved cells guarantees perimeter connectivity by construction, avoiding the need to forcefully close cells and repair broken graphs afterwards.
 4. **Structural Coherence via Single Mutator:**
    All wall modifications route through `Maze.open_passage(a, b)`. This guarantees that cell $a$'s wall and cell $b$'s opposite wall are updated in a single atomic step, making mismatched neighbour wall encodings mathematically unrepresentable.
+
+---
+
+## Shortest path
+
+The path written at the end of the output file (§IV.5) and shown on screen (§V) comes from a **Breadth-First Search** over open walls, in `maze/solver.py`.
+
+- **Why BFS:** every step costs the same, so this is an unweighted shortest-path problem. Cells wait in a queue (`collections.deque`) and are taken from its front, so they come out in order of their distance from the entry. The first time the exit comes out, no shorter route to it can still be waiting. A depth-first search, like the one that carves the maze, finds *a* path but not always the shortest. Dijkstra's algorithm and A* would give the same answer with more machinery.
+- **Recovering the path:** each cell records the cell it was reached from when it joins the queue, which also marks it as reached. The path is read back from the exit and reversed. Time and memory are $O(V)$.
+- **Two shapes:** `shortest_path` returns the cells (for the display), and `to_directions` turns them into `N`/`E`/`S`/`W` letters (for the file).
+- **Ties:** when several shortest paths exist, the fixed neighbour order (N, E, S, W) decides which one is returned, so the same maze always gives the same path.
+- **No path:** `SolveError` is raised if the entry or exit lies on the "42", or if the exit cannot be reached.
 
 ---
 
@@ -177,9 +192,12 @@ pip install mazegen-0.1.0-py3-none-any.whl
 
 ### Basic Usage Example
 
+<!-- TODO (javi, packaging): the wheel currently contains only the empty `mazegen/` package.
+     Until `maze/` is included, the imports below work from the repository, not from an installed wheel. -->
+
 ```python
-from mazegen import MazeGenerator
-from maze.solver import solve_maze
+from maze.generator import MazeGenerator
+from maze.solver import shortest_path, to_directions
 
 # 1. Instantiate the generator with dimensions and options
 generator = MazeGenerator(
@@ -207,12 +225,18 @@ for row in maze.rows():
     hex_row = "".join(f"{mask:x}" for mask in row)
     print(hex_row)
 
-# 5. Compute the optimal shortest path
+# 5. Access a solution: the shortest path from entry to exit
 entry_point = (0, 0)
 exit_point = (19, 14)
-path_str = solve_maze(maze, entry=entry_point, exit=exit_point)
-print(f"Shortest path ({len(path_str)} steps): {path_str}")
+cells = shortest_path(maze, entry_point, exit_point)  # [(0, 0), ..., (19, 14)]
+letters = to_directions(cells)                         # one N/E/S/W per step
+print(f"Shortest path ({len(letters)} steps): {letters}")
+
+# "42" cells are reserved; empty when the board is too small for the pattern
+print(f"Pattern cells: {len(maze.reserved)}")
 ```
+
+Errors are subclasses of `maze.maze.MazeError`: `GenerationError` from `MazeGenerator` and `SolveError` from `shortest_path`. Neither module prints anything; showing the seed or an error is the caller's decision.
 
 ---
 
@@ -225,9 +249,9 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
 - **`skusakab` (So) — Maze Core & Generation Engine (W01–W12, W18, W21):**
   - **Configuration:** Lexical and semantic parsing of `config.txt` (`maze/config.py`), syntax verification, type conversion, and boundary checks.
   - **Data Structure:** `Maze` grid implementation (`maze/maze.py`), `Direction` enum, bitmask manipulation, and the atomic `open_passage` mutator.
-  - **Generation:** Iterative DFS backtracker (`mazegen/generator.py`), seed management, "42" pattern reservation (`maze/pattern_42.py`), and braiding logic with $O(1)$ $3 \times 3$ open area detection.
-  - **Solving:** Shortest-path BFS solver (`maze/solver.py`) producing optimal `NESW` direction strings.
-  - **Testing:** Core unit test suite (`tests/test_config.py`, `tests/test_maze.py`, `tests/test_generator.py`).
+  - **Generation:** Iterative DFS backtracker, seed management, "42" pattern placement, braiding with $O(1)$ $3 \times 3$ open area detection, and the loop top-up (`maze/generator.py`).
+  - **Solving:** Shortest-path BFS solver producing the path cells and the `NESW` string (`maze/solver.py`).
+  - **Testing:** Core unit test suite (`tests/test_config.py`, `tests/test_maze.py`, `tests/test_generator.py`, `tests/test_solver.py`).
 - **`jperez-u` (Javier) — Output, Visualisation, CLI & Packaging (W13–W17, W20, W22–W24):**
   - **Output Serialization:** Hexadecimal formatting, file export, and trailing newline enforcement (`output/maze_writer.py`).
   - **Terminal Rendering:** Modular ASCII visualizer (`display/terminal_renderer.py`), ANSI wall coloring palettes, and path overlay.
@@ -257,6 +281,14 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
    - Transitioned from a generate-and-retry strategy to a constant-time pre-check (`_completes_open_3x3`) evaluating at most 6 windows before opening any wall during braiding.
 6. **Encapsulation of Reusable Module Seed Printing (2026-09-13):**
    - Established that `MazeGenerator` must remain quiet and free of side effects. The seed is exposed via a property, and only `a_maze_ing.py` prints it to `stdout`.
+7. **Loop Top-Up for the Smallest Boards (2026-09-15):**
+   - Braiding one 3x2 path showed that a single wall can fix both dead ends and leave one loop, on a size the generator accepts. Rather than raising the minimum size, a final stage opens the missing walls. Because a tree has exactly $V - 1$ passages, the number of walls braiding opened already gives the loop count, so nothing is counted twice.
+8. **The "42" Shape and Placement (2026-09-15):**
+   - The shape was read from the subject's image. The first placement rule was explained with a wrong argument about 8-wide boards; checking every size by script corrected it, and the 9x7 bound was kept as a simple margin rule even though 9x6 would also work.
+9. **Solver Design (2026-09-17, kickoff item 3.8):**
+   - BFS in the engine, exposed as functions in `maze/solver.py` rather than as a `MazeGenerator` method, since §VI asks the module for access to a solution. Cells and letters come from separate functions, and a missing path raises `SolveError` rather than returning `None`.
+10. **Schedule (2026-09-17):**
+    - The original one-month deadline did not leave time to review the integration of both halves, so it was extended; the new date is still to be fixed.
 
 ---
 
@@ -302,6 +334,9 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
   - [Python `typing` and Type Hints Guide](https://docs.python.org/3/library/typing.html)
 - **Packaging:**
   - [Python Packaging User Guide](https://packaging.python.org/) & [Poetry Documentation](https://python-poetry.org/docs/)
+- **Queues and BFS:**
+  - [Python tutorial — Using Lists as Queues](https://docs.python.org/3/tutorial/datastructures.html#using-lists-as-queues)
+  - [`collections.deque`](https://docs.python.org/3/library/collections.html#collections.deque)
 
 ---
 
@@ -319,6 +354,10 @@ In accordance with Subject §II and §VII, AI assistance (specifically Claude) w
    - Generated standardized NumPy-style docstrings and clarified complex `mypy` typing questions (such as `@property` declarations in `typing.Protocol` interfaces).
 4. **Cross-Language Communication:**
    - Assisted in translating technical notes and decision rationales between Japanese and English, ensuring equal shared understanding across both team members.
+5. **Generator and Solver (so's side):**
+   - The implementation code was written by so; Claude explained concepts (spanning trees, loops, queues, BFS), reviewed each version, and pointed out bugs with hints rather than fixes.
+   - Claude wrote part of the test suite (the braiding, loop top-up, "42" and solver tests), and checked every test file by mutation testing: breaking the code on purpose, one change at a time, to confirm that some test fails.
+   - Claude drafted the docstrings, the user-facing error messages, the solver plan (`Docs/implementation_plans/shortest-path-solver.md`) and the learning note on queues and BFS, and ran generated mazes through `maze_analyzer.py`.
 
 #### Principles & Verification
 
@@ -415,6 +454,7 @@ make build        # リポジトリ直下に mazegen-* 配布パッケージを�
 #### エラー処理方針 (§IV.2)
 
 - 構文エラー、必須キーの欠落、重複キー、範囲外座標、アクセス不可能なファイルパスなどの不正入力に対して、自前の `ConfigError` サブクラスを送出し、エントリポイントで `source:line: problem` 形式のエラーメッセージを標準エラー出力へ表示して終了コード `1` で終了します（未処理例外でクラッシュすることはありません）。
+- 生成と経路探索の問題は `MazeError` の子クラスで伝えます:`GenerationError`(妥当な迷路を作れない大きさ)と `SolveError`(入口か出口が「42」の上、または出口に届かない)。`ConfigError` と `MazeError` は別の系統なので、エントリポイントは両方を捕まえます。メッセージのセルは設定ファイルと同じ `x,y` の形で示します。
 
 ---
 
@@ -425,10 +465,11 @@ make build        # リポジトリ直下に mazegen-* 配布パッケージを�
 **再帰的バックトラッカー（深さ優先探索 / DFS）** を明示的スタックによる反復処理で実装し、既定モード（`PERFECT=False`）向けに**行き止まり解消（braiding）処理**を組み合わせています。
 
 1. **シード解決:** 専用の `random.Random(seed)` インスタンスを生成。未指定時は乱数シードを自動生成し、呼び出し元が表示・再利用できるようにプロパティとして保持。
-2. **「42」パターンの確保:** 迷路が十分なサイズを持ち、四隅および中央候補を塞がない場合に、該当セルを予約領域として設定（全壁閉の `0xf` を維持）。
-3. **全域木の掘削 (DFS):** 未訪問のセルを探索しながら `Maze.open_passage(a, b)` で壁を開放。反復処理により、Python の再帰深度上限（約1000）を回避。
+2. **「42」パターンの確保:** パターンは 7x5 のブロック(幅 3 の「4」と「2」の間に空き列 1 列、計 18 セル)。9x7 以上の盤面で、左上を `(WIDTH // 2 - 3, HEIGHT // 2 - 2)` に置く。空き列が真ん中の列に重なるので中央のセルは必ず空き、周囲に 1 セル以上の余白が残るので四隅も空き、歩けるセルはすべてつながる(9x7〜60x60 の全サイズでスクリプトにより確認)。該当セルは予約領域となり、全壁閉の `0xf` のまま残る。これより小さい盤面ではパターンを省き(`maze.reserved` が空になる)、エントリポイントがその旨を表示する。
+3. **全域木の掘削 (DFS):** 「42」が決して覆わない `(0, 0)` から始め、未訪問のセルを探索しながら `Maze.open_passage(a, b)` で壁を開放。反復処理により、Python の再帰深度上限（約1000）を回避。
 4. **分岐:** `PERFECT=True` の場合は全域木（ループ数0、経路1本）の時点で完了。
-5. **Braiding (既定モード):** 本物の行き止まり（外周や42パターン以外に面する壁を持つセル）を選択的に開放し、2本以上の独立ループを形成。開放前に `_completes_open_3x3` により最大6個の $3 \times 3$ 枠を $O(1)$ で検査し、幅2を超える開放領域が絶対に生成されないよう構造的に保証。
+5. **Braiding (既定モード):** 本物の行き止まり（外周や42パターン以外に面する壁を持つセル）を選択的に開放し、2本以上の独立ループを形成。開放前に `_completes_open_3x3` により最大6個の $3 \times 3$ 枠を $O(1)$ で検査し、幅2を超える開放領域が絶対に生成されないよう構造的に保証。行き止まりの一覧は 1 回作って 1 周する。壁を開けても行き止まりは増えないが、隣り合う 2 つが 1 枚で同時に直ることがあるので、各セルの通路はその順番が来たときに数え直す。木から始めるので、開けた壁の枚数がそのままループの数になる。テストした盤面(20x15、40x30、9x7、「42」の有無とも)では本物の行き止まりは 0 個で、ボーナスの基準を満たした。
+6. **ループの補充:** 最小の盤面(3x2、2x3)では、壁 1 枚で両方の行き止まりが直り、ループが 1 本しか残らないことがある。braiding が開けた壁が 2 枚未満なら、歩けるセルどうしの閉じた壁を 1 枚ずつ、毎回 3x3 を確かめてから開け、ループを 2 本にする。
 
 #### 選定理由
 
@@ -436,6 +477,18 @@ make build        # リポジトリ直下に mazegen-* 配布パッケージを�
 - **反復版による再帰深度の克服:** 明示的なスタック（ヒープメモリ上のリスト）を使用することで、大きな盤面でもスタックオーバーフローを起こさず線形時間 $O(V)$ で安定動作します。
 - **非矩形領域への適応性:** 「42」パターンのセルを初期段階で範囲外扱いとするだけで、バックトラッカーはその周囲を自然に迂回して木を構成でき、後から壁を閉じてグラフを修復する手間やリスクが発生しません。
 - **共有壁の整合性保証:** 壁の変更を `Maze.open_passage` の1箇所に集約することで、隣接する両セルの壁ビットが同時に更新され、壁の食い違い（不整合）が原理的に発生しません。
+
+---
+
+### 最短経路
+
+出力ファイルの最後(§IV.5)と画面(§V)に出す経路は、`maze/solver.py` の**幅優先探索 (BFS)** で求めます。
+
+- **BFS を選んだ理由:** どの一歩もコストが同じなので、重みなしの最短経路問題になります。セルはキュー(`collections.deque`)に並び、先頭から取り出されるので、入口からの距離の順に出てきます。出口が初めて出てきたとき、それより短い道はもう待っていません。迷路を掘るのに使った深さ優先探索は「ある道」を見つけますが、最短とは限りません。ダイクストラ法や A* は、同じ答えをより多くの仕組みで出すことになります。
+- **経路の取り出し:** 各セルは、キューに入るときに「どのセルから来たか」を記録し、それが到達済みの印も兼ねます。経路は出口からその記録をたどって反転します。時間・メモリとも $O(V)$ です。
+- **2 つの形:** `shortest_path` はセルを返し(表示用)、`to_directions` がそれを `N`/`E`/`S`/`W` の文字にします(ファイル用)。
+- **同じ長さの経路が複数あるとき:** 隣を見る順番(N, E, S, W)が固定なので、同じ迷路からは常に同じ経路が返ります。
+- **経路が無いとき:** 入口か出口が「42」の上にある場合と、出口に届かない場合は `SolveError` を送出します。
 
 ---
 
@@ -457,9 +510,12 @@ pip install mazegen-0.1.0-py3-none-any.whl
 
 #### コード例
 
+<!-- TODO (javi, パッケージング): 現在の wheel には空の `mazegen/` しか入っていない。
+     `maze/` を含めるまでは、下の import はリポジトリからは動くが、インストールした wheel からは動かない。 -->
+
 ```python
-from mazegen import MazeGenerator
-from maze.solver import solve_maze
+from maze.generator import MazeGenerator
+from maze.solver import shortest_path, to_directions
 
 # インスタンス化 (カスタムパラメータ: サイズ、モード、シード)
 gen = MazeGenerator(width=20, height=15, perfect=False, seed=42)
@@ -472,10 +528,13 @@ print(f"使用シード値: {gen.seed}")
 for row in maze.rows():
     print("".join(f"{mask:x}" for mask in row))
 
-# 最短経路の取得 (NESW 文字列)
-path = solve_maze(maze, (0, 0), (19, 14))
-print(f"最短経路: {path}")
+# 解へのアクセス: 入口から出口への最短経路
+cells = shortest_path(maze, (0, 0), (19, 14))   # セルの並び
+letters = to_directions(cells)                  # NESW 文字列
+print(f"最短経路: {letters}")
 ```
+
+エラーは `maze.maze.MazeError` の子クラスで、`MazeGenerator` からは `GenerationError`、`shortest_path` からは `SolveError` が送出されます。どちらのモジュールも何も表示しません。シードやエラーを表示するかは呼び出し側が決めます。
 
 ---
 
@@ -486,9 +545,9 @@ print(f"最短経路: {path}")
 - **`skusakab` (So) — コアエンジン & 生成ロジック (W01–W12, W18, W21):**
   - 設定パースおよび検証 (`maze/config.py`)
   - 迷路データ構造・壁ビットマスク・`open_passage` (`maze/maze.py`)
-  - 迷路生成アルゴリズム・シード・「42」・braiding (`mazegen/generator.py`, `maze/pattern_42.py`)
-  - 最短経路探索 BFS ソルバ (`maze/solver.py`)
-  - コア単体テスト群 (`tests/test_config.py`, `tests/test_maze.py`, `tests/test_generator.py`)
+  - 迷路生成アルゴリズム・シード・「42」の配置・braiding・ループの補充 (`maze/generator.py`)
+  - 最短経路探索 BFS ソルバ(経路のセルと NESW 文字列) (`maze/solver.py`)
+  - コア単体テスト群 (`tests/test_config.py`, `tests/test_maze.py`, `tests/test_generator.py`, `tests/test_solver.py`)
 - **`jperez-u` (Javier) — 出力・可視化・インフラ・CLI (W13–W17, W20, W22–W24):**
   - 16進数出力およびメタデータ書き出し (`output/maze_writer.py`)
   - ターミナル ASCII レンダラー・色パレット・操作ハンドラ (`display/`)
@@ -505,6 +564,10 @@ print(f"最短経路: {path}")
 4. **不変条件の構造的保証 (2026-08-24):** 壁の不整合を防ぐため、壁の変更を `Maze.open_passage` の1つのみに制限しました。
 5. **Braiding と 3x3 領域判定の洗練 (2026-09-01〜2026-09-13):** 3x3 開放領域を「内壁12枚がすべて開いている状態」と明確に定義し、壁開放時に影響を受ける最大6つの枠のみを判定する定数時間 $O(1)$ の判定法を確立しました。
 6. **シード出力の責務分離 (2026-09-13):** 再利用ライブラリとしての純粋性を保つため、`MazeGenerator` は標準出力への出力を一切行わず、エントリポイントがプロパティからシードを取得して表示する設計に決定しました。
+7. **最小の盤面のためのループ補充 (2026-09-15):** 3x2 の一本道に braiding をかけると、壁 1 枚で両方の行き止まりが直り、生成器が受け入れる大きさなのにループが 1 本しか残らないことが分かりました。最小サイズを引き上げる代わりに、足りない壁を開ける最終工程を加えました。木の通路はちょうど $V - 1$ 本なので、braiding が開けた壁の枚数がそのままループの数になり、数え直しは不要です。
+8. **「42」の形と配置 (2026-09-15):** 形は subject の画像から読み取りました。最初の配置規則は幅 8 の盤面についての誤った理由で説明していましたが、全サイズをスクリプトで確かめて訂正しました。9x6 でも成り立つことが分かりましたが、「四方に 1 セルの余白」という単純な規則として 9x7 の境界を残しました。
+9. **ソルバーの設計 (2026-09-17、キックオフ論点 3.8):** BFS はエンジン側に置き、`MazeGenerator` のメソッドではなく `maze/solver.py` の関数として公開しました。§VI が解へのアクセスを求めているのはモジュールだからです。セルと文字は別の関数で作り、経路が無い場合は `None` を返さず `SolveError` を送出します。
+10. **日程 (2026-09-17):** 当初の 1 か月の締切では、両者の成果物を統合してレビューする時間が足りないため延長しました。新しい日程は未定です。
 
 #### うまくいったこと / 改善できたこと
 
@@ -524,7 +587,7 @@ print(f"最短経路: {path}")
 - Jamis Buck, _Mazes for Programmers_ (Pragmatic Bookshelf, 2015) — 全域木、バックトラッカー、braiding の基礎理論
 - グラフ理論と全域木の性質（オイラーの公式 $E - V + 1$ による閉路計算）
 - 幅優先探索 (BFS) 最短経路アルゴリズム
-- Python 公式ドキュメント (PEP 8, PEP 257, dataclasses, enum, typing, random)
+- Python 公式ドキュメント (PEP 8, PEP 257, dataclasses, enum, typing, random, `collections.deque`)
 
 #### AI の使い方 (§II & §VII)
 
@@ -534,6 +597,7 @@ print(f"最短経路: {path}")
 - **設計仕様の洗練とエッジケースの洗い出し:** `config-parser.md` の 31 個のエッジケースや、`generation-algorithm.md` の 3x3 判定アルゴリズムの幾何的検討。
 - **Docstring と型ヒントの整理:** PEP 257 (NumPy スタイル) の docstring 整備や `mypy` エラーの原因究明。
 - **ペア間コミュニケーション支援:** 日本語と英語の技術文書の相互翻訳およびニュアンスの確認。
+- **生成器とソルバー(so の担当):** 実装コードは so が書き、Claude は概念の解説(全域木、ループ、キュー、BFS)、各版のレビュー、バグの指摘(修正ではなくヒント)を行いました。テストの一部(braiding、ループの補充、「42」、ソルバー)は Claude が書き、すべてのテストファイルをミューテーションテスト(コードをわざと 1 か所ずつ壊し、いずれかのテストが失敗することを確かめる)で検証しました。docstring、利用者向けのエラーメッセージ、ソルバーの計画書 (`Docs/implementation_plans/shortest-path-solver.md`)、キューと BFS の学習ノートの草稿も Claude が作成し、生成した迷路を `maze_analyzer.py` で検証しました。
 
 AI 生成のコードを無批判に導入することは厳に戒め、すべてのアルゴリズム・不変条件・テストケースについてチーム両名が論理的に説明・検証できる状態を保っています。ディフェンス (§IX) における口頭試問およびライブコーディング修正にも十分に対応できる理解を備えています。
 

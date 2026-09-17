@@ -88,5 +88,11 @@ Outstanding across the whole repo:
 - **`a_maze_ing.py` is only on javi's unmerged branch** `feature/a-maze-ing.py`, though §IV.2
   fixes that filename and `make run` calls it (W17). It still needs the one `except ConfigError`
   handler agreed in 3.9 = A.
-- **so's generator (W05–W09) has not been started.** The solver, the writer and the interactive
-  session all wait on it.
+- **so's generator (W05–W09) is on `feature/generator`, not merged yet.** Both modes are generated:
+  a perfect maze, and the default mode braided with at least two loops (stage 7 tops them up on
+  small boards), with the "42" in the middle from 9x7 up. `maze_analyzer.py` judges them PERFECT and
+  Pac-Man-USABLE, with no real dead end. Plan: `generation-algorithm.md` §3 and Q10–Q11. javi's entry
+  point must report the "42" as left out when `maze.reserved` is empty.
+- **The solver (W12) is written** in `maze/solver.py`: `shortest_path` (BFS, cells) and
+  `to_directions` (`NESW`). Plan: `shortest-path-solver.md`. Open for javi there: Q1 (catch
+  `MazeError`, not only `ConfigError`) and Q2 (pass the path cells to the renderer).

@@ -105,8 +105,8 @@ one of them is corrected.
    "zero" — the trap behind `SEED=0`, `minimum=0` and `bool("False")`.
 8. `python-type-syntax-vs-values.md` — **written**: `[]`, `{}` and `|` mean different things in a type and in an
    expression. Three of the four bugs it caused raised nothing at all.
-9. `bfs-and-shortest-path.md` — why breadth-first search is *provably* shortest and depth-first is not; needed for
-   the `NESW` path in §IV.5.
+9. `bfs-and-shortest-path.md` — **written**: stack against queue, `collections.deque`, why breadth-first search is
+   *provably* shortest and depth-first is not, traced on a 3x3 maze; needed for the `NESW` path in §IV.5.
 10. `union-find.md` — only if we use it to check connectivity; counting independent loops turned out to be a
    subtraction (`generation-algorithm.md` §4.2), not a search.
 11. `random-seed-and-reproducibility.md` — `random.Random(seed)` vs the global `random`, and why reproducibility is
@@ -218,8 +218,8 @@ one of them is corrected.
    区別できない理由。`SEED=0`・`minimum=0`・`bool("False")` の背後にある罠。
 8. `python-type-syntax-vs-values.md` — **作成済み**:`[]`・`{}`・`|` が型と式で意味を変えること、
    そしてそこから生まれた 4 つのバグ(うち 3 つは**何も起こさなかった**)。
-9. `bfs-and-shortest-path.md` — 幅優先探索がなぜ*証明として*最短で、深さ優先はなぜ違うのか。
-   §IV.5 の `NESW` 経路に必要。
+9. `bfs-and-shortest-path.md` — **作成済み**:スタックとキュー、`collections.deque`、幅優先探索がなぜ*証明として*
+   最短で、深さ優先はなぜ違うのかを、3x3 の迷路でトレース。§IV.5 の `NESW` 経路に必要。
 10. `union-find.md` — 連結性の確認に使う場合のみ。独立ループ数の計数は引き算で済むことが分かった
    (`generation-algorithm.md` §4.2)。
 11. `random-seed-and-reproducibility.md` — `random.Random(seed)` とグローバル `random` の違い。
