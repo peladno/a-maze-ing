@@ -148,7 +148,7 @@ class TerminalRenderer(Renderer):
         if self.show_path and (x, y) in getattr(maze, "shortest_path", ()):
             return f"{PATH} . {RESET}"
 
-        if getattr(maze, "is_reserved", lambda pos: False)((x, y)):
+        if hasattr(maze, "is_reserved") and maze.is_reserved((x, y)):
             return f"{PATTERN42}███{RESET}"
 
         return "   "
