@@ -1,0 +1,8 @@
+# Small maze configuration (tests omitting the '42' pattern notice)
+WIDTH=8
+HEIGHT=6
+ENTRY=0,0
+EXIT=7,5
+OUTPUT_FILE=maze_small.txt
+PERFECT=False
+

@@ -1,0 +1,9 @@
+# Large maze configuration
+WIDTH=40
+HEIGHT=25
+ENTRY=0,0
+EXIT=39,24
+OUTPUT_FILE=maze_large.txt
+PERFECT=False
+SEED=999
+

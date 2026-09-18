@@ -6,6 +6,14 @@ import argparse
 import sys
 from pathlib import Path
 
+from display.input_handler import run_interactive_session
+from display.terminal_renderer import TerminalRenderer
+from maze.config import load_config, ConfigError
+from maze.generator import MazeGenerator
+from maze.maze import MazeError
+from maze.solver import shortest_path, to_directions
+from output import maze_writer
+
 
 def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments for the application.
@@ -54,16 +62,42 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"Loading configuration from '{config_path}'...")
 
-    # TODO (Partner side A):
-    # 1. config = load_config(config_path)
-    # 2. maze = generate_maze(config)
-    # 3. shortest_path = solve_maze(maze, config.entry, config.exit)
+    try:
+        config = load_config(config_path)
 
-    # TODO (Integrated pipeline):
-    # 4. MazeWriter.write(maze, config.entry, config.exit,
-    #                     shortest_path, config.output_file)
-    # 5. renderer = TerminalRenderer(show_path=False, color_mode=0)
-    # 6. run_interactive_session(renderer, maze)
+        maze_generator = MazeGenerator(
+            width=config.width,
+            height=config.height,
+            perfect=config.perfect,
+            seed=config.seed)
+
+        print(f"Seed: {maze_generator.seed}")
+        maze = maze_generator.generate()
+
+        if len(maze.reserved) == 0:
+            print("Warning: The '42' pattern was "
+                  "omitted because the maze size is too small.",
+                  file=sys.stderr)
+
+        path_cells = shortest_path(maze, config.entry, config.exit)
+        directions = to_directions(path_cells)
+
+        maze_writer.MazeWriter.write(maze=maze,
+                                     entry=config.entry,
+                                     exit=config.exit,
+                                     shortest_path=directions,
+                                     filepath=config.output_file)
+
+        setattr(maze, "entry", config.entry)
+        setattr(maze, "exit", config.exit)
+        setattr(maze, "shortest_path", set(path_cells))
+
+        renderer = TerminalRenderer(show_path=False, color_mode=0)
+        run_interactive_session(renderer, maze)
+
+    except (ConfigError, MazeError) as err:
+        print(f"Error: {err}", file=sys.stderr)
+        return 1
 
     return 0
 
