@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from maze.maze import Direction
-from .colors import ENTRY, EXIT, PATH, RESET, WALL_COLORS
+from .colors import ENTRY, EXIT, PATH, RESET, WALL_COLORS, PATTERN42
 from .renderer import MazeLike, Renderer
 
 N = Direction.NORTH
@@ -147,10 +147,8 @@ class TerminalRenderer(Renderer):
 
         if self.show_path and (x, y) in getattr(maze, "shortest_path", ()):
             return f"{PATH} . {RESET}"
+
+        if getattr(maze, "is_reserved", lambda pos: False)((x, y)):
+            return f"{PATTERN42}███{RESET}"
+
         return "   "
-
-
-# if __name__ == "__main__":
-#     from .example_maze import DummyMaze
-
-#     TerminalRenderer().render(DummyMaze())
