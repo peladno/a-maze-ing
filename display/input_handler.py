@@ -1,9 +1,16 @@
+from __future__ import annotations
+
+from collections.abc import Callable, Collection
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from display.colors import WALL_COLORS
 from display.renderer import MazeLike
 
 from .terminal_renderer import TerminalRenderer
+
+if TYPE_CHECKING:
+    from maze.maze import Coord
 
 
 class UserAction(Enum):
@@ -30,6 +37,13 @@ def display_menu() -> None:
 
 
 def get_user_action() -> UserAction:
+    """Prompt the user and return the selected action.
+
+    Returns
+    -------
+    UserAction
+        The valid action selected by the user ('t', 'c', 'r', or 'q').
+    """
     while True:
         user_selection = input("Choose an option (t/c/r/q): ").strip().lower()
 
@@ -42,7 +56,11 @@ def get_user_action() -> UserAction:
                   "please choose between: 't', 'c', 'r' or 'q'.")
 
 
-def apply_action(action: UserAction, renderer: TerminalRenderer) -> bool:
+def apply_action(
+    action: UserAction,
+    renderer: TerminalRenderer,
+    on_regenerate: Callable[[], object] | None = None,
+) -> bool:
     """Apply the chosen user action to the renderer or application state.
 
     Parameters
@@ -51,6 +69,8 @@ def apply_action(action: UserAction, renderer: TerminalRenderer) -> bool:
         The action chosen by the user.
     renderer:
         The renderer whose options (show_path, color_mode) are updated.
+    on_regenerate:
+        Optional callback invoked when ``UserAction.REGENERATE`` is chosen.
 
     Returns
     -------
@@ -66,6 +86,8 @@ def apply_action(action: UserAction, renderer: TerminalRenderer) -> bool:
         return True
 
     if action == UserAction.REGENERATE:
+        if on_regenerate is not None:
+            on_regenerate()
         return True
 
     if action == UserAction.QUIT:
@@ -76,7 +98,11 @@ def apply_action(action: UserAction, renderer: TerminalRenderer) -> bool:
 
 
 def run_interactive_session(
-    renderer: TerminalRenderer, maze: MazeLike
+    renderer: TerminalRenderer,
+    maze: MazeLike,
+    on_regenerate: (
+        Callable[[], tuple[MazeLike, Collection[Coord]] | MazeLike] | None
+    ) = None,
 ) -> None:
     """Run the interactive terminal session loop.
 
@@ -85,29 +111,34 @@ def run_interactive_session(
     renderer:
         The terminal renderer used to draw the maze.
     maze:
-        The maze object to display.
+        The initial maze object to display.
+    on_regenerate:
+        Optional callable invoked when the user selects 'r' (Regenerate).
+        It may return a new ``MazeLike`` object, or a tuple of
+        ``(new_maze, new_path)``.
 
     Returns
     -------
     None
         The loop runs until the user chooses to quit.
     """
+    current_maze = maze
     running = True
     while running:
-        renderer.render(maze)
+        renderer.render(current_maze)
         display_menu()
         action = get_user_action()
-        running = apply_action(action, renderer)
-
-
-# if __name__ == "__main__":
-#     from display.example_maze import DummyMaze
-
-#     test_maze = DummyMaze(width=5, height=4, seed=42)
-#     sample_path = (
-#         (0, 0), (1, 0), (1, 1), (2, 1), (3, 1), (4, 1), (4, 2), (4, 3)
-#     )
-#     setattr(test_maze, "shortest_path", sample_path)
-#     test_renderer = TerminalRenderer(show_path=False, color_mode=0)
-
-#     run_interactive_session(test_renderer, test_maze)
+        if action == UserAction.REGENERATE and on_regenerate is not None:
+            result = on_regenerate()
+            if isinstance(result, tuple):
+                current_maze, new_path = result
+                renderer.shortest_path = set(new_path)
+                setattr(current_maze, "shortest_path", set(new_path))
+                if renderer.entry is not None:
+                    setattr(current_maze, "entry", renderer.entry)
+                if renderer.exit is not None:
+                    setattr(current_maze, "exit", renderer.exit)
+            else:
+                current_maze = result
+        else:
+            running = apply_action(action, renderer)

@@ -16,6 +16,7 @@ from display import (
     apply_action,
     display_menu,
     get_user_action,
+    run_interactive_session,
 )
 
 if TYPE_CHECKING:
@@ -236,3 +237,135 @@ def test_display_menu_content(
     assert f"[{UserAction.CHANGE_COLOR.value}] Change Color" in printed
     assert f"[{UserAction.REGENERATE.value}] Regenerate" in printed
     assert f"[{UserAction.QUIT.value}] Quit" in printed
+
+
+def test_terminal_renderer_init_with_explicit_params() -> None:
+    """Verify initializing TerminalRenderer with explicit coordinates and path.
+
+    Returns
+    -------
+    None
+        Asserts that entry, exit, and shortest_path attributes are stored
+        correctly on the renderer.
+    """
+    entry: Coord = (0, 0)
+    exit_coord: Coord = (3, 3)
+    path: list[Coord] = [(0, 0), (1, 0), (2, 0), (3, 0), (3, 3)]
+
+    renderer = TerminalRenderer(
+        show_path=True,
+        color_mode=2,
+        entry=entry,
+        exit=exit_coord,
+        shortest_path=path,
+    )
+
+    assert renderer.entry == (0, 0)
+    assert renderer.exit == (3, 3)
+    assert renderer.shortest_path == set(path)
+    assert renderer.show_path is True
+    assert renderer.color_mode == 2
+
+    maze = Maze(width=4, height=4)
+    assert "E" in renderer._cell_content(0, 0, maze)
+    assert "X" in renderer._cell_content(3, 3, maze)
+    assert "." in renderer._cell_content(1, 0, maze)
+    assert " " in renderer._cell_content(0, 1, maze)
+
+
+def test_terminal_renderer_render_shortest_path_override(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Verify that render() accepts a shortest_path override and updates state.
+
+    Parameters
+    ----------
+    capsys:
+        Pytest standard output capture fixture.
+
+    Returns
+    -------
+    None
+        Asserts that shortest_path on the renderer is updated and rendered.
+    """
+    renderer = TerminalRenderer(show_path=True, color_mode=0)
+    maze = Maze(width=2, height=2)
+
+    assert renderer.shortest_path is None
+    new_path: list[Coord] = [(0, 0), (1, 0)]
+    renderer.render(maze, shortest_path=new_path)
+
+    assert renderer.shortest_path == {(0, 0), (1, 0)}
+    captured = capsys.readouterr()
+    assert "." in captured.out
+
+
+def test_apply_action_regenerate() -> None:
+    """Verify that REGENERATE triggers on_regenerate callback and returns True.
+
+    Returns
+    -------
+    None
+        Asserts that callback is called and loop continues.
+    """
+    called = False
+
+    def callback() -> None:
+        nonlocal called
+        called = True
+
+    renderer = TerminalRenderer(color_mode=0)
+
+    assert apply_action(UserAction.REGENERATE, renderer) is True
+
+    assert apply_action(
+        UserAction.REGENERATE, renderer, on_regenerate=callback
+    ) is True
+    assert called is True
+
+
+def test_run_interactive_session_regenerate_and_quit(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """Verify interactive session handles regeneration and quit actions.
+
+    Parameters
+    ----------
+    monkeypatch:
+        Pytest monkeypatch fixture to simulate user input sequence.
+    capsys:
+        Pytest standard output capture fixture.
+
+    Returns
+    -------
+    None
+        Asserts that maze and shortest_path are updated on regeneration and
+        session terminates on quit.
+    """
+    initial_maze = Maze(width=2, height=2)
+    new_maze = Maze(width=2, height=2)
+    new_path: list[Coord] = [(0, 0), (0, 1)]
+    callback_called = False
+
+    def on_regen() -> tuple[Maze, list[Coord]]:
+        nonlocal callback_called
+        callback_called = True
+        return new_maze, new_path
+
+    renderer = TerminalRenderer(
+        show_path=True,
+        color_mode=0,
+        entry=(0, 0),
+        exit=(1, 1),
+    )
+
+    inputs = iter(["r", "q"])
+    monkeypatch.setattr("builtins.input", lambda _: next(inputs))
+
+    run_interactive_session(renderer, initial_maze, on_regenerate=on_regen)
+
+    assert callback_called is True
+    assert renderer.shortest_path == set(new_path)
+    captured = capsys.readouterr()
+    assert "MAZE INTERACTIVE MENU" in captured.out

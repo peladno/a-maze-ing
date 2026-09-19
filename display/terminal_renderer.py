@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from maze.maze import Direction
+from collections.abc import Collection
+from maze.maze import Coord, Direction
 from .colors import ENTRY, EXIT, PATH, RESET, WALL_COLORS, PATTERN42
 from .renderer import MazeLike, Renderer
 
@@ -15,16 +16,30 @@ W = Direction.WEST
 class TerminalRenderer(Renderer):
     """Render a maze as a fixed-width ASCII drawing in the terminal."""
 
-    def __init__(self, show_path: bool = False, color_mode: int = 0):
+    def __init__(
+        self,
+        show_path: bool = False,
+        color_mode: int = 0,
+        entry: Coord | None = None,
+        exit: Coord | None = None,
+        shortest_path: Collection[Coord] | None = None,
+    ) -> None:
         """Create a renderer with the requested display options.
 
         Parameters
         ----------
         show_path:
-            If ``True``, mark cells in ``maze.shortest_path`` with ``.``.
+            If ``True``, mark cells in ``shortest_path`` with ``.``.
         color_mode:
             Wall colour mode: ``0`` disables colour, while ``1`` to ``3``
             select the configured ANSI wall colours.
+        entry:
+            Optional ``(x, y)`` coordinates of the maze entry.
+        exit:
+            Optional ``(x, y)`` coordinates of the maze exit.
+        shortest_path:
+            Optional collection of ``(x, y)`` coordinates forming the solution
+            path.
 
         Returns
         -------
@@ -38,25 +53,39 @@ class TerminalRenderer(Renderer):
 
         self.show_path = show_path
         self.color_mode = color_mode
+        self.entry = entry
+        self.exit = exit
+        self.shortest_path: set[Coord] | None = (
+            set(shortest_path) if shortest_path is not None else None
+        )
 
-    def render(self, maze: MazeLike) -> None:
+    def render(
+        self,
+        maze: MazeLike,
+        shortest_path: Collection[Coord] | None = None,
+    ) -> None:
         """Print the complete maze, including walls and cell markers.
 
         The wall bitmask uses ``N=1``, ``E=2``, ``S=4`` and ``W=8``;
-        a set bit means that the corresponding wall is closed. The optional
-        ``entry``, ``exit`` and ``shortest_path`` attributes are used when
-        present, but are not required by the maze interface.
+        a set bit means that the corresponding wall is closed. The
+        ``entry``, ``exit`` and ``shortest_path`` attributes configured
+        on the renderer or attached to ``maze`` are used when present.
 
         Parameters
         ----------
         maze:
             Object providing ``width``, ``height`` and ``walls_at``.
+        shortest_path:
+            Optional collection of ``(x, y)`` coordinates to update
+            the solution path displayed by the renderer.
 
         Returns
         -------
         None
             The rendered maze is written directly to standard output.
         """
+        if shortest_path is not None:
+            self.shortest_path = set(shortest_path)
         height = maze.height
         print(self._horizontal_wall(maze, 0, N))
 
@@ -139,14 +168,26 @@ class TerminalRenderer(Renderer):
             A three-character cell marker: ``E`` for entry, ``X`` for exit,
             ``.`` for a visible path cell, or spaces for an empty cell.
         """
-        if (x, y) == getattr(maze, "entry", None):
+        entry = self.entry if self.entry is not None else getattr(
+            maze, "entry", None
+        )
+        exit_coord = self.exit if self.exit is not None else getattr(
+            maze, "exit", None
+        )
+        path = (
+            self.shortest_path
+            if self.shortest_path is not None
+            else getattr(maze, "shortest_path", ())
+        )
+
+        if (x, y) == entry:
             return f"{ENTRY} E {RESET}"
 
-        if (x, y) == getattr(maze, "exit", None):
+        if (x, y) == exit_coord:
             return f"{EXIT} X {RESET}"
 
-        if self.show_path and (x, y) in getattr(maze, "shortest_path", ()):
-            return f"{PATH} . {RESET}"
+        if self.show_path and (x, y) in path:
+            return f"{PATH} * {RESET}"
 
         if hasattr(maze, "is_reserved") and maze.is_reserved((x, y)):
             return f"{PATTERN42}███{RESET}"
