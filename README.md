@@ -159,7 +159,7 @@ We evaluated three classic spanning-tree algorithms (Recursive Backtracker, Rand
 
 The path written at the end of the output file (§IV.5) and shown on screen (§V) comes from a **Breadth-First Search** over open walls, in `maze/solver.py`.
 
-- **Why BFS:** every step costs the same, so this is an unweighted shortest-path problem. Cells wait in a queue (`collections.deque`) and are taken from its front, so they come out in order of their distance from the entry. The first time the exit comes out, no shorter route to it can still be waiting. A depth-first search, like the one that carves the maze, finds *a* path but not always the shortest. Dijkstra's algorithm and A* would give the same answer with more machinery.
+- **Why BFS:** every step costs the same, so this is an unweighted shortest-path problem. Cells wait in a queue (`collections.deque`) and are taken from its front, so they come out in order of their distance from the entry. The first time the exit comes out, no shorter route to it can still be waiting. A depth-first search, like the one that carves the maze, finds _a_ path but not always the shortest. Dijkstra's algorithm and A\* would give the same answer with more machinery.
 - **Recovering the path:** each cell records the cell it was reached from when it joins the queue, which also marks it as reached. The path is read back from the exit and reversed. Time and memory are $O(V)$.
 - **Two shapes:** `shortest_path` returns the cells (for the display), and `to_directions` turns them into `N`/`E`/`S`/`W` letters (for the file).
 - **Ties:** when several shortest paths exist, the fixed neighbour order (N, E, S, W) decides which one is returned, so the same maze always gives the same path.
@@ -192,12 +192,8 @@ pip install mazegen-0.1.0-py3-none-any.whl
 
 ### Basic Usage Example
 
-<!-- TODO (javi, packaging): the wheel currently contains only the empty `mazegen/` package.
-     Until `maze/` is included, the imports below work from the repository, not from an installed wheel. -->
-
 ```python
-from maze.generator import MazeGenerator
-from maze.solver import shortest_path, to_directions
+from mazegen import MazeGenerator, shortest_path, to_directions
 
 # 1. Instantiate the generator with dimensions and options
 generator = MazeGenerator(
@@ -484,7 +480,7 @@ make build        # リポジトリ直下に mazegen-* 配布パッケージを�
 
 出力ファイルの最後(§IV.5)と画面(§V)に出す経路は、`maze/solver.py` の**幅優先探索 (BFS)** で求めます。
 
-- **BFS を選んだ理由:** どの一歩もコストが同じなので、重みなしの最短経路問題になります。セルはキュー(`collections.deque`)に並び、先頭から取り出されるので、入口からの距離の順に出てきます。出口が初めて出てきたとき、それより短い道はもう待っていません。迷路を掘るのに使った深さ優先探索は「ある道」を見つけますが、最短とは限りません。ダイクストラ法や A* は、同じ答えをより多くの仕組みで出すことになります。
+- **BFS を選んだ理由:** どの一歩もコストが同じなので、重みなしの最短経路問題になります。セルはキュー(`collections.deque`)に並び、先頭から取り出されるので、入口からの距離の順に出てきます。出口が初めて出てきたとき、それより短い道はもう待っていません。迷路を掘るのに使った深さ優先探索は「ある道」を見つけますが、最短とは限りません。ダイクストラ法や A\* は、同じ答えをより多くの仕組みで出すことになります。
 - **経路の取り出し:** 各セルは、キューに入るときに「どのセルから来たか」を記録し、それが到達済みの印も兼ねます。経路は出口からその記録をたどって反転します。時間・メモリとも $O(V)$ です。
 - **2 つの形:** `shortest_path` はセルを返し(表示用)、`to_directions` がそれを `N`/`E`/`S`/`W` の文字にします(ファイル用)。
 - **同じ長さの経路が複数あるとき:** 隣を見る順番(N, E, S, W)が固定なので、同じ迷路からは常に同じ経路が返ります。
@@ -510,12 +506,8 @@ pip install mazegen-0.1.0-py3-none-any.whl
 
 #### コード例
 
-<!-- TODO (javi, パッケージング): 現在の wheel には空の `mazegen/` しか入っていない。
-     `maze/` を含めるまでは、下の import はリポジトリからは動くが、インストールした wheel からは動かない。 -->
-
 ```python
-from maze.generator import MazeGenerator
-from maze.solver import shortest_path, to_directions
+from mazegen import MazeGenerator, shortest_path, to_directions
 
 # インスタンス化 (カスタムパラメータ: サイズ、モード、シード)
 gen = MazeGenerator(width=20, height=15, perfect=False, seed=42)

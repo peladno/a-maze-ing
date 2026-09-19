@@ -168,6 +168,7 @@ class TerminalRenderer(Renderer):
             A three-character cell marker: ``E`` for entry, ``X`` for exit,
             ``.`` for a visible path cell, or spaces for an empty cell.
         """
+        pos = (x, y)
         entry = self.entry if self.entry is not None else getattr(
             maze, "entry", None
         )
@@ -177,19 +178,19 @@ class TerminalRenderer(Renderer):
         path = (
             self.shortest_path
             if self.shortest_path is not None
-            else getattr(maze, "shortest_path", ())
+            else getattr(maze, "shortest_path", set())
         )
 
-        if (x, y) == entry:
+        if pos == entry:
             return f"{ENTRY} E {RESET}"
 
-        if (x, y) == exit_coord:
+        if pos == exit_coord:
             return f"{EXIT} X {RESET}"
 
-        if self.show_path and (x, y) in path:
-            return f"{PATH} * {RESET}"
+        if self.show_path and pos in path:
+            return f"{PATH} . {RESET}"
 
-        if hasattr(maze, "is_reserved") and maze.is_reserved((x, y)):
+        if hasattr(maze, "is_reserved") and maze.is_reserved(pos):
             return f"{PATTERN42}███{RESET}"
 
         return "   "

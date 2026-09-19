@@ -30,6 +30,8 @@ clean:
 	rm -rf dist/
 	rm -rf .mypy_cache/
 	rm -rf .pytest_cache/
+	find . -type d -name "__pycache__" -exec rm -rf {} +
+	find . -type f -name "*.py[cod]" -delete
 
 clean-cache:
 	poetry cache clear --all
