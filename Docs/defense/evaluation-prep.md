@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | **Source / 元の資料** | the peer-evaluation sheet, copied in `Docs/reviewmaze` / ピア評価シート(`Docs/reviewmaze` に写したもの) |
-| **Checked on / 確認日** | 2026-09-22, on `main` at `2b70702` |
+| **Checked on / 確認日** | 2026-09-22, last on `main` at `1b87783` (after javi's fixes for R3–R5) |
 | **How it was checked / 確認方法** | every item below was run for real; the outputs quoted are copied from those runs / 下の各項目は実際に実行し、載せた出力はその結果の写し |
 
 > **EN** — How to use this file. Each section follows one block of the evaluation sheet, in its order. For each item it gives what the evaluator checks, what our program does (with the real output), how to show it in the defense, and the questions likely to follow. §0 is a one-page summary; §10 lists the risks to deal with before the defense.
@@ -113,7 +113,7 @@ Entry `E` on blue, exit `X` on red, the "42" in magenta `███`. / 入口は
 - *Why does `r` ignore `SEED`? / なぜ `r` は `SEED` を使わない?* — **EN** The configured seed exists to reproduce the first maze; `r` exists to see a different one. With the same seed, `r` would draw the same maze again. The file is rewritten so it always matches the screen. **JA** 設定のシードは最初の 1 枚を再現するためのもので、`r` は別の迷路を見るためのもの。同じシードでは同じ迷路しか出ない。ファイルも書き直すので、常に画面と一致する。
 - *How is a row drawn? / 1 行はどう描く?* — **EN** Each row of cells becomes two text lines: the cell contents with their west walls, then the south walls. **JA** セル 1 行が文字 2 行になる:西の壁と中身の行、南の壁の行。(→ `Docs/code_guide/06_display.md`)
 
-**Careful / 注意:** Ctrl-D or Ctrl-C at the prompt ends in a traceback (not caught). Quit with `q`. / メニューで Ctrl-D・Ctrl-C を押すと traceback になる(捕まえていない)。終了は `q` で。
+**Quitting / 終了:** `q`, Ctrl-D and Ctrl-C all print `Exiting application. Goodbye!` and end cleanly (Ctrl-D and Ctrl-C fixed by javi on 2026-09-22). / `q`・Ctrl-D・Ctrl-C のどれでも `Exiting application. Goodbye!` と表示して静かに終わる(Ctrl-D・Ctrl-C は 9/22 に javi が対応)。
 
 ---
 
@@ -168,17 +168,20 @@ exit status 1
 | extra: entry on the "42" / 追加:入口が「42」の上 | `ENTRY=8,7` | `Error: the entry 8,7 is part of the "42", whose cells are closed on every side` |
 | extra: too small for loops / 追加:ループの余地が無い | 2x2, `PERFECT=False` | `Error: a maze that is not perfect needs room for two loops: at least 3x2 or 2x3, got 2x2` |
 | extra: missing file / 追加:ファイルが無い | `nope.txt` | `Error: Configuration file 'nope.txt' not found.` |
+| extra: unwritable output / 追加:書けない出力先 | `OUTPUT_FILE=nodir/maze.txt` | `Error: [Errno 2] No such file or directory: 'nodir/maze.txt'` |
+| | `OUTPUT_FILE=existing_dir` (a folder / フォルダ) | `Error: [Errno 21] Is a directory: 'existing_dir'` |
+| | `OUTPUT_FILE=readonly.txt` (no permission / 権限なし) | `Error: [Errno 13] Permission denied: 'readonly.txt'` |
 
 **How it works / 仕組み**
 
-**EN** — `maze/config.py` raises a `ConfigError` subclass with the file name and line; the generator raises `GenerationError` and the solver `SolveError`, both `MazeError`s. `a_maze_ing.py` catches `(ConfigError, MazeError)`, prints `Error: …` to stderr and returns 1. The two families are separate, which is why both are named.
+**EN** — `maze/config.py` raises a `ConfigError` subclass with the file name and line; the generator raises `GenerationError` and the solver `SolveError`, both `MazeError`s. `a_maze_ing.py` catches `(ConfigError, MazeError, OSError)`, prints `Error: …` to stderr and returns 1. The two families are separate, which is why both are named.
 
-**JA** — `maze/config.py` はファイル名と行番号つきの `ConfigError` の仲間を投げる。生成器は `GenerationError`、ソルバーは `SolveError` を投げ、どちらも `MazeError` の仲間。`a_maze_ing.py` は `(ConfigError, MazeError)` を捕まえ、`Error: …` を標準エラーに出して 1 を返す。2 つの系統は別なので、両方を書いている。
+**JA** — `maze/config.py` はファイル名と行番号つきの `ConfigError` の仲間を投げる。生成器は `GenerationError`、ソルバーは `SolveError` を投げ、どちらも `MazeError` の仲間。`a_maze_ing.py` は `(ConfigError, MazeError, OSError)` を捕まえ、`Error: …` を標準エラーに出して 1 を返す。2 つの系統は別なので、両方を書いている。
 
 **Careful / 注意**
 
 - **EN** Never set `OUTPUT_FILE` to the configuration file's own name: the first run overwrites the configuration with the maze. **JA** `OUTPUT_FILE` に設定ファイル自身の名前を書かないこと。1 回目の実行で、設定ファイルが迷路の出力で上書きされる。
-- **EN** An `OUTPUT_FILE` in a directory that does not exist raises an uncaught `OSError` (traceback). Avoid it in the demo; see §10. **JA** 存在しないフォルダの中の `OUTPUT_FILE` は、捕まえていない `OSError`(traceback)になる。デモでは避ける。§10 参照。
+- **EN** An `OUTPUT_FILE` that cannot be written (a missing folder, a folder, no permission) is reported like the other errors since javi's fix of 2026-09-22 — also when `r` rewrites it. **JA** 書き込めない `OUTPUT_FILE`(存在しないフォルダ、フォルダそのもの、権限なし)も、9/22 の javi の修正で他のエラーと同じように報告される。`r` で書き直すときも同じ。
 
 ---
 
@@ -311,14 +314,14 @@ python3 a_maze_ing.py config.txt          # from the repository root / リポジ
 | --- | --- | --- | --- |
 | R1 | ~~Lower-case keys~~ — **settled 2026-09-22**: the subject writes keys in capitals and the sheet's note is a tolerance for the team's own file; keys stay case-sensitive, answer in §4 / **決定済み**:subject はキーを大文字で書き、シートの注記はチームの設定ファイルへの許容。区別したままにし、答えは §4 | so | — |
 | R2 | ~~"positive integer" for WIDTH/HEIGHT~~ — **done 2026-09-22**: `_as_int` says `must be a positive integer` when the minimum is 1 / **対応済み**:最小値 1 のとき `must be a positive integer` と表示 | so | — |
-| R3 | Unwritable `OUTPUT_FILE` → uncaught `OSError` / 書けない `OUTPUT_FILE` で traceback | javi (`a_maze_ing.py`) | catch `OSError` around the write / 書き出しの周りで `OSError` を捕まえる |
-| R4 | Ctrl-D / Ctrl-C at the menu → traceback / メニューで Ctrl-D・Ctrl-C | javi (`display/input_handler.py`) | catch `EOFError` / `KeyboardInterrupt` and quit cleanly / 捕まえて静かに終わる |
-| R5 | The committed wheel's `mazegen/__init__.py` lacks the final newline of the source / コミット済み wheel が 1 文字古い | javi | `make build` after any change, before the defense / 変更後・評価前に作り直す |
+| R3 | ~~Unwritable `OUTPUT_FILE` → traceback~~ — **done 2026-09-22**: `OSError` is caught, `Error: [Errno …] …`, exit 1 / **対応済み** | javi | — |
+| R4 | ~~Ctrl-D / Ctrl-C at the menu → traceback~~ — **done 2026-09-22**: both quit like `q` / **対応済み**:`q` と同じく終了 | javi | — |
+| R5 | ~~Wheel one character behind the source~~ — **done 2026-09-22**: rebuilt; every `.py` in it matches the repository / **対応済み**:作り直し、中の `.py` はすべて一致 | javi | — |
 | R6 | 3 local commits not pushed yet / 未 push の 3 コミット | so | `git push origin main` |
 
-**EN** — None of the open risks fails a mandatory item as long as the demo avoids them. R3 and R4 matter most, because "unexpected end of the program" means 0: avoid an unwritable output path and Ctrl-D / Ctrl-C at the menu, even if they stay unfixed.
+**EN** — R1–R5 are all settled. If code changes again before the defense, run `make lint`, `make test` and `make build`, and check that the wheel's `.py` files still match the repository.
 
-**JA** — デモで避ければ、残っているリスクで必須項目が不合格になるものは無い。最も大事なのは R3 と R4。「予期せぬ終了は 0 点」に関わるので、直さない場合でも、書けない出力先と、メニューでの Ctrl-D・Ctrl-C はデモで避ける。
+**JA** — R1〜R5 はすべて片付いた。評価の前にコードをまた変えたら、`make lint`・`make test`・`make build` を実行し、wheel の中の `.py` がリポジトリと一致しているかを確かめる。
 
 ---
 

@@ -250,7 +250,7 @@ return line + (self._wall_color("|") if last_mask & E else " ")
 
 `input("Choose an option (t/c/r/q): ")` で読み、前後の空白を取り、小文字にします(`" T "` も `t` として受け付ける)。4 つのどれかなら `UserAction(値)` を返し、それ以外なら `❌ Incorrect option, please choose between: 't', 'c', 'r' or 'q'.` と表示して**聞き直します**。
 
-Ctrl-D(`EOFError`)と Ctrl-C(`KeyboardInterrupt`)は捕まえていないので、入力中に押すと traceback で終わります。
+Ctrl-D(`EOFError`)と Ctrl-C(`KeyboardInterrupt`)は `try` で捕まえ、空行を 1 つ表示してから `UserAction.QUIT` を返します。つまり `q` と同じく `Exiting application. Goodbye!` と表示して終わります(2026-09-22 に javi が追加)。
 
 ### 5.4 `apply_action(action, renderer, on_regenerate=None) -> bool`
 
@@ -329,7 +329,7 @@ flowchart TD
 | `███` はどの端末でも同じ幅 | U+2588(全面ブロック)は、多くの端末で 1 文字分の幅だが、「幅があいまいな文字」に分類されるので、日本語環境などの設定によっては 2 文字分で表示され、列がずれることがある |
 | セル間の壁は 2 回描かれる | 右側のセルの西の壁として 1 回だけ。右端だけ東の壁を足す |
 | `r` は `apply_action` で処理される | `run_interactive_session` がコールバックを直接呼ぶ |
-| Ctrl-C で静かに終わる | 捕まえていないので traceback になる |
+| Ctrl-C を押すと traceback になる | 捕まえて `q` と同じく終了する(9/22 から) |
 
 ---
 

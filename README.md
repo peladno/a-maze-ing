@@ -15,7 +15,7 @@ _This project has been created as part of the 42 curriculum by skusakab, jperez-
 - **4-Bit Hexadecimal Wall Encoding (§IV.5):** Each cell is encoded as a single hexadecimal character representing its four wall states (North=1, East=2, South=4, West=8; 1 = closed, 0 = open). Adjacent cells always maintain coherent shared wall states.
 - **Interactive Terminal Visualizer (§V):** Provides clean ASCII rendering with dynamic color rotation (ANSI palettes), shortest path toggle, dynamic maze regeneration, and graceful exit.
 - **Reusable Standalone Package (`mazegen`) (§VI):** The `MazeGenerator` class lives in `maze/generator.py`; the `mazegen` package re-exports it together with the solver, and the wheel and source archive built via Poetry ship both `mazegen` and `maze`.
-- **Strict Code Quality & Standards (§III.1):** Enforces 100% type annotations verified with `mypy`, compliance with `flake8` (PEP 8), NumPy-style docstrings (PEP 257), and clear error messages instead of tracebacks for invalid configurations (see the Error Policy).
+- **Strict Code Quality & Standards (§III.1):** Enforces 100% type annotations verified with `mypy`, compliance with `flake8` (PEP 8), NumPy-style docstrings (PEP 257), and clear error messages instead of tracebacks (see the Error Policy).
 
 ---
 
@@ -121,11 +121,11 @@ With `PERFECT=False` the board must have room for two loops, so it has to be at 
 
 ### Error Policy (§IV.2)
 
-The configuration, generation and solving steps never end in a raw stack trace: every problem they detect is reported as one line on standard error, and the program exits with code `1`.
+Invalid input never ends in a raw stack trace: configuration, generation and solving errors, and an output file that cannot be written, are reported as one line on standard error, and the program exits with code `1`. Ctrl-D or Ctrl-C at the menu quits like `q`.
 
 - Invalid configuration syntax, missing keys, bad values or out-of-bounds coordinates, and a configuration file that cannot be read raise subclasses of `ConfigError`: `ConfigSyntaxError` (a line that is not `KEY=VALUE`), `ConfigMissingKeyError`, `ConfigValueError` (including duplicate keys) and `ConfigFileError`.
 - An error tied to a line reads `source:line: KEY problem`, for example `config.txt:4: WIDTH must be a positive integer, got '0'`; missing keys are listed with the file name only.
-- The top-level entry point in `a_maze_ing.py` intercepts these errors, prints them to `sys.stderr` prefixed with `Error: `, and terminates with exit code `1`. A missing configuration file is reported the same way.
+- The top-level entry point in `a_maze_ing.py` intercepts these errors, prints them to `sys.stderr` prefixed with `Error: `, and terminates with exit code `1`. A missing configuration file is reported the same way, and so is an output file that cannot be written (`OSError`), for example `Error: [Errno 2] No such file or directory: 'nodir/maze.txt'`.
 - Generation and solving report problems with subclasses of `MazeError` instead: `GenerationError` (a size that cannot hold a valid maze) and `SolveError` (an entry or exit placed on the "42", or an exit that cannot be reached). `ConfigError` and `MazeError` are separate families, so the entry point catches both. `SolveError` messages give cells in the `x,y` form of the configuration file.
 
 ---
@@ -393,7 +393,7 @@ In accordance with Subject §II and §VII, AI assistance (specifically Claude) w
 - **16進数ウォール表現 (§IV.5):** 各セルの方位ごとの壁（北=1, 東=2, 南=4, 西=8; 閉=1, 開=0）を 1 桁の 16 進数で出力します。隣接するセル間で共有壁の状態は常に一致します。
 - **ターミナル ASCII 可視化 (§V):** 壁の色変更（ANSI エスケープシーケンス）、最短経路の表示/非表示切り替え、迷路の再生成、終了などのインタラクティブ操作が可能です。
 - **再利用可能モジュール `mazegen` (§VI):** クラス `MazeGenerator` は `maze/generator.py` にあり、`mazegen` パッケージがソルバーとともに再公開しています。Poetry でビルドする `.whl` と `.tar.gz` には、`mazegen` と `maze` の両方が入ります。
-- **厳格なコーディング規約 (§III.1):** すべての関数に型ヒント（`mypy` 準拠）、`flake8`（PEP 8）準拠、NumPy スタイルの docstring（PEP 257）を適用し、不正な設定に対しては traceback ではなく分かりやすいエラーメッセージを表示します（エラー処理方針を参照）。
+- **厳格なコーディング規約 (§III.1):** すべての関数に型ヒント（`mypy` 準拠）、`flake8`（PEP 8）準拠、NumPy スタイルの docstring（PEP 257）を適用し、traceback ではなく分かりやすいエラーメッセージを表示します（エラー処理方針を参照）。
 
 ---
 
@@ -479,7 +479,7 @@ make build        # リポジトリ直下に mazegen-* 配布パッケージを�
 
 #### エラー処理方針 (§IV.2)
 
-- 設定・生成・経路探索で検出した問題は、traceback を出さずに 1 行のメッセージとして標準エラー出力へ表示し、終了コード `1` で終了します。
+- 設定・生成・経路探索の問題と書き込めない出力ファイルは、traceback を出さずに 1 行のメッセージとして標準エラー出力へ表示し、終了コード `1` で終了します（例:`Error: [Errno 2] No such file or directory: 'nodir/maze.txt'`）。メニューでの Ctrl-D・Ctrl-C は `q` と同じく終了します。
 - 構文エラー、必須キーの欠落、不正な値や範囲外の座標、読めない設定ファイルに対しては、自前の `ConfigError` サブクラスを送出します:`ConfigSyntaxError`（`KEY=VALUE` でない行）、`ConfigMissingKeyError`、`ConfigValueError`（重複キーを含む）、`ConfigFileError`。
 - 行に結びつくエラーは `source:line: KEY 問題` の形式です（例:`config.txt:4: WIDTH must be a positive integer, got '0'`）。必須キーの欠落はファイル名だけを示します。エントリポイントはメッセージの前に `Error: ` を付けて表示します。設定ファイルが見つからない場合も同じように報告します。
 - 生成と経路探索の問題は `MazeError` の子クラスで伝えます:`GenerationError`(妥当な迷路を作れない大きさ)と `SolveError`(入口か出口が「42」の上、または出口に届かない)。`ConfigError` と `MazeError` は別の系統なので、エントリポイントは両方を捕まえます。`SolveError` のメッセージは、セルを設定ファイルと同じ `x,y` の形で示します。

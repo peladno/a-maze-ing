@@ -61,7 +61,7 @@ flowchart TD
     K --> L["TerminalRenderer(...)"]
     L --> M["run_interactive_session(..., on_regenerate=regenerate)"]
     M --> OK["return 0"]
-    T -. "ConfigError / MazeError" .-> X2["stderr: Error: {メッセージ}<br/>return 1"]
+    T -. "ConfigError / MazeError / OSError" .-> X2["stderr: Error: {メッセージ}<br/>return 1"]
 ```
 
 ---
@@ -93,7 +93,7 @@ flowchart TD
    9. `regenerate` を定義する(3.3)
    10. `TerminalRenderer(show_path=False, color_mode=0, entry=..., exit=..., shortest_path=path_cells)` — 6 章。**描画にはセルの並び**を渡す
    11. `run_interactive_session(renderer, maze, on_regenerate=regenerate)` — `q` が押されるまでここで待つ
-5. `except (ConfigError, MazeError) as err:` → `Error: {err}` を標準エラーに出し、`1` を返す。
+5. `except (ConfigError, MazeError, OSError) as err:` → `Error: {err}` を標準エラーに出し、`1` を返す。`OSError` は書き込めない出力ファイルのため(2026-09-22 に javi が追加)。
 6. `0` を返す。
 
 **経路を 2 つの形で渡している点に注目してください**(決定 S2 = A):ファイルには `"SEESE"` のような文字列、画面にはセルの並び。
@@ -122,8 +122,8 @@ flowchart TD
 | `GenerationError` | `MazeGenerator(...)` / `generate()` | `Error: a maze that is not perfect needs room for two loops: ...`、終了コード 1 |
 | `SolveError` | `shortest_path` | `Error: the entry 8,7 is part of the "42", ...`、終了コード 1 |
 | 引数が無い | `argparse` | 使い方の表示、終了コード 2 |
-| `OSError` | `MazeWriter.write`(書けない `OUTPUT_FILE`) | **捕まえていない**:traceback |
-| `EOFError` / `KeyboardInterrupt` | メニューの入力中の Ctrl-D / Ctrl-C | **捕まえていない**:traceback |
+| `OSError` | `MazeWriter.write`(書けない `OUTPUT_FILE`) | `Error: [Errno 2] No such file or directory: 'nodir/maze.txt'`、終了コード 1。`r` の書き直しでも同じ |
+| `EOFError` / `KeyboardInterrupt` | メニューの入力中の Ctrl-D / Ctrl-C | `get_user_action` が捕まえ、`q` と同じく `Exiting application. Goodbye!` で終了 |
 
 (上の 4 つのメッセージと終了コードは、README の確認で実際に実行して確かめたものです。)
 

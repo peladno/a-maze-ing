@@ -176,12 +176,12 @@ Exception
 エントリポイント `a_maze_ing.py` は、**この 2 つの系統をまとめて捕まえます。**
 
 ```python
-except (ConfigError, MazeError) as err:
+except (ConfigError, MazeError, OSError) as err:
     print(f"Error: {err}", file=sys.stderr)
     return 1
 ```
 
-`ConfigError` は `MazeError` の子ではないので、片方だけを捕まえると、もう片方のエラーでプログラムが落ちます。これが 2 つとも書いてある理由です。
+`ConfigError` は `MazeError` の子ではないので、片方だけを捕まえると、もう片方のエラーでプログラムが落ちます。これが 2 つとも書いてある理由です。書き込めない出力ファイルの `OSError` も、同じ `except` で捕まえます(2026-09-22 に javi が追加)。
 
 **この 2 つの系統に入らないエラー**(正直に書いておきます):
 
@@ -189,8 +189,8 @@ except (ConfigError, MazeError) as err:
 | --- | --- | --- |
 | `ValueError` | `Maze(0, 5)` のように大きさが 1 未満。ただし生成器が先に `GenerationError` で止めるので、通常の実行では起きない | — |
 | `KeyError` | `to_directions` に隣り合っていないセルを渡したとき。ソルバーの出力では起きない(起きたらバグ) | — |
-| `OSError` | `OUTPUT_FILE` に書けないとき(存在しないフォルダなど) | **捕まえていない**(traceback になる) |
-| `EOFError` / `KeyboardInterrupt` | メニューの入力中に Ctrl-D / Ctrl-C | **捕まえていない** |
+| `OSError` | `OUTPUT_FILE` に書けないとき(存在しないフォルダなど) | エントリポイントが捕まえ、`Error: [Errno 2] ...` を表示して終了コード 1(9/22 から) |
+| `EOFError` / `KeyboardInterrupt` | メニューの入力中に Ctrl-D / Ctrl-C | `get_user_action` が捕まえ、`q` と同じく終了(9/22 から) |
 
 ---
 
