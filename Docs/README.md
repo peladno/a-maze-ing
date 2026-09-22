@@ -1,6 +1,6 @@
 # Docs — A-Maze-ing
 
-*Project: A-Maze-ing (42 Tokyo, Python 3.10+) — skusakab (So) & jperez-u (Javier) — started 2026-08-13*
+_Project: A-Maze-ing (42 Tokyo, Python 3.10+) — skusakab (So) & jperez-u (Javier) — started 2026-08-13_
 
 ---
 
@@ -13,7 +13,7 @@ and **what each of us understood**. It exists for four reasons:
 
 1. **Review (振り返り)** — we can look back at a decision weeks later and remember the reasoning, not just the result.
 2. **Continuity** — if one of us is away for three days, the other can read the logs and continue without a meeting.
-3. **Defense material** — at peer-evaluation both of us must explain *any* part of the project, including parts we
+3. **Defense material** — at peer-evaluation both of us must explain _any_ part of the project, including parts we
    did not write ourselves. These documents are the study material for that.
 4. **Early sharing with the pair** — a design written down before coding gets reviewed before the code exists,
    which is far cheaper than reviewing it afterwards.
@@ -24,15 +24,16 @@ and **what each of us understood**. It exists for four reasons:
 
 ### Structure
 
-| Path | What goes in it | File naming |
-| --- | --- | --- |
-| `Docs/README.md` | This file. Map of the documentation + conventions. | — |
-| `Docs/commit_guide.md` | Git commit rules we both follow. | — |
-| `Docs/subject/` | The subject PDF and its Japanese translation. | `en.subject.pdf`, `ja.subject.md` |
-| `Docs/pair_communication/` | One file per meeting: agenda, decisions, open questions, TODOs with an owner. | `NN_short-topic.md` |
-| `Docs/work_log/` | One file per person per day: what I did / what is next / where I got stuck / time spent. | `YYYY-MM-DD_<author>.md` |
-| `Docs/learning_log/` | One file per concept: a **reference you can come back to**, structured so the understanding reloads in minutes. | `topic-name.md` (kebab-case) |
-| `Docs/implementation_plans/` | The design we actually adopted: scope, interface, steps, edge cases, complexity, test plan. | `topic-name.md` (kebab-case) |
+| Path                         | What goes in it                                                                                                 | File naming                       |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| `Docs/README.md`             | This file. Map of the documentation + conventions.                                                              | —                                 |
+| `Docs/commit_guide.md`       | Git commit rules we both follow.                                                                                | —                                 |
+| `Docs/subject/`              | The subject PDF and its Japanese translation.                                                                   | `en.subject.pdf`, `ja.subject.md` |
+| `Docs/pair_communication/`   | One file per meeting: agenda, decisions, open questions, TODOs with an owner.                                   | `NN_short-topic.md`               |
+| `Docs/work_log/`             | One file per person per day: what I did / what is next / where I got stuck / time spent.                        | `YYYY-MM-DD_<author>.md`          |
+| `Docs/learning_log/`         | One file per concept: a **reference you can come back to**, structured so the understanding reloads in minutes. | `topic-name.md` (kebab-case)      |
+| `Docs/implementation_plans/` | The design we actually adopted: scope, interface, steps, edge cases, complexity, test plan.                     | `topic-name.md` (kebab-case)      |
+| `Docs/code_guide/`           | Comprehensive walkthrough of every module, class, and algorithm in the project (bilingual: JA & EN).            | `NN_topic.md`, `NN_topic-en.md`   |
 
 `<author>` is `so` (skusakab) or `javi` (jperez-u).
 
@@ -85,15 +86,16 @@ Full rules, the list of types, and the scopes we use are in [commit_guide.md](co
 
 ### 構成
 
-| パス | 何を置くか | ファイル命名 |
-| --- | --- | --- |
-| `Docs/README.md` | このファイル。ドキュメント全体の地図と規約。 | — |
-| `Docs/commit_guide.md` | 二人で守る git コミット規約。 | — |
-| `Docs/subject/` | subject PDF とその日本語訳。 | `en.subject.pdf`, `ja.subject.md` |
-| `Docs/pair_communication/` | 1 ミーティング 1 ファイル。議題・決定事項・未解決事項・担当者付き TODO。 | `NN_short-topic.md` |
-| `Docs/work_log/` | 1 人 1 日 1 ファイル。やったこと / 次にやること / 詰まったこと / 作業時間。 | `YYYY-MM-DD_<author>.md` |
-| `Docs/learning_log/` | 1 概念 1 ファイル。**いつでも戻ってこられる解説書**。数分で理解が再ロードされる構成にする。 | `topic-name.md`(kebab-case) |
-| `Docs/implementation_plans/` | 実際に採用した設計。Scope / Interface / 手順 / エッジケース / 計算量 / テスト方針。 | `topic-name.md`(kebab-case) |
+| パス                         | 何を置くか                                                                                  | ファイル命名                      |
+| ---------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------- |
+| `Docs/README.md`             | このファイル。ドキュメント全体の地図と規約。                                                | —                                 |
+| `Docs/commit_guide.md`       | 二人で守る git コミット規約。                                                               | —                                 |
+| `Docs/subject/`              | subject PDF とその日本語訳。                                                                | `en.subject.pdf`, `ja.subject.md` |
+| `Docs/pair_communication/`   | 1 ミーティング 1 ファイル。議題・決定事項・未解決事項・担当者付き TODO。                    | `NN_short-topic.md`               |
+| `Docs/work_log/`             | 1 人 1 日 1 ファイル。やったこと / 次にやること / 詰まったこと / 作業時間。                 | `YYYY-MM-DD_<author>.md`          |
+| `Docs/learning_log/`         | 1 概念 1 ファイル。**いつでも戻ってこられる解説書**。数分で理解が再ロードされる構成にする。 | `topic-name.md`(kebab-case)       |
+| `Docs/implementation_plans/` | 実際に採用した設計。Scope / Interface / 手順 / エッジケース / 計算量 / テスト方針。         | `topic-name.md`(kebab-case)       |
+| `Docs/code_guide/`           | プロジェクトの全モジュール・クラス・アルゴリズムの詳細解説(日英両対応)。                    | `NN_topic.md`, `NN_topic-en.md`   |
 
 `<author>` は `so`(skusakab)または `javi`(jperez-u)。
 
