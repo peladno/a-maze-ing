@@ -963,7 +963,12 @@ eye in the renderer, both owners should agree on this together rather than in se
 | **B** | 3x3 character block per cell — clearest, but large mazes stop fitting the terminal. | 1 セル 3x3 文字ブロック — 最も見やすいが、大きい迷路が端末に収まらない。 |
 | **C** | Block characters / colour fills instead of line drawing.                             | 線ではなくブロック文字や色の塗りで表現。                                  |
 
-> Decision:
+> Decision: **B for the walls, C for the "42"** (2026-09-18, implemented by javi). Each cell is three characters wide
+> between wall characters and takes two text lines, so a 20x15 maze is 81x31 characters. Reserved cells are filled
+> with magenta `███` and entry and exit are coloured tiles, so the "42" reads as "42" down to the 9x7 minimum.
+> `r` regenerates with a fresh seed even when the configuration sets `SEED` — the configured seed reproduces the
+> first maze, `r` is for seeing a different one — and rewrites the output file so that it matches the screen
+> (agreed with so on 2026-09-18).
 
 ---
 
@@ -1326,8 +1331,8 @@ is genuinely shared, because `both` often means nobody.
 | W07 | `PERFECT=True` mode / 完全迷路モード                                |           A           |           A           | so | see 3.4                                                        |
 | W08 | `PERFECT=False` playable board / 遊べる盤面                         |           A           |           A           | so | see 3.4 — the default                                         |
 | W09 | "42" pattern / 「42」パターン                                         |           A           |           A           | so | see 3.6                                                        |
-| W10 | Maze validation (coherence, connectivity, width) / 迷路の検証         |           A           |           A           | so | see 3.7                                                        |
-| W11 | Entry / exit validation / 入口・出口の検証                            |           A           |           A           | so |                                                                |
+| W10 | Maze validation (coherence, connectivity, width) / 迷路の検証         |           A           |           A           | so | see 3.7 — **dropped 2026-09-19**: the tests and `maze_analyzer.py` cover it / **取りやめ**:テストと analyzer で代替 |
+| W11 | Entry / exit validation / 入口・出口の検証                            |           A           |           A           | so | `load_config` (inside, distinct) and `SolveError` (on the "42") / `load_config` と `SolveError` |
 | W12 | Shortest-path solver / 最短経路ソルバ                                 |           A           |           A           | so | see 3.8, 7.2                                                   |
 | W13 | Hex output encoding / 16 進エンコード                                 |           B           |           B           | javi |                                                                |
 | W14 | Output file writing (entry, exit, path, `\n`) / 出力ファイル書き出し |           B           |           B           | javi |                                                                |
@@ -1480,7 +1485,7 @@ Everything else may stay blank on purpose — a blank cell here is not unfinishe
 | 3.10 | Seed / シード                                | 🟡 | A — own `Random`; `a_maze_ing.py` prints the seed / A — 自前の `Random`。表示は `a_maze_ing.py` |               | so / javi |
 | 4.1  | Terminal or MLX / 描画方式                   | 🔴 | A |               |       |
 | 4.2  | MLX per OS / OS ごとの MLX                   | 🟡 |                 |               |       |
-| 4.3  | Rendering and "42" / 描画と「42」            | 🟡 |                 |               |       |
+| 4.3  | Rendering and "42" / 描画と「42」            | 🟡 | B + C — line walls, "42" filled in colour / B + C — 線の壁、「42」は色で塗る |               | javi |
 | 5.1  | `MazeGenerator` API                        | 🟡 |                 |               |       |
 | 5.2  | Build tooling / ビルド方法                   | 🟡 |                 |               |       |
 | 5.3  | `LICENSE.md`                               | 🟡 |                 |               |       |

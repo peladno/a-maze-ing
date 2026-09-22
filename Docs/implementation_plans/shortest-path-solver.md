@@ -3,7 +3,7 @@
 | | |
 | --- | --- |
 | **Owner / 担当** | so (W12) |
-| **Status / 状態** | implemented — steps 1–3 on 2026-09-17; step 4 (§VI documentation) remains / 実装済み — 2026-09-17 に手順 1〜3。手順 4(§VI の説明)が残る |
+| **Status / 状態** | implemented — steps 1–3 on 2026-09-17; step 4 (§VI documentation) by javi on 2026-09-19 / 実装済み — 2026-09-17 に手順 1〜3、2026-09-19 に javi が手順 4(§VI の説明) |
 | **Date / 日付** | 2026-09-15 |
 | **Subject ref** | §IV.5, §V, §VI |
 | **Related / 関連** | `architecture-overview.md`, `generation-algorithm.md` (Q10, Q11), `maze-data-structure.md`, `Docs/pair_communication/01_kickoff.md` § 3.8, 3.9, `output/maze_writer.py`, `display/terminal_renderer.py` |
@@ -431,7 +431,7 @@ with a message a user can act on.
 ### Open questions / 未解決
 
 - [x] **S1, S2, S3 — all A (2026-09-17).** / **すべて A(2026-09-17)。**
-- [ ] **Q1 — for javi: the entry point must catch `MazeError` as well as `ConfigError`.** / **javi へ:エントリポイントは
+- [x] **Q1 — for javi: the entry point must catch `MazeError` as well as `ConfigError`.** / **javi へ:エントリポイントは
   `ConfigError` に加えて `MazeError` も捕まえる必要がある。**
 
   **EN** — Decision 3.9 = A agreed on one `except ConfigError` in `a_maze_ing.py`. But `ConfigError` is not a
@@ -441,7 +441,10 @@ with a message a user can act on.
   **JA** — 決定 3.9 = A では、`a_maze_ing.py` に `except ConfigError` を 1 つ置くと合意した。しかし `ConfigError` は
   `MazeError` の子ではない。生成器の `GenerationError` も、ここの `SolveError` も、そこを素通りしてプログラムを
   落とし、§IV.2 が禁じる状態になる。隣に `MazeError` の捕捉を置けば、両方を受け止められる。
-- [ ] **Q2 — for javi: the renderer reads `maze.shortest_path`, which `Maze` does not have.** / **javi へ:描画は
+  **Resolved / 解決 (2026-09-18):** `a_maze_ing.py` catches `(ConfigError, MazeError)` and exits with status 1. /
+  `a_maze_ing.py` が `(ConfigError, MazeError)` を捕まえ、終了コード 1 で終わる。
+
+- [x] **Q2 — for javi: the renderer reads `maze.shortest_path`, which `Maze` does not have.** / **javi へ:描画は
   `maze.shortest_path` を読むが、`Maze` にその属性はない。**
 
   **EN** — `TerminalRenderer` looks for the path with `getattr(maze, "shortest_path", ())`. With S2 = A the cells
@@ -452,6 +455,11 @@ with a message a user can act on.
   `shortest_path(...)` から来るので、描画はそれを引数で受け取るのがよい。解の結果を `Maze` に持たせないことで、
   `Maze` は壁だけを表す単なる構造のままでいられる。
 
+  **Resolved / 解決 (2026-09-19):** `TerminalRenderer` takes `entry`, `exit` and `shortest_path` as arguments, and
+  the step 4 documentation is in the README and the `mazegen/__init__.py` docstring. /
+  `TerminalRenderer` が `entry`・`exit`・`shortest_path` を引数で受け取るようになり、手順 4 の説明は README と
+  `mazegen/__init__.py` の docstring に入った。
+
 ---
 
 ## 10. Changelog / 変更履歴
@@ -461,3 +469,4 @@ with a message a user can act on.
 | 2026-09-15 | initial draft, with §0 on what a solver is and a BFS trace run on the real `Maze` | 初稿。§0 にソルバーとは何かを、実際の `Maze` で実行した BFS のトレースとともに記載 | the generator is finished; W12 is next, and S1–S3 must be settled before the code | 生成器が完成し、次は W12。コードの前に S1〜S3 を決める必要がある |
 | 2026-09-17 | S1, S2, S3 decided: functions in `maze/solver.py`, cells from `shortest_path` and letters from `to_directions`, `SolveError` when no path exists | S1・S2・S3 を決定。`maze/solver.py` の関数、`shortest_path` がセル・`to_directions` が文字、経路が無ければ `SolveError` | so chose the recommended options | so がおすすめの選択肢を採用 |
 | 2026-09-17 | steps 1–3 implemented; §7 lists the ten tests as written | 手順 1〜3 を実装。§7 を実際に書いた 10 本のテストに合わせた | three edge and design tests were added while writing them; all 12 mutants of the solver fail a test or hang | 書く途中で端のケースと設計のテストを 3 本足した。ソルバーの 12 個のミューテーションはすべて、テストが失敗するか止まらなくなる |
+| 2026-09-22 | step 4 and Q1, Q2 marked done after javi's integration | javi の統合を受けて手順 4 と Q1・Q2 を完了にした | the entry point, the renderer and the package were checked against this plan | エントリポイント・描画・パッケージをこの計画と突き合わせて確認した |
