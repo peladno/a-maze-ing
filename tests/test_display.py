@@ -73,7 +73,7 @@ def test_terminal_renderer_cell_content() -> None:
     Returns
     -------
     None
-        Asserts presence of 'E', 'X', and '.' markers under display options.
+        Asserts presence of 'E', 'X', and 'o' markers under display options.
     """
     maze = Maze(width=2, height=2)
     setattr(maze, "entry", (0, 0))
@@ -89,9 +89,9 @@ def test_terminal_renderer_cell_content() -> None:
     # Exit cell
     assert "X" in renderer_with_path._cell_content(1, 1, maze)
     # Path cell (0, 1) when show_path=True
-    assert "." in renderer_with_path._cell_content(0, 1, maze)
+    assert "o" in renderer_with_path._cell_content(0, 1, maze)
     # Path cell (0, 1) when show_path=False
-    assert "." not in renderer_no_path._cell_content(0, 1, maze)
+    assert "o" not in renderer_no_path._cell_content(0, 1, maze)
 
 
 def test_terminal_renderer_render_output(
@@ -269,7 +269,7 @@ def test_terminal_renderer_init_with_explicit_params() -> None:
     maze = Maze(width=4, height=4)
     assert "E" in renderer._cell_content(0, 0, maze)
     assert "X" in renderer._cell_content(3, 3, maze)
-    assert "." in renderer._cell_content(1, 0, maze)
+    assert "o" in renderer._cell_content(1, 0, maze)
     assert " " in renderer._cell_content(0, 1, maze)
 
 
@@ -297,7 +297,7 @@ def test_terminal_renderer_render_shortest_path_override(
 
     assert renderer.shortest_path == {(0, 0), (1, 0)}
     captured = capsys.readouterr()
-    assert "." in captured.out
+    assert "o" in captured.out
 
 
 def test_apply_action_regenerate() -> None:

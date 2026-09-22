@@ -188,7 +188,7 @@ class TerminalRenderer(Renderer):
             return f"{EXIT} X {RESET}"
 
         if self.show_path and pos in path:
-            return f"{PATH} . {RESET}"
+            return f"{PATH} o {RESET}"
 
         if hasattr(maze, "is_reserved") and maze.is_reserved(pos):
             return f"{PATTERN42}███{RESET}"
