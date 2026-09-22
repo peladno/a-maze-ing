@@ -123,7 +123,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         run_interactive_session(renderer, maze, on_regenerate=regenerate)
 
-    except (ConfigError, MazeError) as err:
+    except (ConfigError, MazeError, OSError) as err:
         print(f"Error: {err}", file=sys.stderr)
         return 1
 

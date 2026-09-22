@@ -45,7 +45,12 @@ def get_user_action() -> UserAction:
         The valid action selected by the user ('t', 'c', 'r', or 'q').
     """
     while True:
-        user_selection = input("Choose an option (t/c/r/q): ").strip().lower()
+        try:
+            user_selection = input("Choose an option (t/c/r/q): "
+                                   ).strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return UserAction.QUIT
 
         valid_values = [action.value for action in UserAction]
 
