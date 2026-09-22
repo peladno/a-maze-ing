@@ -100,7 +100,7 @@ make build                                     # §8  rebuild the package / パ�
 | Key / キー | Sheet item / シートの項目 | What happens / 動作 |
 | --- | --- | --- |
 | `r` | Re-generate / 作り直す | new random seed (printed as `New seed: N`), new maze, output file rewritten / 新しいシードで作り直し、出力ファイルも書き直す |
-| `t` | Show/hide the shortest path / 最短経路の表示切り替え | green `.` on the path / 経路に緑の `.` |
+| `t` | Show/hide the shortest path / 最短経路の表示切り替え | green `o` on the path / 経路に緑の `o` |
 | `c` | Change wall colours / 壁の色の変更 | none → cyan → yellow → blue |
 | `q` | extra: quit / 追加:終了 | `Exiting application. Goodbye!` |
 
@@ -202,9 +202,9 @@ PERFECT=True  → Wall coherence: OK
 
 **Path matches the picture / 経路と画面の一致**
 
-**EN** — The letters in the file are exactly `to_directions(shortest_path(...))`, and replaying them from the entry crosses only open walls and ends on the exit (checked). In the demo, press `t` and follow the green dots with the letters: `S` is down, `E` is right.
+**EN** — The letters in the file are exactly `to_directions(shortest_path(...))`, and replaying them from the entry crosses only open walls and ends on the exit (checked). In the demo, press `t` and follow the green `o` marks with the letters: `S` is down, `E` is right.
 
-**JA** — ファイルの文字は `to_directions(shortest_path(...))` そのもので、入口から文字どおりに進むと開いた壁だけを通って出口に着く(確認済み)。デモでは `t` を押し、緑の点を文字と見比べる。`S` は下、`E` は右。
+**JA** — ファイルの文字は `to_directions(shortest_path(...))` そのもので、入口から文字どおりに進むと開いた壁だけを通って出口に着く(確認済み)。デモでは `t` を押し、緑の `o` を文字と見比べる。`S` は下、`E` は右。
 
 **Likely questions / 想定質問**
 

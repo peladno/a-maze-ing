@@ -63,7 +63,7 @@ After the maze is drawn, a menu waits for one key followed by Enter:
 
 | Key | Action |
 | --- | --- |
-| `t` | Show or hide the shortest path (green `.` marks) |
+| `t` | Show or hide the shortest path (green `o` marks) |
 | `c` | Cycle the wall colour: none → cyan → yellow → blue |
 | `r` | Generate a new maze with a fresh random seed, even when the configuration sets `SEED`. The new seed is printed as `New seed: N`, and `OUTPUT_FILE` is rewritten so that it matches the screen |
 | `q` | Quit |
@@ -435,7 +435,7 @@ make debug
 
 | キー | 操作 |
 | --- | --- |
-| `t` | 最短経路（緑の `.`）の表示/非表示 |
+| `t` | 最短経路（緑の `o`）の表示/非表示 |
 | `c` | 壁の色を切り替える:なし → シアン → 黄 → 青 |
 | `r` | 新しいランダムなシードで迷路を作り直す（設定に `SEED` があっても）。新しいシードを `New seed: N` と表示し、画面と一致するよう `OUTPUT_FILE` も書き直す |
 | `q` | 終了 |
