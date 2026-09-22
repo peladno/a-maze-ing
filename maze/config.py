@@ -258,7 +258,10 @@ def _as_int(value: str, where: str, minimum: int | None) -> int:
         message = f"{where} must be a whole number, got '{value}'"
         raise ConfigValueError(message) from err
     if minimum is not None and number < minimum:
-        message = f"{where} must be at least {minimum}, got '{value}'"
+        if minimum == 1:
+            message = f"{where} must be a positive integer, got '{value}'"
+        else:
+            message = f"{where} must be at least {minimum}, got '{value}'"
         raise ConfigValueError(message)
     return number
 
