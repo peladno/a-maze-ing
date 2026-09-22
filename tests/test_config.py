@@ -162,6 +162,22 @@ def test_as_int_rejects_below_minimum() -> None:
     assert where in str(excinfo.value)
 
 
+def test_as_int_names_a_positive_integer_when_minimum_is_one() -> None:
+    where = "config.txt:4: WIDTH"
+    for value in ("0", "-5"):
+        with pytest.raises(ConfigValueError) as excinfo:
+            _as_int(value, where, minimum=1)
+        message = str(excinfo.value)
+        assert message == f"{where} must be a positive integer, got '{value}'"
+
+
+def test_as_int_names_the_minimum_when_it_is_not_one() -> None:
+    where = "config.txt:9: ENTRY x"
+    with pytest.raises(ConfigValueError) as excinfo:
+        _as_int("-1", where, minimum=0)
+    assert str(excinfo.value) == f"{where} must be at least 0, got '-1'"
+
+
 def test_as_int_accepts_zero_when_minimum_is_zero() -> None:
     where = "config.txt:2: HEIGHT"
     result = _as_int("0", where, 0)
