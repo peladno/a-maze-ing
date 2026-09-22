@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 
+# Output files written by a run (OUTPUT_FILE in config.txt and config_file_examples/)
+# 実行で書き出される出力ファイル(config.txt と config_file_examples/ の OUTPUT_FILE)
+maze*.txt
+
 # Virtual environments / 仮想環境
 .venv/
 venv/
