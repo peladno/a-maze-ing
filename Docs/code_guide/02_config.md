@@ -193,7 +193,7 @@ ConfigError                     このモジュールのエラーの親
 #### `_as_int(value, where, minimum) -> int`
 
 1. `int(value)` で変換。失敗したら `ConfigValueError("... must be a whole number, got '...'")`。元のエラーは `from err` で記録する。
-2. `minimum` が `None` でなく、値がそれより小さければ `ConfigValueError("... must be at least N, got '...'")`。
+2. `minimum` が `None` でなく、値がそれより小さければ `ConfigValueError`。メッセージは、最小値が 1(WIDTH と HEIGHT)なら `"... must be a positive integer, got '...'"`、それ以外(座標の 0)なら `"... must be at least N, got '...'"`。「1 以上の整数」は「正の整数」そのものなので、最小値 1 のときは利用者に分かりやすい言葉で伝える。
 
 **`minimum` に既定値が無い理由:** 呼び出し側が毎回、範囲を明示しなければなりません(大きさは 1、座標は 0、シードは `None`)。既定値があると、範囲の指定を**忘れる**ことができてしまい、忘れると `WIDTH=0` が黙って通ります。
 
@@ -266,8 +266,9 @@ return parse_config(text, str(path))
 | `ConfigValueError` | `{source}:{行}: duplicate key '{キー}', first defined on line {n}` | `config.txt:6: duplicate key 'WIDTH', first defined on line 4` |
 | `ConfigMissingKeyError` | `{source}: missing required keys: {キー, ...}` | `config.txt: missing required keys: WIDTH, EXIT` |
 | `ConfigValueError` | `{場所} must be a whole number, got '{値}'` | `config.txt:4: WIDTH must be a whole number, got 'abc'` |
-| `ConfigValueError` | `{場所} must be at least {最小}, got '{値}'` | `config.txt:4: WIDTH must be at least 1, got '0'` |
-| `ConfigValueError` | 座標の部分も同じ 2 つの形 | `config.txt:9: ENTRY x must be at least 0, got '-1'` |
+| `ConfigValueError` | `{場所} must be a positive integer, got '{値}'`(最小値 1:WIDTH・HEIGHT) | `config.txt:4: WIDTH must be a positive integer, got '0'` |
+| `ConfigValueError` | `{場所} must be at least {最小}, got '{値}'`(それ以外の最小値) | `config.txt:9: ENTRY x must be at least 0, got '-1'` |
+| `ConfigValueError` | 座標の部分が数でないとき | `config.txt:9: ENTRY y must be a whole number, got 'a'` |
 | `ConfigValueError` | `{場所} must be 'x,y', got '{値}'` | `config.txt:9: ENTRY must be 'x,y', got '0'` |
 | `ConfigValueError` | `{場所} must not be empty` | `config.txt:12: OUTPUT_FILE must not be empty` |
 | `ConfigValueError` | `{場所} must be True or False, got '{値}'` | `config.txt:15: PERFECT must be True or False, got 'true'` |
@@ -279,7 +280,7 @@ return parse_config(text, str(path))
 **実際に `a_maze_ing.py` で出したもの**(README の確認で実行):
 
 ```text
-Error: config.txt:4: WIDTH must be at least 1, got '0'
+Error: config.txt:4: WIDTH must be a positive integer, got '0'
 Error: missing.txt: missing required keys: ENTRY, EXIT, OUTPUT_FILE, PERFECT
 Error: dup.txt:2: duplicate key 'WIDTH', first defined on line 1
 ```

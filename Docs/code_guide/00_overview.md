@@ -90,7 +90,7 @@ Choose an option (t/c/r/q):                    ← キー入力を待つ
 │   └── example_maze.py      開発用のダミー迷路(本番では使わない)          javi   → 6 章
 ├── mazegen/
 │   └── __init__.py          §VI の再利用パッケージ(maze/ を再公開)        javi   → 8 章
-├── tests/                   pytest のテスト 133 本                         両方   → 9 章
+├── tests/                   pytest のテスト 135 本                         両方   → 9 章
 ├── pyproject.toml           パッケージの設定(名前・版・中身)              javi   → 8 章
 ├── Makefile                 make install / run / test / lint / build ...   javi   → 8 章
 ├── mazegen-0.1.0-py3-none-any.whl, mazegen-0.1.0.tar.gz   配布物(§VI)     javi   → 8 章

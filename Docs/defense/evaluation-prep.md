@@ -31,7 +31,7 @@
 ```bash
 make install                                   # once / 最初に 1 回
 make lint                                      # §1  flake8 + mypy
-make test                                      # 133 tests
+make test                                      # 135 tests
 python3 a_maze_ing.py config.txt               # §3  t / c / r / q
 python3 maze_analyzer.py maze.txt              # §6  mode check / モードの確認
 python3 maze_analyzer.py maze.txt --max-dead-ends 0   # §9  bonus / ボーナス
@@ -164,7 +164,7 @@ exit status 1
 | | `ENTRY=(0,0)` | `Error: bad_tuple2.txt:3: ENTRY x must be a whole number, got '(0'` |
 | | `EXIT=19,14,3` | `Error: bad_tuple3.txt:4: EXIT must be 'x,y', got '19,14,3'` |
 | extra: outside the maze / 追加:盤面の外 | `EXIT=20,14` | `Error: exit_outside.txt:4: EXIT x must be less than 20, got 20` |
-| extra: negative size / 追加:負の大きさ | `WIDTH=-5` | `Error: neg_width.txt:1: WIDTH must be at least 1, got '-5'` |
+| extra: negative size / 追加:負の大きさ | `WIDTH=-5` | `Error: neg_width.txt:1: WIDTH must be a positive integer, got '-5'` |
 | extra: entry on the "42" / 追加:入口が「42」の上 | `ENTRY=8,7` | `Error: the entry 8,7 is part of the "42", whose cells are closed on every side` |
 | extra: too small for loops / 追加:ループの余地が無い | 2x2, `PERFECT=False` | `Error: a maze that is not perfect needs room for two loops: at least 3x2 or 2x3, got 2x2` |
 | extra: missing file / 追加:ファイルが無い | `nope.txt` | `Error: Configuration file 'nope.txt' not found.` |
@@ -310,7 +310,7 @@ python3 a_maze_ing.py config.txt          # from the repository root / リポジ
 | # | Risk / リスク | Owner / 担当 | Options / 選択肢 |
 | --- | --- | --- | --- |
 | R1 | ~~Lower-case keys~~ — **settled 2026-09-22**: the subject writes keys in capitals and the sheet's note is a tolerance for the team's own file; keys stay case-sensitive, answer in §4 / **決定済み**:subject はキーを大文字で書き、シートの注記はチームの設定ファイルへの許容。区別したままにし、答えは §4 | so | — |
-| R2 | so's note: the WIDTH/HEIGHT message should say "positive integer" (today: `must be at least 1`) / so のメモ:メッセージを「正の整数」に | so | reword the message in `_as_int`'s caller, or keep / 文言を変えるか、このままにする |
+| R2 | ~~"positive integer" for WIDTH/HEIGHT~~ — **done 2026-09-22**: `_as_int` says `must be a positive integer` when the minimum is 1 / **対応済み**:最小値 1 のとき `must be a positive integer` と表示 | so | — |
 | R3 | Unwritable `OUTPUT_FILE` → uncaught `OSError` / 書けない `OUTPUT_FILE` で traceback | javi (`a_maze_ing.py`) | catch `OSError` around the write / 書き出しの周りで `OSError` を捕まえる |
 | R4 | Ctrl-D / Ctrl-C at the menu → traceback / メニューで Ctrl-D・Ctrl-C | javi (`display/input_handler.py`) | catch `EOFError` / `KeyboardInterrupt` and quit cleanly / 捕まえて静かに終わる |
 | R5 | The committed wheel's `mazegen/__init__.py` lacks the final newline of the source / コミット済み wheel が 1 文字古い | javi | `make build` after any change, before the defense / 変更後・評価前に作り直す |
