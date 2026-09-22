@@ -257,13 +257,13 @@ Errors are subclasses of `maze.maze.MazeError`: `GenerationError` from `MazeGene
 
 The project responsibilities were divided between `skusakab` (So) and `jperez-u` (Javier) according to design seams and module contracts:
 
-- **`skusakab` (So) — Maze Core & Generation Engine (W01–W09, W11–W12, W18, W21; W10, a separate validator, was dropped because the tests and `maze_analyzer.py` cover it):**
+- **`skusakab` (So) — Maze Core & Generation Engine:**
   - **Configuration:** Lexical and semantic parsing of `config.txt` (`maze/config.py`), syntax verification, type conversion, and boundary checks.
   - **Data Structure:** `Maze` grid implementation (`maze/maze.py`), `Direction` enum, bitmask manipulation, and the atomic `open_passage` mutator.
   - **Generation:** Iterative DFS backtracker, seed management, "42" pattern placement, braiding with $O(1)$ $3 \times 3$ open area detection, and the loop top-up (`maze/generator.py`).
   - **Solving:** Shortest-path BFS solver producing the path cells and the `NESW` string (`maze/solver.py`).
   - **Testing:** Core unit test suite (`tests/test_config.py`, `tests/test_maze.py`, `tests/test_generator.py`, `tests/test_solver.py`).
-- **`jperez-u` (Javier) — Output, Visualisation, CLI & Packaging (W13–W17, W19–W20, W22–W24):**
+- **`jperez-u` (Javier) — Output, Visualisation, CLI & Packaging:**
   - **Output Serialization:** Hexadecimal formatting, file export, and trailing newline enforcement (`output/maze_writer.py`).
   - **Terminal Rendering:** Modular ASCII visualizer (`display/terminal_renderer.py`), ANSI wall coloring palettes, and path overlay.
   - **User Interaction:** Keyboard action handler (`display/input_handler.py`) supporting regeneration, path toggling, and color switching.
@@ -278,7 +278,7 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
    - Targeted a 1-month development cycle (deadline: 2026-09-17).
    - Originally agreed on Python's built-in `venv` + `pip` with `requirements.txt`.
    - Outlined modular separation between backend generation and frontend visualization.
-2. **Transition to Poetry (2026-08-20 / Decision 2.1):**
+2. **Transition to Poetry (2026-08-20):**
    - Javier proposed and implemented Poetry via `pyproject.toml` and `poetry.lock`.
    - _Rationale:_ Deterministic dependency resolution across different development operating systems (Windows and Linux), clean separation of developer tooling (`flake8`, `mypy`, `pytest`) from runtime dependencies, and standardized wheel builds satisfying §VI.
 3. **Data Structure & Unified Coordinate System (2026-08-21 to 2026-09-02):**
@@ -296,7 +296,7 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
    - Braiding one 3x2 path showed that a single wall can fix both dead ends and leave one loop, on a size the generator accepts. Rather than raising the minimum size, a final stage opens the missing walls. Because a tree has exactly $V - 1$ passages, the number of walls braiding opened already gives the loop count, so nothing is counted twice.
 8. **The "42" Shape and Placement (2026-09-15):**
    - The shape was read from the subject's image. The first placement rule was explained with a wrong argument about 8-wide boards; checking every size by script corrected it, and the 9x7 bound was kept as a simple margin rule even though 9x6 would also work.
-9. **Solver Design (2026-09-17, kickoff item 3.8):**
+9. **Solver Design (2026-09-17):**
    - BFS in the engine, exposed as functions in `maze/solver.py` rather than as a `MazeGenerator` method, since §VI asks the module for access to a solution. Cells and letters come from separate functions, and a missing path raises `SolveError` rather than returning `None`.
 10. **Schedule (2026-09-17):**
     - The original one-month deadline did not leave time to review the integration of both halves, so it was extended; the new date is still to be fixed.
@@ -315,7 +315,7 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
 #### What Could Be Improved
 
 - **Cross-Platform Makefile Quirks:** Developing across different environments (Windows PowerShell vs Unix) led to early line ending (`CRLF`) and tab issues in `Makefile`. This was resolved by committing a comprehensive `.gitattributes` file and explicit LF configurations.
-- **Git Workflow Formalization:** Choosing direct branch merges over Pull Requests (Decision 1.2 = A) sped up rapid iteration but required conscious manual discipline to review the peer's diffs. Formalizing PR reviews for shared contracts earlier would have provided extra visibility.
+- **Git Workflow Formalization:** Choosing direct branch merges over Pull Requests sped up rapid iteration but required conscious manual discipline to review the peer's diffs. Formalizing PR reviews for shared contracts earlier would have provided extra visibility.
 
 ### Tools Used
 
@@ -567,13 +567,13 @@ print(f"最短経路: {letters}")
 
 #### 役割分担
 
-- **`skusakab` (So) — コアエンジン & 生成ロジック (W01–W09, W11–W12, W18, W21。W10 の独立した検証器は、テストと `maze_analyzer.py` で代えられるため取りやめ):**
+- **`skusakab` (So) — コアエンジン & 生成ロジック:**
   - 設定パースおよび検証 (`maze/config.py`)
   - 迷路データ構造・壁ビットマスク・`open_passage` (`maze/maze.py`)
   - 迷路生成アルゴリズム・シード・「42」の配置・braiding・ループの補充 (`maze/generator.py`)
   - 最短経路探索 BFS ソルバ(経路のセルと NESW 文字列) (`maze/solver.py`)
   - コア単体テスト群 (`tests/test_config.py`, `tests/test_maze.py`, `tests/test_generator.py`, `tests/test_solver.py`)
-- **`jperez-u` (Javier) — 出力・可視化・CLI・インフラ・パッケージング (W13–W17, W19–W20, W22–W24):**
+- **`jperez-u` (Javier) — 出力・可視化・CLI・インフラ・パッケージング:**
   - 16進数出力およびメタデータ書き出し (`output/maze_writer.py`)
   - ターミナル ASCII レンダラー・色パレット・操作ハンドラ (`display/`)
   - メイン CLI 統合 (`a_maze_ing.py`)
@@ -584,7 +584,7 @@ print(f"最短経路: {letters}")
 #### 計画の変遷
 
 1. **キックオフ (2026-08-13):** 9/17 を締切とする約1か月の計画を策定。当初は `venv` + `pip` を採用予定でした。
-2. **Poetry への移行 (2026-08-20 / 決定 2.1):** 異なる開発環境（Windows と Linux）での依存関係の完全な固定、開発ツールと実行時依存の分離、§VI のパッケージ配布を容易にするため、Javier の提案・実装により Poetry へ移行しました。
+2. **Poetry への移行 (2026-08-20):** 異なる開発環境（Windows と Linux）での依存関係の完全な固定、開発ツールと実行時依存の分離、§VI のパッケージ配布を容易にするため、Javier の提案・実装により Poetry へ移行しました。
 3. **データ構造と座標系の統一 (2026-08-21〜2026-09-02):** 当初は境界で `(x, y)` と `[y][x]` を変換する計画でしたが、`Maze` クラスが内部で転置を吸収し、プロジェクト全体で `(x, y)` 順に統一することで座標変換バグを防止しました。
 4. **不変条件の構造的保証 (2026-08-24):** 壁の不整合を防ぐため、壁の変更を `Maze.open_passage` の1つのみに制限しました。
 5. **Braiding と 3x3 領域判定の洗練 (2026-09-01〜2026-09-13):** 3x3 開放領域を「内壁12枚がすべて開いている状態」と明確に定義し、壁開放時に影響を受ける最大6つの枠のみを判定する定数時間 $O(1)$ の判定法を確立しました。
