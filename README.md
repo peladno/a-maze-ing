@@ -280,7 +280,7 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
    - Outlined modular separation between backend generation and frontend visualization.
 2. **Transition to Poetry (2026-08-20 / Decision 2.1):**
    - Javier proposed and implemented Poetry via `pyproject.toml` and `poetry.lock`.
-   - _Rationale:_ Deterministic dependency resolution across different development operating systems (Windows and Linux), clean separation of developer tooling (`flake8`, `mypy`, `pytest`) from runtime dependencies, and standardized wheel builds satisfying §VI. Documented in [`Docs/pair_communication/03_poetry_switch.md`](Docs/pair_communication/03_poetry_switch.md).
+   - _Rationale:_ Deterministic dependency resolution across different development operating systems (Windows and Linux), clean separation of developer tooling (`flake8`, `mypy`, `pytest`) from runtime dependencies, and standardized wheel builds satisfying §VI.
 3. **Data Structure & Unified Coordinate System (2026-08-21 to 2026-09-02):**
    - The team initially considered converting coordinates at boundaries between `(x, y)` and `[row][col]`.
    - _Evolution:_ Unified the entire project around `(x, y)` tuples (`Coord = tuple[int, int]`). The internal transposition to `_grid[y][x]` is completely encapsulated inside `Maze`, eliminating transpose bugs on non-square mazes.
@@ -307,8 +307,8 @@ The project responsibilities were divided between `skusakab` (So) and `jperez-u`
 
 #### What Worked Well
 
-- **Contract-First Implementation:** Drafting architecture specifications in `Docs/implementation_plans/` before writing code allowed both members to work in parallel on opposite sides of interfaces without integration friction.
-- **Bilingual Documentation & Work Logs:** Maintaining daily logs in `Docs/work_log/` and bilingual guides in `Docs/learning_log/` bridged communication across native languages (Japanese and Spanish) and provided complete audit trails of technical decisions.
+- **Contract-First Implementation:** Writing a design plan for each module before its code allowed both members to work in parallel on opposite sides of interfaces without integration friction.
+- **Bilingual Documentation & Work Logs:** Keeping daily work logs and bilingual learning notes bridged communication across native languages (Japanese and Spanish) and provided complete audit trails of technical decisions.
 - **Correct-by-Construction Design:** Designing `open_passage` to update both sides of a wall and reserving "42" cells prior to DFS eliminated entire categories of wall-incoherence and graph-disconnection bugs.
 - **Independent Validation via `maze_analyzer.py`:** Incorporating the evaluation analyzer into the verification loop ensured objective validation against grading standards.
 
@@ -357,10 +357,10 @@ In accordance with Subject §II and §VII, AI assistance (specifically Claude) w
 
 #### Specific Tasks & Modules Supported by AI
 
-1. **Bilingual Learning Logs (`Docs/learning_log/`):**
-   - AI drafted comprehensive technical explainers and comparative analyses covering Python language mechanics, bitmask operations, generator execution timing, and algorithm trade-offs (e.g., `bitmask-wall-encoding.md`, `maze-generation-algorithms.md`, `python-enum-and-property.md`, `python-exceptions.md`, `python-generators.md`).
+1. **Bilingual Learning Notes:**
+   - AI drafted comprehensive technical explainers and comparative analyses covering Python language mechanics, bitmask operations, generator execution timing, and algorithm trade-offs (bit masks, generators, exceptions, the Python object model, and a comparison of maze-generation algorithms).
 2. **Design Specification & Edge-Case Brainstorming:**
-   - Assisted in formulating contract specifications in `Docs/implementation_plans/`, particularly mapping out the 31 edge cases in `config-parser.md` and calculating the 6 checking windows for $3 \times 3$ open area constraints in `generation-algorithm.md`.
+   - Assisted in formulating the design plans, particularly mapping out the 31 edge cases of the configuration parser and the 6 checking windows of the 3x3 open-area rule.
 3. **Docstring Formatting & Typing Assistance:**
    - Generated standardized NumPy-style docstrings and clarified complex `mypy` typing questions (such as `@property` declarations in `typing.Protocol` interfaces).
 4. **Cross-Language Communication:**
@@ -368,7 +368,7 @@ In accordance with Subject §II and §VII, AI assistance (specifically Claude) w
 5. **Generator and Solver (so's side):**
    - The implementation code was written by so; Claude explained concepts (spanning trees, loops, queues, BFS), reviewed each version, and pointed out bugs with hints rather than fixes.
    - Claude wrote part of the test suite (the braiding, loop top-up, "42" and solver tests), and checked every test file by mutation testing: breaking the code on purpose, one change at a time, to confirm that some test fails.
-   - Claude drafted the docstrings, the user-facing error messages, the solver plan (`Docs/implementation_plans/shortest-path-solver.md`) and the learning note on queues and BFS, and ran generated mazes through `maze_analyzer.py`.
+   - Claude drafted the docstrings, the user-facing error messages, the solver's design plan and the learning note on queues and BFS, and ran generated mazes through `maze_analyzer.py`.
 
 #### Principles & Verification
 
@@ -584,7 +584,7 @@ print(f"最短経路: {letters}")
 #### 計画の変遷
 
 1. **キックオフ (2026-08-13):** 9/17 を締切とする約1か月の計画を策定。当初は `venv` + `pip` を採用予定でした。
-2. **Poetry への移行 (2026-08-20 / 決定 2.1):** 異なる開発環境（Windows と Linux）での依存関係の完全な固定、開発ツールと実行時依存の分離、§VI のパッケージ配布を容易にするため、Javier の提案・実装により Poetry へ移行しました（[`Docs/pair_communication/03_poetry_switch.md`](Docs/pair_communication/03_poetry_switch.md)）。
+2. **Poetry への移行 (2026-08-20 / 決定 2.1):** 異なる開発環境（Windows と Linux）での依存関係の完全な固定、開発ツールと実行時依存の分離、§VI のパッケージ配布を容易にするため、Javier の提案・実装により Poetry へ移行しました。
 3. **データ構造と座標系の統一 (2026-08-21〜2026-09-02):** 当初は境界で `(x, y)` と `[y][x]` を変換する計画でしたが、`Maze` クラスが内部で転置を吸収し、プロジェクト全体で `(x, y)` 順に統一することで座標変換バグを防止しました。
 4. **不変条件の構造的保証 (2026-08-24):** 壁の不整合を防ぐため、壁の変更を `Maze.open_passage` の1つのみに制限しました。
 5. **Braiding と 3x3 領域判定の洗練 (2026-09-01〜2026-09-13):** 3x3 開放領域を「内壁12枚がすべて開いている状態」と明確に定義し、壁開放時に影響を受ける最大6つの枠のみを判定する定数時間 $O(1)$ の判定法を確立しました。
@@ -596,7 +596,7 @@ print(f"最短経路: {letters}")
 
 #### うまくいったこと / 改善できたこと
 
-- **うまくいったこと:** コード実装前に `Docs/implementation_plans/` でインターフェース契約を綿密に定義したことで、モジュール統合時の不整合がほぼゼロに抑えられました。また、日々の作業ログ (`Docs/work_log/`) とバイリンガル解説 (`Docs/learning_log/`) により、言語差（日本語とスペイン語/英語）を超えて円滑に協働できました。
+- **うまくいったこと:** コード実装前にモジュールごとの設計計画を書き、インターフェース契約を綿密に定義したことで、モジュール統合時の不整合がほぼゼロに抑えられました。また、日々の作業ログと日英の学習ノートにより、言語差（日本語とスペイン語/英語）を超えて円滑に協働できました。
 - **改善できたこと:** Windows 環境と Linux 環境における改行コード（CRLF）や Make のタブ文字問題で序盤に手戻りが発生したため、`.gitattributes` の導入を初期段階で行うべきでした。また、PR を介さない直マージ運用を採ったため、相手のコードを能動的に読み込む規律が強く求められました。
 
 #### 使用したツール
@@ -618,15 +618,11 @@ print(f"最短経路: {letters}")
 
 42 の AI 指針 (§II) に従い、Claude をペアプログラミング・学習支援ツールとして活用しました:
 
-- **学習ノートの草稿作成 (`Docs/learning_log/`):** ビット演算、Python の型システム、ジェネレータの評価タイミング、例外設計などの概念整理とバイリンガル解説の作成。
+- **学習ノートの草稿作成:** ビット演算、Python の型システム、ジェネレータの評価タイミング、例外設計などの概念整理とバイリンガル解説の作成。
 - **設計仕様の洗練とエッジケースの洗い出し:** `config-parser.md` の 31 個のエッジケースや、`generation-algorithm.md` の 3x3 判定アルゴリズムの幾何的検討。
 - **Docstring と型ヒントの整理:** PEP 257 (NumPy スタイル) の docstring 整備や `mypy` エラーの原因究明。
 - **ペア間コミュニケーション支援:** 日本語と英語の技術文書の相互翻訳およびニュアンスの確認。
-- **生成器とソルバー(so の担当):** 実装コードは so が書き、Claude は概念の解説(全域木、ループ、キュー、BFS)、各版のレビュー、バグの指摘(修正ではなくヒント)を行いました。テストの一部(braiding、ループの補充、「42」、ソルバー)は Claude が書き、すべてのテストファイルをミューテーションテスト(コードをわざと 1 か所ずつ壊し、いずれかのテストが失敗することを確かめる)で検証しました。docstring、利用者向けのエラーメッセージ、ソルバーの計画書 (`Docs/implementation_plans/shortest-path-solver.md`)、キューと BFS の学習ノートの草稿も Claude が作成し、生成した迷路を `maze_analyzer.py` で検証しました。
+- **生成器とソルバー(so の担当):** 実装コードは so が書き、Claude は概念の解説(全域木、ループ、キュー、BFS)、各版のレビュー、バグの指摘(修正ではなくヒント)を行いました。テストの一部(braiding、ループの補充、「42」、ソルバー)は Claude が書き、すべてのテストファイルをミューテーションテスト(コードをわざと 1 か所ずつ壊し、いずれかのテストが失敗することを確かめる)で検証しました。docstring、利用者向けのエラーメッセージ、ソルバーの設計計画書、キューと BFS の学習ノートの草稿も Claude が作成し、生成した迷路を `maze_analyzer.py` で検証しました。
 
 AI 生成のコードを無批判に導入することは厳に戒め、すべてのアルゴリズム・不変条件・テストケースについてチーム両名が論理的に説明・検証できる状態を保っています。ディフェンス (§IX) における口頭試問およびライブコーディング修正にも十分に対応できる理解を備えています。
 
----
-
-Documentation for our own process (work logs, learning notes, design plans) lives in [`Docs/`](Docs/README.md).
-私たちの作業記録(作業ログ・学習ノート・設計計画)は [`Docs/`](Docs/README.md) にある。
